@@ -44,7 +44,7 @@ namespace tinyOS
 			cpu.Push(cpu.Registers[rX]);
 		}
 
-		[OpCode(OpCode.Pushr, Comment = "Push the value of a constant onto the stack")]
+		[OpCode(OpCode.Pushi, Comment = "Push the value of a constant onto the stack")]
 		[Parameter("iValue", Type = ParamType.Constant, Comment = "Constant to be pushed")]
 		public static void Pushi(Cpu cpu, uint iValue)
 		{
@@ -58,7 +58,7 @@ namespace tinyOS
 			cpu.Registers[rX] = cpu.Pop();
 		}
 
-		[OpCode(OpCode.Popr, Comment = "Pop a value off the stack and into a memory location pointed to by a register")]
+		[OpCode(OpCode.Popm, Comment = "Pop a value off the stack and into a memory location pointed to by a register")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register pointing to memory address")]
 		public static void Popm(Cpu cpu, uint rX)
 		{
@@ -69,7 +69,7 @@ namespace tinyOS
 			Array.Copy(bytes, 0, cpu.Ram, ptr, 4);
 		}
 
-		[OpCode(OpCode.Popr, Comment = "Assign a register to a constant value")]
+		[OpCode(OpCode.Movi, Comment = "Assign a register to a constant value")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register being assigned")]
 		[Parameter("iValue", Type = ParamType.Constant, Comment = "Assignment value")]
 		public static void Movi(Cpu cpu, uint rX, uint iValue)
@@ -223,7 +223,7 @@ namespace tinyOS
 			cpu.Call(value);
 		}
 
-		[OpCode(OpCode.Call, Comment = "Call the function offset from the current instruction by a memory address pointed to by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
+		[OpCode(OpCode.Callm, Comment = "Call the function offset from the current instruction by a memory address pointed to by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register pointing to the memory address containing the instruction offset")]
 		public static void Callm(Cpu cpu, uint rX)
 		{
@@ -246,7 +246,7 @@ namespace tinyOS
 			cpu.Registers[rY] = cpu.Allocate(cpu.Registers[rX]);
 		}
 
-		[OpCode(OpCode.AcquireLock, Comment = "Acquire the operating system lock whose number is provided in the register")]
+		[OpCode(OpCode.Acquire, Comment = "Acquire the operating system lock whose number is provided in the register")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the lock number")]
 		public static void AcquireLock(Cpu cpu, uint rX)
 		{
@@ -254,7 +254,7 @@ namespace tinyOS
 			cpu.AcquireLock(lockNo);
 		}
 
-		[OpCode(OpCode.ReleaseLock, Comment = "Release the lock whose number is provided in the register; If the lock is not held by the current process, the instruction is a no-op")]
+		[OpCode(OpCode.Release, Comment = "Release the lock whose number is provided in the register; If the lock is not held by the current process, the instruction is a no-op")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the lock number")]
 		public static void ReleaseLock(Cpu cpu, uint rX)
 		{
@@ -262,7 +262,7 @@ namespace tinyOS
 			cpu.ReleaseLock(lockNo);
 		}
 
-		[OpCode(OpCode.SignalEvent, Comment = "Signal the operating system event whose number is provided in the register")]
+		[OpCode(OpCode.Signal, Comment = "Signal the operating system event whose number is provided in the register")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
 		public static void SignalEvent(Cpu cpu, uint rX)
 		{
@@ -270,7 +270,7 @@ namespace tinyOS
 			cpu.SignalEvent(eventNo);
 		}
 
-		[OpCode(OpCode.WaitEvent, Comment = "Wait for an operating system event to become signalled")]
+		[OpCode(OpCode.Wait, Comment = "Wait for an operating system event to become signalled")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
 		public static void WaitEvent(Cpu cpu, uint rX)
 		{
@@ -286,7 +286,7 @@ namespace tinyOS
 			cpu.Sleep(sleep);
 		}
 
-		[OpCode(OpCode.SetPriority, Comment = "Set the priority of the current process to the value in register")]
+		[OpCode(OpCode.SetP, Comment = "Set the priority of the current process to the value in register")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the new priority")]
 		public static void SetPriority(Cpu cpu, uint rX)
 		{
@@ -302,7 +302,7 @@ namespace tinyOS
 			cpu.Exit(exitCode);
 		}
 
-		[OpCode(OpCode.TerminateProcess, Comment = "Terminates another process")]
+		[OpCode(OpCode.TermP, Comment = "Terminates another process")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register pointing to process to terminate")]
 		[Parameter("rY", Type = ParamType.Register, Comment = "Published exit code")]
 		public static void TerminateProcess(Cpu cpu, uint rX, uint rY)
@@ -312,7 +312,7 @@ namespace tinyOS
 			cpu.TerminateProcess(pId, exitCode);
 		}
 
-		[OpCode(OpCode.FreeMemory, Comment = "Free memory previously allocated, pointed to by a register ")]
+		[OpCode(OpCode.Free, Comment = "Free memory previously allocated, pointed to by a register ")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to free")]
 		public static void FreeMemory(Cpu cpu, uint rX)
 		{
@@ -320,7 +320,7 @@ namespace tinyOS
 			cpu.Free(offset);
 		}
 
-		[OpCode(OpCode.MemoryClear, Comment = "Zero-out memory pointed to by a register for X bytes")]
+		[OpCode(OpCode.Clear, Comment = "Zero-out memory pointed to by a register for X bytes")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
 		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
 		public static void MemoryClear(Cpu cpu, uint rX, uint rY)
