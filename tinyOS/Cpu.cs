@@ -203,6 +203,10 @@ namespace tinyOS
 		{
 			var addr = Translate(vAddr);
 			var data = BitConverter.GetBytes(value);
+
+			if ( addr < 0 || addr >= Ram.Length )
+				throw new InvalidOperationException("Invalid physical address");
+
 			Array.Copy(data, 0, Ram, addr, 4);
 		}
 
@@ -283,7 +287,7 @@ namespace tinyOS
 			process.Locks.Add(@lock);
 		}
 
-		public void SignalEvent(uint eventNo, uint eventData)
+		public void SignalEvent(uint eventNo)
 		{
 			if ( eventNo == 0 || eventNo > EventCount )
 				return;
@@ -297,7 +301,7 @@ namespace tinyOS
 			}
 		}
 
-		public void WaitEvent(uint eventNo, uint rY)
+		public void WaitEvent(uint eventNo)
 		{
 			if ( eventNo == 0 || eventNo > EventCount )
 				return;

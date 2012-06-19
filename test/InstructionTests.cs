@@ -204,7 +204,7 @@ namespace ClassLibrary1
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 			
 			Instructions.Movi(_cpu, Register.A, 88);
-			Instructions.Movrm(_cpu, Register.A, Register.B);
+			Instructions.Movrm(_cpu, Register.B, Register.A);
 
 			var value = BitConverter.ToUInt32(_cpu.Ram, _heapOffset);
 			Assert.That(value, Is.EqualTo(88));
@@ -218,11 +218,11 @@ namespace ClassLibrary1
 			
 			Instructions.Movi(_cpu, Register.A, 0x12345678);
 			Instructions.Pushr(_cpu, Register.B);
-			Instructions.Movrm(_cpu, Register.A, Register.B);
+			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Addi(_cpu, Register.B, 4);
-			Instructions.Movrm(_cpu, Register.A, Register.B);
+			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Addi(_cpu, Register.B, 4);
-			Instructions.Movrm(_cpu, Register.A, Register.B);
+			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Popr(_cpu, Register.B);
 			
 			var value = BitConverter.ToUInt64(_cpu.Ram, _heapOffset);
@@ -301,7 +301,7 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 4);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 			Instructions.Movi(_cpu, Register.A, 99);
-			Instructions.Movrm(_cpu, Register.A, Register.B);
+			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Printm(_cpu, Register.B);
 			Assert.That(printStack.Peek(), Is.EqualTo(99));
 		}

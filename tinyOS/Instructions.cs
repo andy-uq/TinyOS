@@ -264,21 +264,18 @@ namespace tinyOS
 
 		[OpCode(OpCode.SignalEvent, Comment = "Signal the operating system event whose number is provided in the register")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the event data")]
-		public static void SignalEvent(Cpu cpu, uint rX, uint rY)
+		public static void SignalEvent(Cpu cpu, uint rX)
 		{
 			var eventNo = cpu.Registers[rX];
-			var eventData = cpu.Registers[rY];
-			cpu.SignalEvent(eventNo, eventData);
+			cpu.SignalEvent(eventNo);
 		}
 
 		[OpCode(OpCode.WaitEvent, Comment = "Wait for an operating system event to become signalled")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the event data")]
-		public static void WaitEvent(Cpu cpu, uint rX, uint rY)
+		public static void WaitEvent(Cpu cpu, uint rX)
 		{
 			var eventNo = cpu.Registers[rX];
-			cpu.WaitEvent(eventNo, rY);
+			cpu.WaitEvent(eventNo);
 		}
 
 		[OpCode(OpCode.Sleep, Comment = "Sleep the number of clock cycles as indicated in r1. If the time to sleep is 0, the process sleeps infinitely")]
