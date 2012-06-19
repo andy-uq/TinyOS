@@ -198,6 +198,36 @@ namespace ClassLibrary1
 		}
 
 		[Test]
+		public void WaitEvent()
+		{
+			var pA = _cpu.CurrentProcess;
+
+			Instructions.Movi(_cpu, Register.A, 1);
+			Instructions.WaitEvent(_cpu, Register.A);
+
+			Assert.That(_cpu.CurrentProcess, Is.Null);
+			Assert.That(_cpu.DeviceQueue.Where(x => x.Item1 == DeviceId.Event1).Select(x => x.Item2), Contains.Item(pA));
+		}
+
+		[Test]
+		public void SignalEvent()
+		{
+			var pA = _cpu.CurrentProcess;
+
+			Instructions.Movi(_cpu, Register.A, 1);
+			Instructions.WaitEvent(_cpu, Register.A);
+
+			var pB = new ProcessContextBlock();
+			_cpu.CurrentProcess = pB;
+			Instructions.Movi(_cpu, Register.A, 1);
+			Instructions.SignalEvent(_cpu, Register.A);
+
+			Assert.That(_cpu.CurrentProcess, Is.EqualTo(pB));
+			Assert.That(_cpu.ReadyQueue, Contains.Item(pA));
+			Assert.That(_cpu.DeviceQueue, Is.Empty);
+		}
+
+		[Test]
 		public void Movrm()
 		{
 			Instructions.Movi(_cpu, Register.A, 10);
