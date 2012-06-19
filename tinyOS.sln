@@ -11,6 +11,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{FD1F5B
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleFiles", "SampleFiles", "{A07BEA1D-87BB-4CFF-8618-F889B5E8DB51}"
+	ProjectSection(SolutionItems) = preProject
+		Sample Programs\idle-n.txt = Sample Programs\idle-n.txt
+		Sample Programs\idle.txt = Sample Programs\idle.txt
+		Sample Programs\prog1.txt = Sample Programs\prog1.txt
+		Sample Programs\prog2.txt = Sample Programs\prog2.txt
+		Sample Programs\prog3.txt = Sample Programs\prog3.txt
+		Sample Programs\readme.txt = Sample Programs\readme.txt
+		Sample Programs\scott1.txt = Sample Programs\scott1.txt
+		Sample Programs\scott10.txt = Sample Programs\scott10.txt
+		Sample Programs\scott11.txt = Sample Programs\scott11.txt
+		Sample Programs\scott12.txt = Sample Programs\scott12.txt
+		Sample Programs\scott13.txt = Sample Programs\scott13.txt
+		Sample Programs\scott2.txt = Sample Programs\scott2.txt
+		Sample Programs\scott3.txt = Sample Programs\scott3.txt
+		Sample Programs\scott4.txt = Sample Programs\scott4.txt
+		Sample Programs\scott5.txt = Sample Programs\scott5.txt
+		Sample Programs\scott6.txt = Sample Programs\scott6.txt
+		Sample Programs\scott7.txt = Sample Programs\scott7.txt
+		Sample Programs\scott8.txt = Sample Programs\scott8.txt
+		Sample Programs\scott9.txt = Sample Programs\scott9.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

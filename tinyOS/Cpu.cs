@@ -15,6 +15,7 @@ namespace tinyOS
 		public const int PriorityCount = 32;
 		public const int RegisterCount = 10;
 		public const int LockCount = 10;
+		public const int EventCount = 10;
 		public const int SpIndex = RegisterCount - 1;
 
 		public ProcessContextBlock CurrentProcess { get; set; }
@@ -22,16 +23,15 @@ namespace tinyOS
 		public MemoryManager MemoryManager { get; set; }
 		public byte[] Ram { get; private set; }
 		public ReadyQueue ReadyQueue { get; private set; }
-
 		public DeviceQueue DeviceQueue { get; private set; }
 		public Lock[] Locks { get; set; }
+		public Event[] Events { get; set; }
+		public ulong TickCount { get; private set; }
 
 		public uint[] Registers
 		{
 			get { return CurrentProcess.Registers; }
 		}
-
-		public ulong TickCount { get; private set; }
 
 		public bool Sf
 		{
@@ -63,6 +63,7 @@ namespace tinyOS
 			ReadyQueue = new ReadyQueue(PriorityCount);
 			DeviceQueue = new DeviceQueue();
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
+			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId) (x + Devices.Events)).Select(x => new Event(x)).ToArray();
 			_processes = new Dictionary<uint, ProcessContextBlock>();
 			IdleProcess = new ProcessContextBlock
 			{
@@ -137,14 +138,14 @@ namespace tinyOS
 			CurrentProcess.Priority = newPriority;
 		}
 
-		public void TerminateProcess(uint pId)
+		public void TerminateProcess(uint pId, uint exitCode)
 		{
 			var process = _processes[pId];
 
 			foreach (var page in process.PageTable)
 				MemoryManager.Free(page);
 
-			process.ExitCode = 0xffffffff;
+			process.ExitCode = exitCode;
 		}
 
 		public int Translate(uint vAddr)
@@ -280,6 +281,30 @@ namespace tinyOS
 			@lock.Owner = process.Id;
 			@lock.RefCount++;
 			process.Locks.Add(@lock);
+		}
+
+		public void SignalEvent(uint eventNo, uint eventData)
+		{
+			if ( eventNo == 0 || eventNo > EventCount )
+				return;
+
+			var ev = Events[eventNo - 1];
+
+			ProcessContextBlock process;
+			while ((process = DeviceQueue.Dequeue(ev.Handle)) != null)
+			{
+				ReadyQueue.Enqueue(process);
+			}
+		}
+
+		public void WaitEvent(uint eventNo, uint rY)
+		{
+			if ( eventNo == 0 || eventNo > EventCount )
+				return;
+
+			var ev = Events[eventNo - 1];
+			DeviceQueue.Enqueue(ev.Handle, CurrentProcess);
+			CurrentProcess = null;
 		}
 	}
 }

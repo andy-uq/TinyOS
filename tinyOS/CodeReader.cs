@@ -5,7 +5,7 @@ namespace tinyOS
 {
 	public class CodeReader
 	{
-		private MemoryStream _codeStream;
+		private readonly MemoryStream _codeStream;
 
 		public CodeReader(byte[] codeData)
 		{
