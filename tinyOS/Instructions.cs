@@ -172,30 +172,55 @@ namespace tinyOS
 			cpu.Registers[rY] = cpu.Allocate(cpu.Registers[rX]);
 		}
 
-		public static void AcquireLock(Cpu cpu, uint lValue, uint rValue)
+		public static void AcquireLock(Cpu cpu, uint rX)
 		{
+			var lockNo = cpu.Registers[rX];
+			cpu.AcquireLock(lockNo);
 		}
 
-		public static void ReleaseLock(Cpu cpu, uint lValue, uint rValue)
+		public static void ReleaseLock(Cpu cpu, uint rX)
 		{
+			var lockNo = cpu.Registers[rX];
+			cpu.ReleaseLock(lockNo);
 		}
 
-		public static void Sleep(Cpu cpu, uint lValue, uint rValue)
+		public static void Sleep(Cpu cpu, uint rX)
 		{
+			var sleep = cpu.Registers[rX];
+			cpu.Sleep(sleep);
 		}
 
-		public static void SetPriority(Cpu cpu, uint lValue, uint rValue)
+		public static void SetPriority(Cpu cpu, uint rX)
 		{
+			var priority = cpu.Registers[rX];
+			cpu.AdjustPriority((byte )(priority & 0xFF));
 		}
 
-		public static void Exit(Cpu cpu, uint lValue, uint rValue)
+		public static void Exit(Cpu cpu, uint rX)
 		{
+			var exitCode = cpu.Registers[rX];
+			cpu.Exit(exitCode);
+		}
+
+		public static void TerminateProcess(Cpu cpu, uint rX)
+		{
+			var pId = cpu.Registers[rX];
+			cpu.TerminateProcess(pId);
 		}
 
 		public static void FreeMemory(Cpu cpu, uint rX)
 		{
 			var offset = cpu.Registers[rX];
 			cpu.Free(offset);
+		}
+
+		public static void MemoryClear(Cpu cpu, uint rX, uint rY)
+		{
+			var vAddr = cpu.Registers[rX];
+			var addr = cpu.Translate(vAddr);
+			var end = addr + cpu.Registers[rY];
+			while ( addr < end )
+				cpu.Ram[addr++] = 0;
 		}
 	}
 }

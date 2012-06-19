@@ -7,11 +7,11 @@ namespace tinyOS
 		public PageInfo(Page page)
 		{
 			Owner = page.Owner;
-			Offset = page.Offset;
+			Offset = page.PhysicalOffset;
 			Size = page.Size;
 		}
 
-		public int Owner { get; private set; }
+		public uint Owner { get; private set; }
 		public uint Offset { get; private set; }
 		public uint Size { get; private set; }
 
@@ -34,7 +34,7 @@ namespace tinyOS
 		{
 			unchecked
 			{
-				int result = Owner;
+				var result = (int )Owner;
 				result = (result*397) ^ Offset.GetHashCode();
 				result = (result*397) ^ Size.GetHashCode();
 				return result;

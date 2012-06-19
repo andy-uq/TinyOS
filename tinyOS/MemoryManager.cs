@@ -5,24 +5,6 @@ using System.Linq;
 
 namespace tinyOS
 {
-	public class PageSizeComparer : IComparer<Page>
-	{
-		public int Compare(Page x, Page y)
-		{
-			return x.Size.CompareTo(y.Size);
-		}
-	}
-	public class PageOffsetComparer : IComparer<Page>
-	{
-		public int Compare(Page x, Page y)
-		{
-			var result = x.Offset.CompareTo(y.Offset);
-			return Forward ? result : result*-1;
-		}
-
-		public bool Forward { get; set; }
-	}
-
 	public class MemoryManager
 	{
 		private readonly SortedSet<Page> _pages;
@@ -31,7 +13,7 @@ namespace tinyOS
 		public MemoryManager(uint freeSize)
 		{
 			_pages = new SortedSet<Page>(new PageOffsetComparer());
-			_freePages = new SortedSet<Page>(new PageSizeComparer()) {new Page {Offset = 0, Size = freeSize}};
+			_freePages = new SortedSet<Page>(new PageSizeComparer()) {new Page {PhysicalOffset = 0, Size = freeSize}};
 		}
 
 		public IEnumerable<PageInfo> AllocatedPages
@@ -44,15 +26,15 @@ namespace tinyOS
 			get { return _freePages.Select(page => new PageInfo(page)); }
 		}
 
-		public Page Allocate(int owner, uint size)
+		public Page Allocate(uint owner, uint size)
 		{
 			var freeBlock = _freePages.FirstOrDefault(x => size <= x.Size);
 			if ( freeBlock == null )
 				return null;
 
-			var page = new Page { Owner = owner, Offset = freeBlock.Offset, Size = size};
+			var page = new Page { Owner = owner, PhysicalOffset = freeBlock.PhysicalOffset, Size = size};
 
-			freeBlock.Offset += size;
+			freeBlock.PhysicalOffset += size;
 			freeBlock.Size -= size;
 
 			if (freeBlock.Size == 0)
@@ -70,7 +52,7 @@ namespace tinyOS
 			foreach ( var page in pageTable )
 			{
 				if ( vAddr < address + page.Size )
-					return (int)(page.Offset + vAddr);
+					return (int)(page.PhysicalOffset + vAddr);
 
 				address += page.Size;
 				vAddr -= page.Size;
@@ -96,9 +78,9 @@ namespace tinyOS
 			{
 				_freePages.Remove(freePage);
 
-				freePage.Offset = GetPagesToRight(freePage)
+				freePage.PhysicalOffset = GetPagesToRight(freePage)
 					.Reverse()
-					.Aggregate(freePage.Offset, (offset, pageToTheRight) => MovePage(pageToTheRight, offset));
+					.Aggregate(freePage.PhysicalOffset, (offset, pageToTheRight) => MovePage(pageToTheRight, offset));
 
 				CollapseFreePage(freePage);
 			}
@@ -106,38 +88,38 @@ namespace tinyOS
 
 		private uint MovePage(Page page, uint newOffset)
 		{
-			var offset = page.Offset;
-			page.Offset = newOffset;
+			var offset = page.PhysicalOffset;
+			page.PhysicalOffset = newOffset;
 
 			return offset;
 		}
 
 		private IEnumerable<Page> GetPagesToRight(Page page)
 		{
-			return _pages.TakeWhile(x => x.Offset > page.Offset);
+			return _pages.TakeWhile(x => x.PhysicalOffset > page.PhysicalOffset);
 		}
 
 		private Page CollapseFreePage(Page page)
 		{
-			uint offset = page.Offset;
+			uint offset = page.PhysicalOffset;
 			uint size = page.Size;
 
 			Page left;
-			while ( (left = _freePages.SingleOrDefault(x => (x.Offset + x.Size) == offset)) != null )
+			while ( (left = _freePages.SingleOrDefault(x => (x.PhysicalOffset + x.Size) == offset)) != null )
 			{
 				_freePages.Remove(left);
-				offset = left.Offset;
+				offset = left.PhysicalOffset;
 				size += left.Size;
 			}
 
 			Page right;
-			while ( (right = _freePages.SingleOrDefault(x => (offset + size) == x.Offset)) != null )
+			while ( (right = _freePages.SingleOrDefault(x => (offset + size) == x.PhysicalOffset)) != null )
 			{
 				_freePages.Remove(right);
 				size += right.Size;
 			}
 
-			return new Page { Offset = offset, Size = size };
+			return new Page { PhysicalOffset = offset, Size = size };
 		}
 
 		public int Compare(Page x, Page y)

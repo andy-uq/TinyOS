@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,17 +6,32 @@ namespace tinyOS
 {
 	public class Cpu
 	{
+		private const int IdleQuanta = 5;
+		private const int UserQuanta = 10;
+
+		private readonly Dictionary<uint, ProcessContextBlock> _processes;
+		private uint _nextProcessId = 1;
+
+		public const int PriorityCount = 32;
 		public const int RegisterCount = 10;
+		public const int LockCount = 10;
 		public const int SpIndex = RegisterCount - 1;
 
 		public ProcessContextBlock CurrentProcess { get; set; }
-		
 		public Action<uint> PrintMethod { get; set; }
-		
 		public MemoryManager MemoryManager { get; set; }
 		public byte[] Ram { get; private set; }
+		public ReadyQueue ReadyQueue { get; private set; }
 
-		public uint[] Registers { get { return CurrentProcess.Registers; } }
+		public DeviceQueue DeviceQueue { get; private set; }
+		public Lock[] Locks { get; set; }
+
+		public uint[] Registers
+		{
+			get { return CurrentProcess.Registers; }
+		}
+
+		public ulong TickCount { get; private set; }
 
 		public bool Sf
 		{
@@ -25,8 +39,16 @@ namespace tinyOS
 			set { CurrentProcess.Sf = value; }
 		}
 
-		public bool Zf { get { return CurrentProcess.Zf; } set { CurrentProcess.Zf = value; } }
-		public uint Ip { get { return CurrentProcess.Ip; } }
+		public bool Zf
+		{
+			get { return CurrentProcess.Zf; }
+			set { CurrentProcess.Zf = value; }
+		}
+
+		public uint Ip
+		{
+			get { return CurrentProcess.Ip; }
+		}
 
 		public uint Sp
 		{
@@ -38,18 +60,65 @@ namespace tinyOS
 		{
 			Ram = new byte[ramSize];
 			MemoryManager = new MemoryManager(ramSize);
+			ReadyQueue = new ReadyQueue(PriorityCount);
+			DeviceQueue = new DeviceQueue();
+			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
+			_processes = new Dictionary<uint, ProcessContextBlock>();
+			IdleProcess = new ProcessContextBlock
+			{
+				Id = 0,
+			};
 		}
+
+		protected ProcessContextBlock IdleProcess { get; set; }
 
 		public void Run(ProcessContextBlock block)
 		{
 			var globalData = MemoryManager.Allocate(block.Id, 4096);
 			if (globalData != null)
 			{
+				block.Id = NextProcessId();
 				block.Stack = MemoryManager.Allocate(block.Id, 4096);
 				block.GlobalData = MemoryManager.Allocate(block.Id, 4096);
-				block.Registers[7] = (uint )block.Id;
-				block.Registers[8] = block.GlobalData.Offset;
+				block.Registers[7] = (uint) block.Id;
+				block.Registers[8] = block.GlobalData.PhysicalOffset;
+
+				_processes.Add(block.Id, block);
+				ReadyQueue.Enqueue(block);
 			}
+		}
+
+		private uint NextProcessId()
+		{
+			return _nextProcessId++;
+		}
+
+		public void Tick()
+		{
+			if (CurrentProcess == null || CurrentProcess.Quanta == 0)
+			{
+				CurrentProcess = SwitchToNextProcess();
+			}
+
+			CurrentProcess.Quanta--;
+			TickCount++;
+		}
+
+		private ProcessContextBlock SwitchToNextProcess()
+		{
+			var process = ReadyQueue.Dequeue();
+
+			if (process == null)
+			{
+				process = IdleProcess;
+				process.Quanta = IdleQuanta;
+			}
+			else
+			{
+				process.Quanta = UserQuanta;
+			}
+
+			return process;
 		}
 
 		public void Exit(uint exitCode)
@@ -60,13 +129,29 @@ namespace tinyOS
 				MemoryManager.Free(page);
 
 			MemoryManager.Compact();
+			CurrentProcess = null;
+		}
+
+		public void AdjustPriority(byte newPriority)
+		{
+			CurrentProcess.Priority = newPriority;
+		}
+
+		public void TerminateProcess(uint pId)
+		{
+			var process = _processes[pId];
+
+			foreach (var page in process.PageTable)
+				MemoryManager.Free(page);
+
+			process.ExitCode = 0xffffffff;
 		}
 
 		public int Translate(uint vAddr)
 		{
 			return MemoryManager.Translate(CurrentProcess.PageTable, vAddr);
 		}
-		
+
 		public void Print(uint value)
 		{
 			(PrintMethod ?? Console.WriteLine)(value);
@@ -76,8 +161,8 @@ namespace tinyOS
 		{
 			unchecked
 			{
-				var offset = (int)uOffset;
-				CurrentProcess.Ip = (uint)(CurrentProcess.Ip + offset);
+				var offset = (int) uOffset;
+				CurrentProcess.Ip = (uint) (CurrentProcess.Ip + offset);
 			}
 		}
 
@@ -96,16 +181,16 @@ namespace tinyOS
 		{
 			var page = MemoryManager.Allocate(CurrentProcess.Id, size);
 
-			if ( page == null )
+			if (page == null)
 				return 0;
 
 			CurrentProcess.PageTable.Allocate(page);
-			return page.Offset;
+			return page.PhysicalOffset;
 		}
 
 		public void Free(uint offset)
 		{
-			var page = CurrentProcess.PageTable.SingleOrDefault(x => x.Offset == (offset - 1024U));
+			var page = CurrentProcess.PageTable.SingleOrDefault(x => x.PhysicalOffset == (offset - 1024U));
 			if (page != null)
 			{
 				CurrentProcess.PageTable.Free(page);
@@ -128,111 +213,73 @@ namespace tinyOS
 
 		public void Push(uint value)
 		{
-			Write(CurrentProcess.Stack.Offset + Sp, value);
+			Write(CurrentProcess.Stack.PhysicalOffset + Sp, value);
 			Sp += 4;
 		}
 
 		public uint Pop()
 		{
 			Sp -= 4;
-			var value = Read(CurrentProcess.Stack.Offset + Sp);
+			var value = Read(CurrentProcess.Stack.PhysicalOffset + Sp);
 
 			return value;
 		}
 
 		public uint Peek()
 		{
-			return Read(CurrentProcess.Stack.Offset + (Sp - 4));
+			return Read(CurrentProcess.Stack.PhysicalOffset + (Sp - 4));
 		}
-	}
 
-	public class ProcessContextBlock
-	{
-		private Page _stack;
-		private Page _code;
-		private Page _globalData;
-
-		public int Id { get; set; }
-
-		public uint[] Registers { get; set; }
-		public uint Ip { get; set; }
-		public bool Sf { get; set; }
-		public bool Zf { get; set; }
-
-		public Page Stack
+		public void Sleep(uint sleep)
 		{
-			get { return _stack; }
-			set
+			CurrentProcess = null;
+		}
+
+		public void ReleaseLock(uint lockNo)
+		{
+			if (lockNo == 0 || lockNo > LockCount)
+				return;
+
+			var @lock = Locks[lockNo - 1];
+			if (@lock.Owner != CurrentProcess.Id)
+				return;
+
+			@lock.RefCount--;
+			if (@lock.RefCount != 0) 
+				return;
+
+			@lock.Owner = 0;
+			@lock.RefCount = 0;
+
+			var process = DeviceQueue.Dequeue(@lock.Handle);
+			if (process == null)
+				return;
+
+			AcquireLock(process, @lock);
+			ReadyQueue.Enqueue(process);
+		}
+
+		public void AcquireLock(uint lockNo)
+		{
+			if (lockNo == 0 || lockNo > LockCount)
+				return;
+
+			var @lock = Locks[lockNo - 1];
+			if (@lock.Owner == CurrentProcess.Id || @lock.Owner == 0)
 			{
-				_stack = value;
-				PageTable.Allocate(value);
+				AcquireLock(CurrentProcess, @lock);
+				return;
 			}
+
+			DeviceQueue.Enqueue(@lock.Handle, CurrentProcess);
+			CurrentProcess = null;
 		}
 
-		public Page Code
+		private void AcquireLock(ProcessContextBlock process, Lock @lock)
 		{
-			get { return _code; }
-			set
-			{
-				_code = value;
-				PageTable.Allocate(value);
-			}
+			@lock.Owner = process.Id;
+			@lock.RefCount++;
+			process.Locks.Add(@lock);
 		}
-
-		public Page GlobalData
-		{
-			get { return _globalData; }
-			set
-			{
-				_globalData = value;
-				PageTable.Allocate(value);
-			}
-		}
-
-		public PageTable PageTable { get; set; }
-		public uint ExitCode { get; set; }
-
-		public ProcessContextBlock()
-		{
-			Registers = new uint[10];
-			PageTable = new PageTable();
-		}
-	}
-	
-	public class PageTable : IEnumerable<Page>
-	{
-		private readonly SortedSet<Page> _pages;
-
-		public PageTable()
-		{
-			_pages = new SortedSet<Page>(new PageOffsetComparer { Forward = true });
-		}
-
-		public void Allocate(Page page)
-		{
-			_pages.Add(page);
-		}
-
-		public void Free(Page page)
-		{
-			_pages.Remove(page);
-		}
-
-		public IEnumerator<Page> GetEnumerator()
-		{
-			return _pages.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-	}
-
-	public class Page
-	{
-		public int Owner { get; set; }
-		public uint Offset { get; set; }
-		public uint Size { get; set; }
 	}
 }
