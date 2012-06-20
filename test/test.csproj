@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeParserTests.cs" />
+    <Compile Include="CpuTests.cs" />
     <Compile Include="InstructionTests.cs" />
     <Compile Include="MemoryManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

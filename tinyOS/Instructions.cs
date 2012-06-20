@@ -191,7 +191,7 @@ namespace tinyOS
 
 		[OpCode(OpCode.Cmpr, Comment = "Compare two registers. Set ZF if values are equal, SF if rX < rY")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing value to compare")]
-		[Parameter("iValue", Type = ParamType.Constant, Comment = "Register to compare against")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register to compare against")]
 		public static void Cmpr(Cpu cpu, uint rX, uint rY)
 		{
 			var lValue = cpu.Registers[rX];

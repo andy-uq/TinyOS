@@ -31,7 +31,14 @@ namespace ClassLibrary1
 			uint pId = 10;
 
 			_cpu = new Cpu(1024);
-			_cpu.CurrentProcess = new ProcessContextBlock { Id = pId, Stack = _cpu.MemoryManager.Allocate(pId, 128), Code = _cpu.MemoryManager.Allocate(pId, 128) };
+			_cpu.CurrentProcess = new ProcessContextBlock
+			{
+				Id = pId,
+				Stack = _cpu.MemoryManager.Allocate(pId, 128),
+				Code = _cpu.MemoryManager.Allocate(pId, 128),
+				GlobalData = _cpu.MemoryManager.Allocate(pId, 128)
+			};
+
 			var pageInfo = _cpu.CurrentProcess.PageTable.Last();
 			_heapOffset = (int )(pageInfo.PhysicalOffset + pageInfo.Size);
 		}
@@ -125,40 +132,62 @@ namespace ClassLibrary1
 		public void Jmp()
 		{
 			Instructions.Movi(_cpu, Register.A, 10);
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Jmp(_cpu, Register.A);
-			Assert.That(_cpu.Ip, Is.EqualTo(10));
+			_cpu.CurrentProcess.Ip++;
 
-			Instructions.Movi(_cpu, Register.A, AsUint(-10));
+			Assert.That(_cpu.Ip, Is.EqualTo(11));
+
+			Instructions.Movi(_cpu, Register.A, AsUint(-11));
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Jmp(_cpu, Register.A);
-			Assert.That(_cpu.Ip, Is.EqualTo(0));
+			_cpu.CurrentProcess.Ip++;
+			
+			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void Je()
 		{
 			Instructions.Movi(_cpu, Register.C, AsUint(10));
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Movi(_cpu, Register.A, 10);
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Cmpi(_cpu, Register.A, 10);
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Je(_cpu, Register.C);
-			Assert.That(_cpu.Ip, Is.EqualTo(10));
+			_cpu.CurrentProcess.Ip++;
+			
+			Assert.That(_cpu.Ip, Is.EqualTo(13));
 
-			Instructions.Movi(_cpu, Register.C, AsUint(-10));
+			Instructions.Movi(_cpu, Register.C, AsUint(-13));
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Je(_cpu, Register.C);
-			Assert.That(_cpu.Ip, Is.EqualTo(0));
+			_cpu.CurrentProcess.Ip++;
+			
+			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void Jlt()
 		{
 			Instructions.Movi(_cpu, Register.C, AsUint(10));
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Movi(_cpu, Register.A, 10);
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Cmpi(_cpu, Register.A, 20);
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Jlt(_cpu, Register.C);
-			Assert.That(_cpu.Ip, Is.EqualTo(10));
+			_cpu.CurrentProcess.Ip++;
 
-			Instructions.Movi(_cpu, Register.C, AsUint(-10));
+			Assert.That(_cpu.Ip, Is.EqualTo(13));
+
+			Instructions.Movi(_cpu, Register.C, AsUint(-13));
+			_cpu.CurrentProcess.Ip++;
 			Instructions.Jlt(_cpu, Register.C);
-			Assert.That(_cpu.Ip, Is.EqualTo(0));
+			_cpu.CurrentProcess.Ip++;
+
+			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
 		private static uint AsUint(int value)
@@ -194,7 +223,7 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 10);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 			Assert.That(B, Is.EqualTo(_heapOffset));
-			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(3));
+			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(4));
 		}
 
 		[Test]

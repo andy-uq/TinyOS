@@ -16,6 +16,11 @@ namespace tinyOS
 
 		public void Write(Instruction instruction)
 		{
+			_streamWriter.WriteLine(ToString(instruction));
+		}
+
+		public static string ToString(Instruction instruction)
+		{
 			var format = "{0}{1}";
 
 			if ( instruction.Comment != null )
@@ -29,25 +34,21 @@ namespace tinyOS
 				throw new InvalidOperationException(string.Format("Parameter mismatch: {0} ({1}, {2})", meta.OpCode, meta.Parameters.Length, instruction.Parameters.Length));
 			}
 
-			_streamWriter.WriteLine(format, 
-				instruction.OpCode.ToString().PadRight(10), 
-				string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters[i], x))).PadRight(20), 
-				instruction.Comment
-			);
+			return string.Format(format,
+			                     instruction.OpCode.ToString().PadRight(10),
+			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters[i], x))).PadRight(20),
+			                     instruction.Comment);
 		}
 
-		private object FormatValue(ParameterInfo pInfo, uint value)
+		private static object FormatValue(ParameterInfo pInfo, uint value)
 		{
 			switch (pInfo.Type)
 			{
 				case ParamType.Register:
-					return string.Concat('r', value).PadRight(10);
+					return string.Concat('r', value).PadRight(12);
 
 				case ParamType.Constant:
-					return string.Concat('$', value).PadRight(10);
-
-				case ParamType.None:
-					return new string(' ', 10);
+					return string.Concat('$', value).PadRight(12);
 
 				default:
 					throw new ArgumentOutOfRangeException();

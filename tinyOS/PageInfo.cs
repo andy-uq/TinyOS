@@ -22,25 +22,6 @@ namespace tinyOS
 			return other.Owner == Owner && other.Offset == Offset && other.Size == Size;
 		}
 
-		public override bool Equals(object obj)
-		{
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
-			if (obj.GetType() != typeof (PageInfo)) return false;
-			return Equals((PageInfo) obj);
-		}
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				var result = (int )Owner;
-				result = (result*397) ^ Offset.GetHashCode();
-				result = (result*397) ^ Size.GetHashCode();
-				return result;
-			}
-		}
-
 		public override string ToString()
 		{
 			return string.Format("[0x{0:x4}] ({1:n0} bytes)", Offset, Size);

@@ -16,4 +16,4 @@
 7	r3, r5		;save address in r3
 28	r1
 28	r3
-27               ; this is exit.
+27  $0             ; this is exit.

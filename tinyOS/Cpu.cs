@@ -9,6 +9,7 @@ namespace tinyOS
 		private const int IdleQuanta = 5;
 		private const int UserQuanta = 10;
 
+		private readonly Dictionary<OpCode, Action<Cpu, uint[]>> _operations;
 		private readonly Dictionary<uint, ProcessContextBlock> _processes;
 		private uint _nextProcessId = 1;
 
@@ -65,13 +66,19 @@ namespace tinyOS
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
 			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId) (x + Devices.Events)).Select(x => new Event(x)).ToArray();
 			_processes = new Dictionary<uint, ProcessContextBlock>();
+			_operations = OpCodeMeta.OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMeta.OpCodeMetaInformationBuilder.BuildOperation);
 			IdleProcess = new ProcessContextBlock
 			{
 				Id = 0,
 			};
 		}
 
-		protected ProcessContextBlock IdleProcess { get; set; }
+		public ProcessContextBlock IdleProcess { get; private set; }
+
+		public bool Running
+		{
+			get { return (IdleProcess.ExitCode == 0); }
+		}
 
 		public void Run(ProcessContextBlock block)
 		{
@@ -101,8 +108,23 @@ namespace tinyOS
 				CurrentProcess = SwitchToNextProcess();
 			}
 
-			CurrentProcess.Quanta--;
+			var codeData = new byte[CurrentProcess.Code.Size];
+			Array.Copy(Ram, CurrentProcess.Code.PhysicalOffset, codeData, 0, codeData.Length);
+
+			var codeReader = new CodeReader(codeData);
+			var instruction = codeReader.Instructions.ElementAt((int )Ip);
+			Execute(instruction);
+
 			TickCount++;
+		}
+
+		private void Execute(Instruction instruction)
+		{
+			CurrentProcess.Ip++;
+			CurrentProcess.Quanta--;
+
+			_operations[instruction.OpCode](this, instruction.Parameters);
+			Console.WriteLine(instruction);
 		}
 
 		private ProcessContextBlock SwitchToNextProcess()
@@ -163,7 +185,7 @@ namespace tinyOS
 			unchecked
 			{
 				var offset = (int) uOffset;
-				CurrentProcess.Ip = (uint) (CurrentProcess.Ip + offset);
+				CurrentProcess.Ip = (uint) (CurrentProcess.Ip + offset) - 1;
 			}
 		}
 

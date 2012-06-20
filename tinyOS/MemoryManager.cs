@@ -121,10 +121,5 @@ namespace tinyOS
 
 			return new Page { PhysicalOffset = offset, Size = size };
 		}
-
-		public int Compare(Page x, Page y)
-		{
-			return x.Size.CompareTo(y.Size);
-		}
 	}
 }
