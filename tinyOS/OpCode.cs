@@ -2,6 +2,7 @@ namespace tinyOS
 {
 	public enum OpCode
 	{
+		Noop,
 		Incr,
 		Addi,
 		Addr,
@@ -17,7 +18,6 @@ namespace tinyOS
 		Jmp,
 		Cmpi,
 		Cmpr,
-		Cmprm,
 		Jlt,
 		Jgt,
 		Je,
@@ -39,6 +39,7 @@ namespace tinyOS
 		TermP,
 		Popr,
 		Popm,
+		Cmprm,
 		Jne,
 	}
 }

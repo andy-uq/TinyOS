@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using tinyOS.OpCodeMeta;
 
 namespace tinyOS
@@ -15,36 +16,42 @@ namespace tinyOS
 
 		public void Write(Instruction instruction)
 		{
-			var format = "{0}{1}{2}";
+			var format = "{0}{1}";
 
 			if ( instruction.Comment != null )
 			{
-				format = "{0}{1}{2};{3}";
+				format = "{0}{1};{2}";
 			}
 
-			_streamWriter.WriteLine(format, instruction.OpCode.ToString().PadRight(10), FormatValue(instruction.OpCode, instruction.LValue, 0), FormatValue(instruction.OpCode, instruction.RValue, 1), instruction.Comment);
+			var meta = OpCodeMetaInformation.Lookup[instruction.OpCode];
+			if (meta.Parameters.Length < instruction.Parameters.Length)
+			{
+				throw new InvalidOperationException(string.Format("Parameter mismatch: {0} ({1}, {2})", meta.OpCode, meta.Parameters.Length, instruction.Parameters.Length));
+			}
+
+			_streamWriter.WriteLine(format, 
+				instruction.OpCode.ToString().PadRight(10), 
+				string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters[i], x))).PadRight(20), 
+				instruction.Comment
+			);
 		}
 
-		private object FormatValue(OpCode opCode, uint u, int i)
+		private object FormatValue(ParameterInfo pInfo, uint value)
 		{
-			var meta = OpCodeMetaInformation.Lookup[opCode];
-			if (i < meta.Parameters.Length)
+			switch (pInfo.Type)
 			{
-				var p = meta.Parameters[i];
-				switch (p.Type)
-				{
-					case ParamType.Register:
-						return string.Concat('r', u).PadRight(10);
+				case ParamType.Register:
+					return string.Concat('r', value).PadRight(10);
 
-					case ParamType.Constant:
-						return string.Concat('$', u).PadRight(10);
+				case ParamType.Constant:
+					return string.Concat('$', value).PadRight(10);
 
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
+				case ParamType.None:
+					return new string(' ', 10);
+
+				default:
+					throw new ArgumentOutOfRangeException();
 			}
-
-			return new string(' ', 10);
 		}
 
 		public void Close()

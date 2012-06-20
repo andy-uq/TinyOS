@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace tinyOS
 {
 	public class TextParser
 	{
-		private static readonly Regex _legacy = new Regex(@"(?<opcode>(\d+))(\s+(?!;)(?<lvalue>\S+))?(\s+(?!;)(?<rvalue>\S+))?(\s*;\s*(?<comment>.*))?");
-		private static readonly Regex _asm = new Regex(@"(?<opcode>(\w+))(\s+(?<lvalue>\S+))?(\s+(?<rvalue>\S+))?(\s*;?<comment>.*)?");
+		private static readonly Regex _legacy = new Regex(@"(?<opcode>(\d+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
+		private static readonly Regex _asm = new Regex(@"(?<opcode>(\w+))(\s+(?<value>\S+))*(\s*;?<comment>.*)?");
 		private static readonly Regex _register = new Regex(@"r(?<r>\d+)");
 		private static readonly Regex _constant = new Regex(@"(\$(?<int>-?\d+))|(0x(?<hex>[0-9a-f]+))");
 
@@ -35,32 +36,34 @@ namespace tinyOS
 		private Instruction ParseLegacy(Match match)
 		{
 			var opCode = match.Groups["opcode"].Value;
-			var lValue = match.Groups["lvalue"].Value;
-			var rValue = match.Groups["rvalue"].Value;
 			var comment = match.Groups["comment"].Value;
-			
+
 			return new Instruction
 			{
 				OpCode = (OpCode)int.Parse(opCode),
-				LValue = DecodeValue(lValue),
-				RValue = DecodeValue(rValue),
-				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim()
+				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
+				Parameters = match.Groups["value"]
+					.Captures
+					.Cast<Capture>()
+					.Select(x => DecodeValue(x.Value))
+					.ToArray(),
 			};
 		}
 
 		private Instruction Parse(Match match)
 		{
 			var opCode = match.Groups["opcode"].Value;
-			var lValue = match.Groups["lvalue"].Value;
-			var rValue = match.Groups["rvalue"].Value;
 			var comment = match.Groups["comment"].Value;
 			
 			return new Instruction
 			{
 				OpCode = (OpCode)int.Parse(opCode),
-				LValue = DecodeValue(lValue),
-				RValue = DecodeValue(rValue),
-				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim()
+				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
+				Parameters = match.Groups["value"]
+					.Captures
+					.Cast<Capture>()
+					.Select(x => DecodeValue(x.Value))
+					.ToArray(),
 			};
 		}
 

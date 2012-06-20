@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeReader.cs" />
+    <Compile Include="CodeWriter.cs" />
     <Compile Include="Cpu.cs" />
     <Compile Include="DeviceId.cs" />
     <Compile Include="DeviceQueue.cs" />

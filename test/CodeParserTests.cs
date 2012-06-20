@@ -11,7 +11,7 @@ namespace ClassLibrary1
 		[Test]
 		public void OpenFile()
 		{
-			var file = @"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott2.txt";
+			var file = @"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt";
 			var parser = new TextParser();
 			var ms = new StringWriter();
 			var writer = new tinyOS.InstructionFormatter(ms);

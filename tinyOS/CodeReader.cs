@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace tinyOS
 {
@@ -21,10 +22,17 @@ namespace tinyOS
 				while (_codeStream.Position < _codeStream.Length )
 				{
 					var opCodeByte = (OpCode )reader.ReadByte();
-					var lValue = reader.ReadUInt32();
-					var rValue = reader.ReadUInt32();
+					var pLength = reader.ReadByte();
 
-					yield return new Instruction {OpCode = opCodeByte, LValue = lValue, RValue = rValue};
+					yield return new Instruction
+					{
+						OpCode = opCodeByte, 
+						Parameters = Enumerable
+							.Range(0, pLength)
+							.Select(x => reader.ReadUInt32())
+							.ToArray(),
+						Comment = reader.ReadString(),
+					};
 				}
 			}
 		}

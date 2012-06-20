@@ -5,7 +5,11 @@ namespace tinyOS
 {
 	public static class IdleProcess
 	{
-		private static readonly Instruction[] _instructions = new[] { new Instruction {OpCode = OpCode.Printr, LValue = 20}, new Instruction {OpCode = OpCode.Jmp, LValue = unchecked((uint) (-1))}};
+		private static readonly Instruction[] _instructions = new[] 
+		{ 
+			new Instruction {OpCode = OpCode.Printr, Parameters = new[] { 20U } }, 
+			new Instruction {OpCode = OpCode.Jmp, Parameters = new[] { unchecked((uint) (-1)) } } 
+		};
 
 		public static Instruction[] Instructions
 		{
