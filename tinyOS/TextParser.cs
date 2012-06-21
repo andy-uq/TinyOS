@@ -7,8 +7,8 @@ namespace tinyOS
 {
 	public class TextParser
 	{
-		private static readonly Regex _legacy = new Regex(@"(?<opcode>(\d+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
-		private static readonly Regex _asm = new Regex(@"(?<opcode>(\w+))(\s+(?<value>\S+))*(\s*;?<comment>.*)?");
+		private static readonly Regex _legacy = new Regex(@"^\s*(?<opcode>(\d+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
+		private static readonly Regex _asm = new Regex(@"^\s*(?<opcode>(\w+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
 		private static readonly Regex _register = new Regex(@"r(?<r>\d+)");
 		private static readonly Regex _constant = new Regex(@"(\$(?<int>-?\d+))|(0x(?<hex>[0-9a-f]+))");
 
@@ -57,7 +57,7 @@ namespace tinyOS
 			
 			return new Instruction
 			{
-				OpCode = (OpCode)int.Parse(opCode),
+				OpCode = (OpCode)Enum.Parse(typeof(OpCode), opCode, true),
 				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
 				Parameters = match.Groups["value"]
 					.Captures

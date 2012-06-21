@@ -9,6 +9,10 @@ namespace tinyOS
 		private const int IdleQuanta = 5;
 		private const int UserQuanta = 10;
 
+		public uint DefaultCodeSize { get; set; }
+		public uint StackSize { get; set; }
+		public uint GlobalDataSize { get; set; }
+
 		private readonly Dictionary<OpCode, Action<Cpu, uint[]>> _operations;
 		private readonly Dictionary<uint, ProcessContextBlock> _processes;
 		private uint _nextProcessId = 1;
@@ -57,10 +61,14 @@ namespace tinyOS
 			set { Registers[SpIndex] = value; }
 		}
 
-		public Cpu(uint ramSize)
+		public Cpu(uint ramSize = (4 << 20))
 		{
+			DefaultCodeSize = 4096;
+			GlobalDataSize = 4096;
+			StackSize = 4096;
+
 			Ram = new byte[ramSize];
-			MemoryManager = new MemoryManager(ramSize);
+			MemoryManager = new MemoryManager(ramSize, Ram);
 			ReadyQueue = new ReadyQueue(PriorityCount);
 			DeviceQueue = new DeviceQueue();
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
@@ -80,20 +88,31 @@ namespace tinyOS
 			get { return (IdleProcess.ExitCode == 0); }
 		}
 
+		public ProcessContextBlock Load()
+		{
+			var pId = NextProcessId();
+			var processContextBlock = new ProcessContextBlock
+			{
+				Id = pId, 
+				Code = MemoryManager.Allocate(pId, DefaultCodeSize),
+				Priority = 16,
+			};
+
+			return processContextBlock;
+		}
+
 		public void Run(ProcessContextBlock block)
 		{
-			var globalData = MemoryManager.Allocate(block.Id, 4096);
-			if (globalData != null)
-			{
-				block.Id = NextProcessId();
-				block.Stack = MemoryManager.Allocate(block.Id, 4096);
-				block.GlobalData = MemoryManager.Allocate(block.Id, 4096);
-				block.Registers[7] = (uint) block.Id;
-				block.Registers[8] = block.GlobalData.PhysicalOffset;
+			if (block == null)
+				throw new ArgumentNullException("block");
 
-				_processes.Add(block.Id, block);
-				ReadyQueue.Enqueue(block);
-			}
+			block.Stack = MemoryManager.Allocate(block.Id, StackSize);
+			block.GlobalData = MemoryManager.Allocate(block.Id, GlobalDataSize);
+			block.Registers[7] = block.Id;
+			block.Registers[8] = (block.GlobalData ?? new Page()).PhysicalOffset;
+
+			_processes.Add(block.Id, block);
+			ReadyQueue.Enqueue(block);
 		}
 
 		private uint NextProcessId()
@@ -108,23 +127,31 @@ namespace tinyOS
 				CurrentProcess = SwitchToNextProcess();
 			}
 
-			var codeData = new byte[CurrentProcess.Code.Size];
-			Array.Copy(Ram, CurrentProcess.Code.PhysicalOffset, codeData, 0, codeData.Length);
+			if ( CurrentProcess == IdleProcess && CurrentProcess.Code == null )
+			{
+				Execute(new Instruction { OpCode = OpCode.Noop });
+			}
+			else
+			{
+				var codeData = new byte[CurrentProcess.Code.Size];
+				Array.Copy(Ram, CurrentProcess.Code.PhysicalOffset, codeData, 0, codeData.Length);
 
-			var codeReader = new CodeReader(codeData);
-			var instruction = codeReader.Instructions.ElementAt((int )Ip);
-			Execute(instruction);
+				var codeReader = new CodeReader(codeData);
+				var instruction = codeReader.Instructions.ElementAt((int) Ip);
+				Execute(instruction);
+			}
 
 			TickCount++;
 		}
 
 		private void Execute(Instruction instruction)
 		{
+			var pId = CurrentProcess.Id;
 			CurrentProcess.Ip++;
 			CurrentProcess.Quanta--;
 
 			_operations[instruction.OpCode](this, instruction.Parameters);
-			Console.WriteLine(instruction);
+			Console.WriteLine("{0}) {1}", pId, instruction);
 		}
 
 		private ProcessContextBlock SwitchToNextProcess()

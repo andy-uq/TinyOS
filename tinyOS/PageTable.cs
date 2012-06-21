@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -14,6 +15,9 @@ namespace tinyOS
 
 		public void Allocate(Page page)
 		{
+			if (page == null)
+				throw new ArgumentNullException("page");
+
 			_pages.Add(page);
 		}
 

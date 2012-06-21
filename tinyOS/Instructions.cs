@@ -5,6 +5,10 @@ namespace tinyOS
 {
 	public static class Instructions
 	{
+		[OpCode(OpCode.Noop, Comment = "Do nothing")]
+		public static void Incr(Cpu cpu)
+		{}
+
 		[OpCode(OpCode.Incr, Comment = "Increase the value of a register by 1")]
 		[Parameter("rX", Type = ParamType.Register, Comment="Register to be increased")]
 		public static void Incr(Cpu cpu, uint rX)

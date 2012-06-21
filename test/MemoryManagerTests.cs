@@ -14,7 +14,7 @@ namespace ClassLibrary1
 		[Test]
 		public void Allocate()
 		{
-			var mm = new MemoryManager(10);
+			var mm = new MemoryManager(10, new byte[10]);
 
 			var p1 = mm.Allocate(1, 1);
 			var p2 = mm.Allocate(1, 2);
@@ -30,7 +30,7 @@ namespace ClassLibrary1
 		[Test]
 		public void Free()
 		{
-			var mm = new MemoryManager(10);
+			var mm = new MemoryManager(10, new byte[10]);
 
 			mm.Allocate(1, 1);
 			mm.Allocate(1, 2);
@@ -44,7 +44,7 @@ namespace ClassLibrary1
 		[Test]
 		public void FreeLeft()
 		{
-			var mm = new MemoryManager(10);
+			var mm = new MemoryManager(10, new byte[10]);
 
 			var p1 = mm.Allocate(1, 1);
 			var p2 = mm.Allocate(1, 2);

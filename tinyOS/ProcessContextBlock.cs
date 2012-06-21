@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace tinyOS
 {
@@ -35,7 +36,10 @@ namespace tinyOS
 			set
 			{
 				_stack = value;
-				PageTable.Allocate(value);
+				if (value != null)
+				{
+					PageTable.Allocate(value);
+				}
 			}
 		}
 
@@ -45,7 +49,10 @@ namespace tinyOS
 			set
 			{
 				_code = value;
-				PageTable.Allocate(value);
+				if ( value != null )
+				{
+					PageTable.Allocate(value);
+				}
 			}
 		}
 
@@ -55,8 +62,33 @@ namespace tinyOS
 			set
 			{
 				_globalData = value;
-				PageTable.Allocate(value);
+				if ( value != null )
+				{
+					PageTable.Allocate(value);
+				}
 			}
+		}
+	}
+
+	public static class ProcessControlBlockExtensions
+	{
+		public static void Compile(this ProcessContextBlock pcb, string source)
+		{
+			var writer = new CodeWriter(pcb.Code.Data);
+			using (var reader = new StringReader(source))
+			{
+				var parser = new TextParser();
+				string line;
+				while ((line = reader.ReadLine()) != null)
+				{
+					if (string.IsNullOrWhiteSpace(line))
+						continue;
+
+					var instruction = parser.Parse(line);
+					writer.Write(instruction);
+				}
+			}
+			writer.Close();
 		}
 	}
 }

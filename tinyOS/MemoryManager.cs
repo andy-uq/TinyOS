@@ -1,17 +1,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace tinyOS
 {
 	public class MemoryManager
 	{
+		private readonly byte[] _data;
 		private readonly SortedSet<Page> _pages;
 		private readonly SortedSet<Page> _freePages;
 
-		public MemoryManager(uint freeSize)
+		public MemoryManager(uint freeSize, byte[] data)
 		{
+			_data = data;
 			_pages = new SortedSet<Page>(new PageOffsetComparer());
 			_freePages = new SortedSet<Page>(new PageSizeComparer()) {new Page {PhysicalOffset = 0, Size = freeSize}};
 		}
@@ -32,7 +35,13 @@ namespace tinyOS
 			if ( freeBlock == null )
 				return null;
 
-			var page = new Page { Owner = owner, PhysicalOffset = freeBlock.PhysicalOffset, Size = size};
+			var page = new Page
+			{
+				Owner = owner,
+				PhysicalOffset = freeBlock.PhysicalOffset,
+				Size = size,
+				Data = new MemoryStream(_data, (int)freeBlock.PhysicalOffset, (int)size, writable: true)
+			};
 
 			freeBlock.PhysicalOffset += size;
 			freeBlock.Size -= size;
