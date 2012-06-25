@@ -66,6 +66,7 @@
     <Compile Include="ProcessContextBlock.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Ram.cs" />
     <Compile Include="ReadyQueue.cs" />
     <Compile Include="TextParser.cs" />
   </ItemGroup>
