@@ -1,35 +1,53 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace tinyOS
 {
 	public class PageTable : IEnumerable<Page>
 	{
-		private readonly SortedSet<Page> _pages;
+		private readonly List<PageInfo> _pages;
+	    private uint _nextPageNo;
 
 		public PageTable()
 		{
-			_pages = new SortedSet<Page>(new PageOffsetComparer { Forward = true });
+			_pages = new List<PageInfo>();
+		    _nextPageNo = 1;
 		}
 
-		public Page Allocate()
+		public Page CreatePage()
 		{
-		    uint pageNumber = (uint) _pages.Count + 1;
-		    var page = new Page {Number = pageNumber };
+		    uint pageNumber = _nextPageNo;
+		    var page = new Page {PageNumber = pageNumber };
 
-		    _pages.Add(page);
+		    _nextPageNo++;
 		    return page;
 		}
 
-		public void Free(Page page)
+        public PageInfo Find(Predicate<PageInfo> match)
+        {
+            return _pages.Find(match);
+        }
+
+	    public PageInfo Find(uint vAddr)
+	    {
+	        return Find(x => x.Offset <= vAddr && vAddr >= x.Offset + x.Size);
+	    }
+
+        public void Add(PageInfo page)
+        {
+            _pages.Add(page);
+        }
+
+		public void Free(PageInfo page)
 		{
 			_pages.Remove(page);
 		}
 
 		public IEnumerator<Page> GetEnumerator()
 		{
-			return _pages.GetEnumerator();
+			return _pages.SelectMany(x => x.Pages).GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

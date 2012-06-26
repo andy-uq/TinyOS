@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace tinyOS
@@ -25,8 +26,7 @@ namespace tinyOS
 
 		public ProcessContextBlock CurrentProcess { get; set; }
 		public Action<uint> PrintMethod { get; set; }
-		public MemoryManager MemoryManager { get; set; }
-		public byte[] Ram { get; private set; }
+		public Ram Ram { get; private set; }
 		public ReadyQueue ReadyQueue { get; private set; }
 		public DeviceQueue DeviceQueue { get; private set; }
 		public Lock[] Locks { get; set; }
@@ -61,14 +61,13 @@ namespace tinyOS
 			set { Registers[SpIndex] = value; }
 		}
 
-		public Cpu(uint ramSize = (4 << 20))
+		public Cpu(uint ramSize = (4 << 20), uint frameSize = (1 << 10))
 		{
-			DefaultCodeSize = 4096;
-			GlobalDataSize = 4096;
-			StackSize = 4096;
+            DefaultCodeSize = frameSize;
+			GlobalDataSize = frameSize;
+			StackSize = frameSize;
 
-			Ram = new byte[ramSize];
-			MemoryManager = new MemoryManager(ramSize, Ram);
+			Ram = new Ram(ramSize, frameSize);
 			ReadyQueue = new ReadyQueue(PriorityCount);
 			DeviceQueue = new DeviceQueue();
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
@@ -94,10 +93,10 @@ namespace tinyOS
 			var processContextBlock = new ProcessContextBlock
 			{
 				Id = pId, 
-				Code = MemoryManager.Allocate(pId, DefaultCodeSize),
 				Priority = 16,
 			};
 
+		    processContextBlock.Code.Append(Ram.Allocate(processContextBlock));
 			return processContextBlock;
 		}
 
@@ -106,10 +105,10 @@ namespace tinyOS
 			if (block == null)
 				throw new ArgumentNullException("block");
 
-			block.Stack = MemoryManager.Allocate(block.Id, StackSize);
-			block.GlobalData = MemoryManager.Allocate(block.Id, GlobalDataSize);
+			block.Stack.Append(Ram.Allocate(block));
+			block.GlobalData.Append(Ram.Allocate(block));
 			block.Registers[7] = block.Id;
-			block.Registers[8] = (block.GlobalData ?? new Page()).PhysicalOffset;
+			block.Registers[8] = block.GlobalData.Offset;
 
 			_processes.Add(block.Id, block);
 			ReadyQueue.Enqueue(block);
@@ -133,10 +132,7 @@ namespace tinyOS
 			}
 			else
 			{
-				var codeData = new byte[CurrentProcess.Code.Size];
-				Array.Copy(Ram, CurrentProcess.Code.PhysicalOffset, codeData, 0, codeData.Length);
-
-				var codeReader = new CodeReader(codeData);
+				var codeReader = new CodeReader(GetMemoryStream(CurrentProcess.Code));
 				var instruction = codeReader.Instructions.ElementAt((int) Ip);
 				Execute(instruction);
 			}
@@ -176,9 +172,8 @@ namespace tinyOS
 			CurrentProcess.ExitCode = exitCode;
 
 			foreach (var page in CurrentProcess.PageTable)
-				MemoryManager.Free(page);
+				Ram.Free(page);
 
-			MemoryManager.Compact();
 			CurrentProcess = null;
 		}
 
@@ -192,14 +187,9 @@ namespace tinyOS
 			var process = _processes[pId];
 
 			foreach (var page in process.PageTable)
-				MemoryManager.Free(page);
+				Ram.Free(page);
 
 			process.ExitCode = exitCode;
-		}
-
-		public int Translate(uint vAddr)
-		{
-			return MemoryManager.Translate(CurrentProcess.PageTable, vAddr);
 		}
 
 		public void Print(uint value)
@@ -229,59 +219,85 @@ namespace tinyOS
 
 		public uint Allocate(uint size)
 		{
-			var page = MemoryManager.Allocate(CurrentProcess.Id, size);
+            var page = new PageInfo();
+		    
+            while (size > Ram.FrameSize)
+            {
+                size -= Ram.FrameSize;
+                page.Append(Ram.Allocate(CurrentProcess));
+            }
 
-			if (page == null)
-				return 0;
-
-			CurrentProcess.PageTable.Allocate(page);
-			return page.PhysicalOffset;
+            page.Append(Ram.Allocate(CurrentProcess));
+		    return page.Offset;
 		}
 
 		public void Free(uint offset)
 		{
-			var page = CurrentProcess.PageTable.SingleOrDefault(x => x.PhysicalOffset == (offset - 1024U));
+			var page = CurrentProcess.PageTable.Find(x => x.Offset == offset);
 			if (page != null)
 			{
-				CurrentProcess.PageTable.Free(page);
-				MemoryManager.Free(page);
+                foreach (var p in page.Pages)
+                    Ram.Free(p);
+
+                CurrentProcess.PageTable.Free(page);
 			}
 		}
 
-		public void Write(uint vAddr, uint value)
+		public bool Write(uint vAddr, uint value)
 		{
-			var addr = Translate(vAddr);
-			var data = BitConverter.GetBytes(value);
+		    var page = CurrentProcess.PageTable.Find(vAddr);
+            if (page == null)
+                return false;
 
-			if ( addr < 0 || addr >= Ram.Length )
-				throw new InvalidOperationException("Invalid physical address");
+            using (var stream = GetMemoryStream(page))
+            {
+                stream.Position = vAddr - page.Offset;
+                using (var writer = new BinaryWriter(stream))
+                    writer.Write(value);
+            }
 
-			Array.Copy(data, 0, Ram, addr, 4);
+		    return true;
 		}
 
 		public uint Read(uint vAddr)
 		{
-			var addr = Translate(vAddr);
-			return BitConverter.ToUInt32(Ram, addr);
-		}
+            var page = CurrentProcess.PageTable.Find(vAddr);
+            if (page == null)
+                throw new InvalidOperationException(string.Format("Bad address: [0x{0:x8}]", vAddr));
+            
+            using (var stream = GetMemoryStream(page))
+            {
+                stream.Position = vAddr - page.Offset;
+                using (var writer = new BinaryReader(stream))
+                    return writer.ReadUInt32();
+            }
+        }
 
 		public void Push(uint value)
 		{
-			Write(CurrentProcess.Stack.PhysicalOffset + Sp, value);
-			Sp += 4;
+			if (Write(CurrentProcess.Stack.Offset + Sp, value))
+			{
+			    Sp += 4;
+			}
 		}
 
 		public uint Pop()
 		{
+            if (Sp == 0)
+                return 0;
+
 			Sp -= 4;
-			var value = Read(CurrentProcess.Stack.PhysicalOffset + Sp);
+			var value = Read(CurrentProcess.Stack.Offset + Sp);
 
 			return value;
 		}
 
 		public uint Peek()
 		{
-			return Read(CurrentProcess.Stack.PhysicalOffset + (Sp - 4));
+            if (Sp == 0)
+                return 0;
+            
+            return Read(CurrentProcess.Stack.Offset + (Sp - 4));
 		}
 
 		public void Sleep(uint sleep)
@@ -359,5 +375,125 @@ namespace tinyOS
 			DeviceQueue.Enqueue(ev.Handle, CurrentProcess);
 			CurrentProcess = null;
 		}
+
+	    public Stream GetMemoryStream(PageInfo page)
+	    {
+	        return new PageStream(Ram, page);
+	    }
 	}
+
+    public class PageStream : Stream
+    {
+        private readonly Ram _ram;
+        private readonly PageInfo _pageSet;
+        private Page _page;
+
+        public PageStream(Ram ram, PageInfo pageSet)
+        {
+            if (ram == null)
+                throw new ArgumentNullException("ram");
+
+            if (pageSet == null)
+                throw new ArgumentNullException("pageSet");
+
+            _ram = ram;
+            _pageSet = pageSet;
+            _page = pageSet.Pages.FirstOrDefault();
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            switch (origin)
+            {
+                case SeekOrigin.Begin:
+                    Position = Math.Max(offset, 0L);
+                    break;
+
+                case SeekOrigin.Current:
+                    Position += offset;
+                    break;
+
+                case SeekOrigin.End:
+                    Position = Math.Min(Length - offset, 0L);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException("origin");
+            }
+
+            return Position;
+        }
+
+        public override void SetLength(long value)
+        {
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (count <= 0)
+                return 0;
+
+            var bytesRead = 0U;
+            var bytesRemaining = (uint)count;
+
+            var addr = new VirtualAddress((uint) (_pageSet.Offset + Position));
+            if (_page == null || _page.PageNumber != addr.PageNumber )
+                _page = _pageSet.Pages.Single(x => x.PageNumber == addr.PageNumber);
+
+            while (bytesRemaining > 0)
+            {
+                var current = _ram.GetStream(_page);
+                var remaining = _page.Size - addr.Offset;
+
+                var read = (uint )current.Read(buffer, offset, (int) Math.Min(remaining, bytesRemaining));
+                bytesRemaining -= read;
+                bytesRead += read;
+                offset += (int )read;
+
+                _page = _pageSet.Next(_page);
+                if (_page == null)
+                    break;
+
+                addr = _page.VirtualAddress;
+            }
+
+            return (int) bytesRead;
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+        }
+
+        public override bool CanRead
+        {
+            get { return true; }
+        }
+
+        public override bool CanSeek
+        {
+            get { return true; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return false; }
+        }
+
+        public override long Length
+        {
+            get { return _pageSet.Size; }
+        }
+
+        private long _position;
+
+        public override long Position
+        {
+            get { return _position; }
+            set { _position = value; }
+        }
+    }
 }

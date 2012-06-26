@@ -7,6 +7,8 @@ namespace ClassLibrary1
 	[TestFixture]
 	public class MemoryManagerTests
 	{
+        ProcessContextBlock _pcb = new ProcessContextBlock();
+
 		public MemoryManagerTests()
 		{
 		}
@@ -14,11 +16,11 @@ namespace ClassLibrary1
 		[Test]
 		public void Allocate()
 		{
-			var mm = new MemoryManager(10, new byte[10]);
+			var mm = new MemoryManager(new Ram(10, 1));
 
-			var p1 = mm.Allocate(1, 1);
-			var p2 = mm.Allocate(1, 2);
-			var p3 = mm.Allocate(1, 3);
+			var p1 = mm.Allocate(_pcb);
+			var p2 = mm.Allocate(_pcb);
+			var p3 = mm.Allocate(_pcb);
 
 			var allocated = mm.AllocatedPages.ToArray();
 			Assert.That(allocated.Length, Is.EqualTo(3));
@@ -30,11 +32,11 @@ namespace ClassLibrary1
 		[Test]
 		public void Free()
 		{
-			var mm = new MemoryManager(10, new byte[10]);
+            var mm = new MemoryManager(new Ram(10, 1));
 
-			mm.Allocate(1, 1);
-			mm.Allocate(1, 2);
-			mm.Allocate(1, 3);
+            var p1 = mm.Allocate(_pcb);
+            var p2 = mm.Allocate(_pcb);
+            var p3 = mm.Allocate(_pcb);
 
 			var freeBlock = mm.FreePages.Single();
 			Assert.That(freeBlock.Offset, Is.EqualTo(6));
@@ -44,11 +46,11 @@ namespace ClassLibrary1
 		[Test]
 		public void FreeLeft()
 		{
-			var mm = new MemoryManager(10, new byte[10]);
+            var mm = new MemoryManager(new Ram(10, 1));
 
-			var p1 = mm.Allocate(1, 1);
-			var p2 = mm.Allocate(1, 2);
-			var p3 = mm.Allocate(1, 3);
+            var p1 = mm.Allocate(_pcb);
+            var p2 = mm.Allocate(_pcb);
+            var p3 = mm.Allocate(_pcb);
 
 			mm.Free(p1);
 

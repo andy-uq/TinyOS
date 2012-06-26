@@ -66,11 +66,10 @@ namespace tinyOS
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register pointing to memory address")]
 		public static void Popm(Cpu cpu, uint rX)
 		{
-			var bytes = BitConverter.GetBytes(cpu.Pop());
+			var value = cpu.Pop();
 
 			var vAddr = cpu.Registers[rX];
-			var ptr = cpu.Translate(vAddr);
-			Array.Copy(bytes, 0, cpu.Ram, ptr, 4);
+			cpu.Write(vAddr, value);
 		}
 
 		[OpCode(OpCode.Movi, Comment = "Assign a register to a constant value")]
@@ -242,7 +241,7 @@ namespace tinyOS
 			cpu.Return();
 		}
 
-		[OpCode(OpCode.Alloc, Comment = "Allocate memory")]
+		[OpCode(OpCode.Alloc, Comment = "CreatePage memory")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Size required")]
 		[Parameter("rY", Type = ParamType.Register, Comment = "Register to hold allocated address (0 if allocation was not successful)")]
 		public static void Alloc(Cpu cpu, uint rX, uint rY)
@@ -330,10 +329,13 @@ namespace tinyOS
 		public static void MemoryClear(Cpu cpu, uint rX, uint rY)
 		{
 			var vAddr = cpu.Registers[rX];
-			var addr = cpu.Translate(vAddr);
-			var end = addr + cpu.Registers[rY];
-			while (addr < end)
-				cpu.Ram[addr++] = 0;
+		    var count = cpu.Registers[rY];
+
+            while (--count > 0)
+            {
+                cpu.Write(vAddr, 0);
+                vAddr += 4;
+            }
 		}
 	}
 }

@@ -32,8 +32,8 @@ namespace ClassLibrary1
 		public void RunCpu()
 		{
 			var cpu = new Cpu(512);
-			cpu.IdleProcess.Code = cpu.MemoryManager.Allocate(0, 512);
-			var ms = new MemoryStream(cpu.Ram, (int )cpu.IdleProcess.Code.PhysicalOffset, (int )cpu.IdleProcess.Code.Size);
+			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
+			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
 			var writer = new CodeWriter(ms);
 			Array.ForEach(IdleProcess.TerminatingIdle, writer.Write);
 

@@ -6,14 +6,19 @@ namespace tinyOS
 {
 	public class CodeReader
 	{
-		private readonly MemoryStream _codeStream;
+		private readonly Stream _codeStream;
 
 		public CodeReader(byte[] codeData)
 		{
 			_codeStream = new MemoryStream(codeData);
 		}
 
-		public IEnumerable<Instruction> Instructions
+	    public CodeReader(Stream codeStream)
+	    {
+	        _codeStream = codeStream;
+	    }
+
+	    public IEnumerable<Instruction> Instructions
 		{
 			get
 			{

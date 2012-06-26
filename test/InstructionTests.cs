@@ -18,7 +18,7 @@ namespace ClassLibrary1
 	public class InstructionTests
 	{
 		private Cpu _cpu;
-		private int _heapOffset;
+		private byte[] _heap;
 
 		private uint A { get { return _cpu.Registers[1]; } }
 		private uint B { get { return _cpu.Registers[2]; } }
@@ -28,19 +28,16 @@ namespace ClassLibrary1
 		[SetUp]
 		public void SetUp()
 		{
-			uint pId = 10;
+			const uint pId = 10;
 
-			_cpu = new Cpu(1024);
-			_cpu.CurrentProcess = new ProcessContextBlock
-			{
-				Id = pId,
-				Stack = _cpu.MemoryManager.Allocate(pId, 128),
-				Code = _cpu.MemoryManager.Allocate(pId, 128),
-				GlobalData = _cpu.MemoryManager.Allocate(pId, 128)
-			};
+			_cpu = new Cpu(1024, 32);
+		    var p = new ProcessContextBlock { Id = pId };
+		    p.Stack.Append(_cpu.Ram.Allocate(p));
+		    p.Code.Append(_cpu.Ram.Allocate(p));
+		    p.GlobalData.Append(_cpu.Ram.Allocate(p));
 
-			var pageInfo = _cpu.CurrentProcess.PageTable.Last();
-			_heapOffset = (int )(pageInfo.PhysicalOffset + pageInfo.Size);
+		    _cpu.CurrentProcess = p;
+		    _heap = new byte[0];
 		}
 
 		[Test]
@@ -220,10 +217,10 @@ namespace ClassLibrary1
 		[Test]
 		public void Alloc()
 		{
-			Instructions.Movi(_cpu, Register.A, 10);
+            int count = _cpu.CurrentProcess.PageTable.Count();
+            Instructions.Movi(_cpu, Register.A, 10);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
-			Assert.That(B, Is.EqualTo(_heapOffset));
-			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(4));
+            Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(count + 1));
 		}
 
 		[Test]
@@ -265,7 +262,7 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 88);
 			Instructions.Movrm(_cpu, Register.B, Register.A);
 
-			var value = BitConverter.ToUInt32(_cpu.Ram, _heapOffset);
+			var value = BitConverter.ToUInt32(_heap, 0);
 			Assert.That(value, Is.EqualTo(88));
 		}
 
@@ -283,8 +280,8 @@ namespace ClassLibrary1
 			Instructions.Addi(_cpu, Register.B, 4);
 			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Popr(_cpu, Register.B);
-			
-			var value = BitConverter.ToUInt64(_cpu.Ram, _heapOffset);
+
+            var value = BitConverter.ToUInt64(_heap, 0);
 			Assert.That(value, Is.EqualTo(0x1234567812345678));
 
 			Instructions.Pushr(_cpu, Register.B);
@@ -293,7 +290,7 @@ namespace ClassLibrary1
 			Instructions.MemoryClear(_cpu, Register.B, Register.A);
 			Instructions.Popr(_cpu, Register.B);
 
-			value = BitConverter.ToUInt64(_cpu.Ram, _heapOffset);
+            value = BitConverter.ToUInt64(_heap, 0);
 			Console.WriteLine(value.ToString("x8"));
 			Assert.That(value, Is.EqualTo(0x1234560000000078));
 
@@ -305,8 +302,8 @@ namespace ClassLibrary1
 		{
 			Instructions.Movi(_cpu, Register.A, 10);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
-			
-			Array.Copy(BitConverter.GetBytes(88), 0, _cpu.Ram, _heapOffset, 4);
+
+            Array.Copy(BitConverter.GetBytes(88), 0, _heap, 0, 4);
 
 			Instructions.Movmr(_cpu, Register.A, Register.B);
 			
@@ -320,14 +317,11 @@ namespace ClassLibrary1
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 			Instructions.Alloc(_cpu, Register.A, Register.C);
 			
-			Assert.That(B, Is.EqualTo(_heapOffset + 0));
-			Assert.That(C, Is.EqualTo(_heapOffset + 4));
-
-			Array.Copy(BitConverter.GetBytes(88), 0, _cpu.Ram, _heapOffset, 4);
+            Array.Copy(BitConverter.GetBytes(88), 0, _heap, 0, 4);
 
 			Instructions.Movmm(_cpu, Register.C, Register.B);
 
-			var value = BitConverter.ToUInt32(_cpu.Ram, _heapOffset + 4);
+            var value = BitConverter.ToUInt32(_heap, 4);
 			Assert.That(value, Is.EqualTo(88));
 		}
 

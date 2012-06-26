@@ -1,30 +1,48 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace tinyOS
 {
-	public class PageInfo : IEquatable<PageInfo>
+	public class PageInfo
 	{
-		public PageInfo(Page page)
-		{
-			Owner = page.Owner;
-			Offset = page.PhysicalOffset;
-			Size = page.Size;
-		}
+	    private Page _page;
+	    private readonly List<Page> _pages;
 
-		public uint Owner { get; private set; }
-		public uint Offset { get; private set; }
-		public uint Size { get; private set; }
+	    public PageInfo()
+	    {
+            _pages = new List<Page>();
+	    }
 
-		public bool Equals(PageInfo other)
-		{
-			if (ReferenceEquals(null, other)) return false;
-			if (ReferenceEquals(this, other)) return true;
-			return other.Owner == Owner && other.Offset == Offset && other.Size == Size;
-		}
+	    public uint Owner { get; private set; }
+        public uint Offset { get { return _page == null ? 0 : _page.VirtualAddress.Address; } }
+        public uint Size { get { return (uint) _pages.Sum(x => x.Size); } }
 
-		public override string ToString()
+	    public IEnumerable<Page> Pages
+	    {
+	        get { return _pages; }
+	    }
+
+	    public override string ToString()
 		{
 			return string.Format("[0x{0:x4}] ({1:n0} bytes)", Offset, Size);
 		}
+
+	    public void Append(Page page)
+	    {
+            if (page == null)
+                throw new ArgumentNullException("page");
+
+            if (_page == null)
+                _page = page;
+
+	        _pages.Add(page);
+	    }
+
+	    public Page Next(Page page)
+	    {
+	        var pageIndex = _pages.IndexOf(page) + 1;
+            return pageIndex == _pages.Count ? null : _pages[pageIndex];
+	    }
 	}
 }
