@@ -11,7 +11,7 @@ namespace ClassLibrary1
 		[Test]
 		public void OpenFile()
 		{
-			var file = @"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt";
+			var file = @"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt";
 			var parser = new TextParser();
 			var ms = new StringWriter();
 			var writer = new tinyOS.InstructionFormatter(ms);
@@ -33,14 +33,14 @@ namespace ClassLibrary1
 		[Test]
 		public void Compile()
 		{
-			var objData = Compile(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
+			var objData = Compile(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
 			Console.WriteLine(BitConverter.ToString(objData));
 		}
 
 		[Test]
 		public void Decompile()
 		{
-			var objData = Compile(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
+			var objData = Compile(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
 			var reader = new CodeReader(objData);
 			var writer = new InstructionFormatter(Console.Out);
 			foreach  (var instruction in reader.Instructions)

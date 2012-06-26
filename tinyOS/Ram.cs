@@ -1,13 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
-namespace tinyOS
+namespace tinyOS.X
 {
+    public class Page
+    {
+        public uint Owner { get; set; }
+        public uint Number { get; set; }
+        public uint FrameNumber { get; set; }
+    }
+
 	public class Ram
 	{
-		private byte[] _ram;
-		private Page[] _pageTable;
-		public int Size
+		private readonly byte[] _ram;
+		private readonly List<Frame>[] _pageTable;
+		
+        public int Size
 		{
 			get { return _ram.Length; }
 		}
@@ -16,21 +26,67 @@ namespace tinyOS
 
 		public Ram(int size, int frameSize)
 		{
-			_ram = new byte[size];
-			_pageTable = Enumerable.Range(0, size / frameSize).Select(x => new Page()).ToArray();
-
-			FrameSize = frameSize;
+            FrameSize = frameSize;
+            
+            _ram = new byte[size];
+            _pageTable = Enumerable.Range(0, size / frameSize)
+                .Select(x => CreateFrame(0, x))
+                .Select(x => new List<Frame> { x })
+                .ToArray();
 		}
 
-		public uint ToPhysicalAddress(VirtualAddress vaddr)
+	    private Frame CreateFrame(uint processId, int frameNumber)
+	    {
+	        return new Frame
+	                   {
+	                       ProcessId = processId, 
+                           FrameAddress = (uint )(frameNumber * FrameSize),
+                           Live = true,
+	                   };
+	    }
+
+	    public uint ToPhysicalAddress(uint processId, VirtualAddress vaddr)
 		{
-			var page = _pageTable[vaddr.PageNumber];
-			return page.FrameAddress + vaddr.Offset;
+	        uint pageNumber = vaddr.PageNumber;
+	        var frame = LiveFrames.SingleOrDefault(x => x.ProcessId == processId && x.PageNumber == pageNumber );
+            if (frame == null)
+                throw new InvalidOperationException();
+
+			return frame.FrameAddress + vaddr.Offset;
 		}
+
+        public Page Allocate(ProcessContextBlock pcb)
+        {
+            var firstFreeFrame =
+                (
+                    from f in _pageTable
+                    select f.First(x => x.ProcessId == 0)
+                ).FirstOrDefault();
+
+            if (firstFreeFrame == null)
+                return null;
+
+            var page = pcb.PageTable.Allocate();
+            firstFreeFrame.ProcessId = pcb.Id;
+            firstFreeFrame.PageNumber = page.Number;
+
+            return page;
+        }
+
+	    private IEnumerable<Frame> LiveFrames
+	    {
+	        get { return _pageTable.Select(frameList => frameList[0]); }
+	    }
+
+        public Stream GetStream(Page page)
+        {
+            return new MemoryStream(_ram, (int)page.FrameNumber * FrameSize, FrameSize, true);
+        }
 		
-		private class Page
+		private class Frame
 		{
 			public uint ProcessId { get; set; }
+			public uint PageNumber { get; set; }
 			public bool Live { get; set; }
 			public bool Pinned { get; set; }
 			public uint FrameAddress { get; set; }

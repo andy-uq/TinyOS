@@ -13,12 +13,13 @@ namespace tinyOS
 			_pages = new SortedSet<Page>(new PageOffsetComparer { Forward = true });
 		}
 
-		public void Allocate(Page page)
+		public Page Allocate()
 		{
-			if (page == null)
-				throw new ArgumentNullException("page");
+		    uint pageNumber = (uint) _pages.Count + 1;
+		    var page = new Page {Number = pageNumber };
 
-			_pages.Add(page);
+		    _pages.Add(page);
+		    return page;
 		}
 
 		public void Free(Page page)
