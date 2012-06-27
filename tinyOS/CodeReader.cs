@@ -22,7 +22,11 @@ namespace tinyOS
 		{
 			get
 			{
-				_codeStream.Position = 0;
+				if (_codeStream.CanSeek)
+				{
+					_codeStream.Seek(0, SeekOrigin.Begin);
+				}
+
 				var reader = new BinaryReader(_codeStream);
 				while (_codeStream.Position < _codeStream.Length )
 				{

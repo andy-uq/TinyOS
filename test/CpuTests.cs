@@ -32,16 +32,30 @@ namespace ClassLibrary1
 		public void RunCpu()
 		{
 			var cpu = new Cpu(2048, 256);
-			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
-			
-			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
-			var writer = new CodeWriter(ms);
-			Array.ForEach(IdleProcess.TerminatingIdle, writer.Write);
+			IdleProcess.Initialise(cpu, IdleProcess.TerminatingIdle);
 
 			while (cpu.Running)
 			{
 				cpu.Tick();
 			}
+		}
+
+		[Test]
+		public void RunRealCpu()
+		{
+			var cpu = new Cpu(2048, 256);
+			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
+			
+			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
+			var writer = new CodeWriter(ms);
+			Array.ForEach(IdleProcess.Instructions, writer.Write);
+
+			cpu.Tick();
+			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
+			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1));
+			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20));
+
+
 		}
 
 		[Test]

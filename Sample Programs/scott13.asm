@@ -16,4 +16,4 @@ Alloc     r4          r5          ;ask for 17 bytes
 Movr      r3          r5          ;save address in r3
 Free      r1                      
 Free      r3                      
-Exit      r0                      ;this is exit.
+Exit      r1                      ;this is exit.

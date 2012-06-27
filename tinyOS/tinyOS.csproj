@@ -8,8 +8,8 @@
     <ProjectGuid>{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>tinyOS</RootNamespace>
-    <AssemblyName>tinyOS</AssemblyName>
+    <RootNamespace>Andy.TinyOS</RootNamespace>
+    <AssemblyName>Andy.TinyOS</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -46,13 +46,14 @@
     <Compile Include="CodeReader.cs" />
     <Compile Include="CodeWriter.cs" />
     <Compile Include="Cpu.cs" />
+    <Compile Include="CpuSleepTimer.cs" />
     <Compile Include="DeviceId.cs" />
     <Compile Include="DeviceQueue.cs" />
     <Compile Include="Devices.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="IdleProcess.cs" />
     <Compile Include="Instruction.cs" />
-    <Compile Include="InstructionFormatter.cs" />
+    <Compile Include="Utility\InstructionFormatter.cs" />
     <Compile Include="Instructions.cs" />
     <Compile Include="Lock.cs" />
     <Compile Include="MemoryManager.cs" />
@@ -67,8 +68,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ram.cs" />
     <Compile Include="ReadyQueue.cs" />
-    <Compile Include="TextParser.cs" />
+    <Compile Include="Utility\InstructionTextReader.cs" />
+    <Compile Include="Utility\InstructionTextWriter.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

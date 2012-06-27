@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Andy.TinyOS.Utility;
 
 namespace tinyOS
 {
@@ -45,7 +46,7 @@ namespace tinyOS
 			{
 				using (var reader = new StringReader(source))
 				{
-					var parser = new TextParser();
+					var parser = new InstructionTextReader();
 					string line;
 					while ((line = reader.ReadLine()) != null)
 					{

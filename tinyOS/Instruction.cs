@@ -1,4 +1,6 @@
-﻿namespace tinyOS
+﻿using Andy.TinyOS.Utility;
+
+namespace tinyOS
 {
 	public class Instruction
 	{
@@ -13,7 +15,7 @@
 
 		public override string ToString()
 		{
-			return InstructionFormatter.ToString(this);
+			return InstructionFormatter.ToString(this).TrimEnd();
 		}
 	}
 }

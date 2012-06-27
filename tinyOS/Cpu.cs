@@ -25,6 +25,7 @@ namespace tinyOS
 		public Ram Ram { get; private set; }
 		public ReadyQueue ReadyQueue { get; private set; }
 		public DeviceQueue DeviceQueue { get; private set; }
+		public CpuSleepTimer SleepTimer { get; private set; }
 		public Lock[] Locks { get; set; }
 		public Event[] Events { get; set; }
 		public ulong TickCount { get; private set; }
@@ -64,12 +65,10 @@ namespace tinyOS
 			DeviceQueue = new DeviceQueue();
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId)(x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
 			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId)(x + Devices.Events)).Select(x => new Event(x)).ToArray();
+			SleepTimer = new CpuSleepTimer();
 			_processes = new Dictionary<uint, ProcessContextBlock>();
 			_operations = OpCodeMeta.OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMeta.OpCodeMetaInformationBuilder.BuildOperation);
-			IdleProcess = new ProcessContextBlock
-			{
-				Id = 1,
-			};
+			IdleProcess = new ProcessContextBlock { Id = 1, };
 		}
 
 		public Cpu(uint ramSize = (4 << 20), uint frameSize = (1 << 10))
@@ -134,7 +133,19 @@ namespace tinyOS
 				Execute(instruction);
 			}
 
+			TickSleepTimer();
 			TickCount++;
+		}
+
+		private void TickSleepTimer()
+		{
+			DeviceId sleepTimer;
+			if (!SleepTimer.Tick(out sleepTimer)) 
+				return;
+
+			ProcessContextBlock wakingProcess;
+			while ((wakingProcess = DeviceQueue.Dequeue(sleepTimer)) != null)
+				ReadyQueue.Enqueue(wakingProcess);
 		}
 
 		private void Execute(Instruction instruction)
@@ -308,6 +319,8 @@ namespace tinyOS
 
 		public void Sleep(uint sleep)
 		{
+			var handle = SleepTimer.Register(sleep);
+			DeviceQueue.Enqueue(handle, CurrentProcess);
 			CurrentProcess = null;
 		}
 

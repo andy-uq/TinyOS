@@ -32,17 +32,22 @@ namespace ClassLibrary1
 		{
 			const uint pId = 10;
 
-			_cpu = new Cpu(new Ram(_ram, 32));
-		    var p = new ProcessContextBlock { Id = pId };
-		    p.Stack.Append(_cpu.Ram.Allocate(p));
-		    p.Code.Append(_cpu.Ram.Allocate(p));
-		    p.GlobalData.Append(_cpu.Ram.Allocate(p));
-
-		    _cpu.CurrentProcess = p;
+			_cpu = new Cpu(new Ram(_ram, 128));
+		    var p = CreateProcess(pId);
+			_cpu.CurrentProcess = p;
 
 			var heap = _cpu.Ram.Allocate(_cpu.IdleProcess);
 			_heapOffset = (int) _cpu.Ram.ToPhysicalAddress(_cpu.IdleProcess.Id, heap.VirtualAddress);
 			_cpu.Ram.Free(heap);
+		}
+
+		private ProcessContextBlock CreateProcess(uint pId)
+		{
+			var p = new ProcessContextBlock {Id = pId};
+			p.Stack.Append(_cpu.Ram.Allocate(p));
+			p.Code.Append(_cpu.Ram.Allocate(p));
+			p.GlobalData.Append(_cpu.Ram.Allocate(p));
+			return p;
 		}
 
 		private byte[] GetHeap()
@@ -244,6 +249,25 @@ namespace ClassLibrary1
 			Assert.That(_cpu.CurrentProcess, Is.Null);
 			Assert.That(_cpu.DeviceQueue.Where(x => x.Item1 == DeviceId.Event1).Select(x => x.Item2), Contains.Item(pA));
 		}
+
+		[Test]
+		public void Sleep()
+		{
+			IdleProcess.Initialise(_cpu);
+
+			var pA = _cpu.CurrentProcess;
+			Instructions.Movi(_cpu, Register.A, 10);
+			Instructions.Sleep(_cpu, Register.A);
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
+
+			for ( int i = 0; i < 10; i++ )
+				_cpu.Tick();
+
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+		}
+
 
 		[Test]
 		public void SignalEvent()

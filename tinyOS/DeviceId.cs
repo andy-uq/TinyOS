@@ -25,5 +25,6 @@ namespace tinyOS
 		Event10,
 
 		Terminal = Devices.Terminal,
+		Sleep = Devices.Sleep,
 	}
 }

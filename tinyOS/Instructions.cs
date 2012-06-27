@@ -7,7 +7,9 @@ namespace tinyOS
 	{
 		[OpCode(OpCode.Noop, Comment = "Do nothing")]
 		public static void Noop(Cpu cpu)
-		{}
+		{
+			
+		}
 
 		[OpCode(OpCode.Incr, Comment = "Increase the value of a register by 1")]
 		[Parameter("rX", Type = ParamType.Register, Comment="Register to be increased")]
@@ -122,7 +124,8 @@ namespace tinyOS
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register to print")]
 		public static void Printr(Cpu cpu, uint rX)
 		{
-			cpu.Print(cpu.Registers[rX]);
+			var value = cpu.Registers[rX];
+			cpu.Print(value);
 		}
 
 		[OpCode(OpCode.Printm, Comment = "Print a value in memory")]
@@ -138,7 +141,8 @@ namespace tinyOS
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Jmp(Cpu cpu, uint rX)
 		{
-			cpu.Jump(cpu.Registers[rX]);
+			var uOffset = cpu.Registers[rX];
+			cpu.Jump(uOffset);
 		}
 
 		[OpCode(OpCode.Jlt, Comment = "Jump to an instruction relative to the current instruction when Sf is set. Value may be negative.")]

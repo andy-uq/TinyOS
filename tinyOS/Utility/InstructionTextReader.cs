@@ -2,10 +2,11 @@
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using tinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS.Utility
 {
-	public class TextParser
+	public class InstructionTextReader
 	{
 		private static readonly Regex _legacy = new Regex(@"^\s*(?<opcode>(\d+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
 		private static readonly Regex _asm = new Regex(@"^\s*(?<opcode>(\w+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
@@ -75,7 +76,7 @@ namespace tinyOS
 			Match match;
 			if ((match = _register.Match(lValue)).Success)
 			{
-				return uint.Parse(match.Groups["r"].Value);
+				return uint.Parse(match.Groups["r"].Value) - 1;
 			}
 
 			if ( (match = _constant.Match(lValue)).Success )

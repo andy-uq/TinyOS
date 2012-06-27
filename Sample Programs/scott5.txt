@@ -29,6 +29,6 @@
 6 	r6, $14		;move 12 into r6
 14	r6, $14		;compare r6 and 18
 18	r7		; je over the exit
-27
+27  r7
 11	r1
-27
+27 r1

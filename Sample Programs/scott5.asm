@@ -24,11 +24,11 @@ Printr    r1
 Movi      r6          $19         ;move 12 into r6
 Cmpi      r6          $14         ;compare r6 and 18
 Jgt       r7                      ;jgt over the exit
-Exit                              
+Exit      r7                      
 Printr    r1                      
 Movi      r6          $14         ;move 12 into r6
 Cmpi      r6          $14         ;compare r6 and 18
 Je        r7                      ;je over the exit
-Exit                              
+Exit      r7                      
 Printr    r1                      
-Exit                              
+Exit      r1                      

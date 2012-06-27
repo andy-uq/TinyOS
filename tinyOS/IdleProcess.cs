@@ -7,8 +7,10 @@ namespace tinyOS
 	{
 		private static readonly Instruction[] _instructions = new[] 
 		{ 
-			new Instruction {OpCode = OpCode.Printr, Parameters = new[] { 20U } }, 
-			new Instruction {OpCode = OpCode.Jmp, Parameters = new[] { unchecked((uint) (-1)) } } 
+			new Instruction {OpCode = OpCode.Movi, Parameters = new[] { 0U, 20U } }, 
+			new Instruction {OpCode = OpCode.Movi, Parameters = new[] { 1U, unchecked((uint) (-1)) } }, 
+			new Instruction {OpCode = OpCode.Printr, Parameters = new[] { 0U } }, 
+			new Instruction {OpCode = OpCode.Jmp, Parameters = new[] { 1U } } 
 		};
 
 		private static readonly Instruction[] _terminatingIdle = new[]
@@ -33,6 +35,15 @@ namespace tinyOS
 			{
 				return _instructions;
 			}
+		}
+
+		public static void Initialise(Cpu cpu, Instruction[] code = null)
+		{
+			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
+
+			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
+			var writer = new CodeWriter(ms);
+			Array.ForEach(code ?? Instructions, writer.Write);
 		}
 	}
 }

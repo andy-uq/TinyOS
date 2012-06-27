@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Andy.TinyOS.Utility;
 using NUnit.Framework;
 using tinyOS;
 
@@ -26,10 +27,10 @@ namespace ClassLibrary1
 		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt")]
 		public void OpenFile(string file)
 		{
-			var parser = new TextParser();
+			var parser = new InstructionTextReader();
 			var outputFile = Path.ChangeExtension(file, ".asm");
 			using (var stringWriter = File.CreateText(outputFile))
-			using (var writer = new InstructionFormatter(stringWriter))
+			using (var writer = new InstructionTextWriter(stringWriter))
 			using (var streamReader = File.OpenText(file))
 			{
 				string line;
@@ -61,7 +62,7 @@ namespace ClassLibrary1
 		{
 			var objData = Compile(@filename);
 			var reader = new CodeReader(objData);
-			var writer = new InstructionFormatter(Console.Out);
+			var writer = new InstructionTextWriter(Console.Out);
 			foreach  (var instruction in reader.Instructions)
 			{
 				writer.Write(instruction);
@@ -70,7 +71,7 @@ namespace ClassLibrary1
 
 		private byte[] Compile(string file)
 		{
-			var parser = new TextParser();
+			var parser = new InstructionTextReader();
 			var ms = new MemoryStream();
 			var writer = new tinyOS.CodeWriter(ms);
 
@@ -89,11 +90,38 @@ namespace ClassLibrary1
 		}
 
 		[Test, ExpectedException(typeof(InvalidOperationException))]
-		public void WriteBadCode()
+		public void WriteExtraParameter()
 		{
+			var badInstruction = new Instruction { OpCode = OpCode.Ret, Parameters = new[] { 0U } };
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+Unknown \(0\)"));
+
 			var ms = new StringWriter();
-			var writer = new tinyOS.InstructionFormatter(ms);
-			writer.Write(new Instruction { OpCode = OpCode.Ret, Parameters = new[] { 0U }});
+			using (var writer = new InstructionTextWriter(ms))
+				writer.Write(badInstruction);
+		}
+
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void WriteBadOpCode()
+		{
+			var badInstruction = new Instruction {OpCode = (OpCode) 254 };
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^254$"));
+			
+			var ms = new StringWriter();
+			using (var writer = new InstructionTextWriter(ms))
+				writer.Write(badInstruction);
+		}
+
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void WriteMissingParameter()
+		{
+			var badInstruction = new Instruction { OpCode = OpCode.Movi, Parameters = new[] { 0U } };
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Movi\s+r1"));
+
+			var ms = new StringWriter();
+			using (var writer = new InstructionTextWriter(ms))
+			{
+				writer.Write(badInstruction);
+			}
 		}
 	}
 }
