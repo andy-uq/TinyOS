@@ -6,7 +6,7 @@ namespace tinyOS
 	public static class Instructions
 	{
 		[OpCode(OpCode.Noop, Comment = "Do nothing")]
-		public static void Incr(Cpu cpu)
+		public static void Noop(Cpu cpu)
 		{}
 
 		[OpCode(OpCode.Incr, Comment = "Increase the value of a register by 1")]
@@ -327,6 +327,32 @@ namespace tinyOS
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
 		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
 		public static void MemoryClear(Cpu cpu, uint rX, uint rY)
+		{
+			var vAddr = cpu.Registers[rX];
+		    var count = cpu.Registers[rY];
+
+			cpu.MemoryClear(vAddr, count);
+		}
+
+		[OpCode(OpCode.MapShared, Comment = "Map a shared memory portion into the address space")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
+		public static void MapShared(Cpu cpu, uint rX, uint rY)
+		{
+			var vAddr = cpu.Registers[rX];
+		    var count = cpu.Registers[rY];
+
+            while (--count > 0)
+            {
+                cpu.Write(vAddr, 0);
+                vAddr += 4;
+            }
+		}
+
+		[OpCode(OpCode.Input, Comment = "Block process waiting for key press")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
+		public static void Input(Cpu cpu, uint rX, uint rY)
 		{
 			var vAddr = cpu.Registers[rX];
 		    var count = cpu.Registers[rY];

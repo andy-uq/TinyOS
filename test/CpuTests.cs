@@ -31,8 +31,9 @@ namespace ClassLibrary1
 		[Test]
 		public void RunCpu()
 		{
-			var cpu = new Cpu(512);
+			var cpu = new Cpu(2048, 256);
 			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
+			
 			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
 			var writer = new CodeWriter(ms);
 			Array.ForEach(IdleProcess.TerminatingIdle, writer.Write);
@@ -46,11 +47,10 @@ namespace ClassLibrary1
 		[Test]
 		public void RunCpuWithProgram()
 		{
-			var cpu = new Cpu(2048) { DefaultCodeSize = 512, GlobalDataSize = 32, StackSize = 32 };
+			var cpu = new Cpu(2048, 256);
 			var prog1 = cpu.Load();
-			
-			prog1.Compile(_reallySimpleProgram);
-			
+
+			cpu.Compile(prog1, _reallySimpleProgram);
 			cpu.Run(prog1);
 
 			while (prog1.ExitCode == 0)
@@ -64,12 +64,12 @@ namespace ClassLibrary1
 		[Test]
 		public void ProgramSignals()
 		{
-			var cpu = new Cpu(2048) { DefaultCodeSize = 512, GlobalDataSize = 32, StackSize = 32 };
+			var cpu = new Cpu(2048, 256);
 			var prog1 = cpu.Load();
 			var prog2 = cpu.Load();
-			
-			prog1.Compile(_p1);
-			prog2.Compile(_p2);
+
+			cpu.Compile(prog1, _p1);
+			cpu.Compile(prog2, _p2);
 			
 			cpu.Run(prog1);
 			cpu.Run(prog2);

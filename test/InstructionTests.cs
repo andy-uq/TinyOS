@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using tinyOS;
@@ -18,7 +19,8 @@ namespace ClassLibrary1
 	public class InstructionTests
 	{
 		private Cpu _cpu;
-		private byte[] _heap;
+		private int _heapOffset;
+		private readonly byte[] _ram = new byte[1024];
 
 		private uint A { get { return _cpu.Registers[1]; } }
 		private uint B { get { return _cpu.Registers[2]; } }
@@ -30,14 +32,22 @@ namespace ClassLibrary1
 		{
 			const uint pId = 10;
 
-			_cpu = new Cpu(1024, 32);
+			_cpu = new Cpu(new Ram(_ram, 32));
 		    var p = new ProcessContextBlock { Id = pId };
 		    p.Stack.Append(_cpu.Ram.Allocate(p));
 		    p.Code.Append(_cpu.Ram.Allocate(p));
 		    p.GlobalData.Append(_cpu.Ram.Allocate(p));
 
 		    _cpu.CurrentProcess = p;
-		    _heap = new byte[0];
+
+			var heap = _cpu.Ram.Allocate(_cpu.IdleProcess);
+			_heapOffset = (int) _cpu.Ram.ToPhysicalAddress(_cpu.IdleProcess.Id, heap.VirtualAddress);
+			_cpu.Ram.Free(heap);
+		}
+
+		private byte[] GetHeap()
+		{
+			return new MemoryStream(_ram, (int) _heapOffset, (int) (_ram.Length - _heapOffset)).ToArray();
 		}
 
 		[Test]
@@ -262,7 +272,8 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 88);
 			Instructions.Movrm(_cpu, Register.B, Register.A);
 
-			var value = BitConverter.ToUInt32(_heap, 0);
+			var heap = GetHeap();
+			var value = BitConverter.ToUInt32(_ram, _heapOffset);
 			Assert.That(value, Is.EqualTo(88));
 		}
 
@@ -281,7 +292,7 @@ namespace ClassLibrary1
 			Instructions.Movrm(_cpu, Register.B, Register.A);
 			Instructions.Popr(_cpu, Register.B);
 
-            var value = BitConverter.ToUInt64(_heap, 0);
+			var value = BitConverter.ToUInt64(_ram, _heapOffset);
 			Assert.That(value, Is.EqualTo(0x1234567812345678));
 
 			Instructions.Pushr(_cpu, Register.B);
@@ -290,7 +301,7 @@ namespace ClassLibrary1
 			Instructions.MemoryClear(_cpu, Register.B, Register.A);
 			Instructions.Popr(_cpu, Register.B);
 
-            value = BitConverter.ToUInt64(_heap, 0);
+			value = BitConverter.ToUInt64(_ram, _heapOffset);
 			Console.WriteLine(value.ToString("x8"));
 			Assert.That(value, Is.EqualTo(0x1234560000000078));
 
@@ -303,7 +314,7 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 10);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 
-            Array.Copy(BitConverter.GetBytes(88), 0, _heap, 0, 4);
+			Array.Copy(BitConverter.GetBytes(88), 0, _ram, _heapOffset, 4);
 
 			Instructions.Movmr(_cpu, Register.A, Register.B);
 			
@@ -316,12 +327,12 @@ namespace ClassLibrary1
 			Instructions.Movi(_cpu, Register.A, 4);
 			Instructions.Alloc(_cpu, Register.A, Register.B);
 			Instructions.Alloc(_cpu, Register.A, Register.C);
-			
-            Array.Copy(BitConverter.GetBytes(88), 0, _heap, 0, 4);
+
+			Array.Copy(BitConverter.GetBytes(88), 0, _ram, _heapOffset, 4);
 
 			Instructions.Movmm(_cpu, Register.C, Register.B);
 
-            var value = BitConverter.ToUInt32(_heap, 4);
+			var value = BitConverter.ToUInt32(_ram, (int) (_heapOffset + _cpu.Ram.FrameSize));
 			Assert.That(value, Is.EqualTo(88));
 		}
 

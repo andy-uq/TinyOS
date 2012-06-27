@@ -162,7 +162,7 @@ namespace tinyOS
 
 	    public override string ToString()
 		{
-			return string.Format("[0x{0:x8}] Page: {1:n}, Offset {2}", Address, PageNumber, Offset);
+			return string.Format("[0x{0:x8}] Page: {1:n0}, Offset {2}", Address, PageNumber, Offset);
 		}
 
         public static uint ToAddress(Page page, int offset = 0)

@@ -5,10 +5,6 @@ namespace tinyOS
 {
 	public class ProcessContextBlock
 	{
-		private PageInfo _code;
-		private PageInfo _globalData;
-		private PageInfo _stack;
-
 		public ProcessContextBlock()
 		{
 			Registers = new uint[10];
@@ -42,25 +38,27 @@ namespace tinyOS
 
 	public static class ProcessControlBlockExtensions
 	{
-		public static Stream Compile(this ProcessContextBlock pcb, string source)
+		public static Stream Compile(this Cpu cpu, ProcessContextBlock pcb, string source)
 		{
-            var stream = new MemoryStream();
-			var writer = new CodeWriter(stream);
-			using (var reader = new StringReader(source))
+            var stream = cpu.GetMemoryStream(pcb.Code);
+			using ( var writer = new CodeWriter(stream) )
 			{
-				var parser = new TextParser();
-				string line;
-				while ((line = reader.ReadLine()) != null)
+				using (var reader = new StringReader(source))
 				{
-					if (string.IsNullOrWhiteSpace(line))
-						continue;
+					var parser = new TextParser();
+					string line;
+					while ((line = reader.ReadLine()) != null)
+					{
+						if (string.IsNullOrWhiteSpace(line))
+							continue;
 
-					var instruction = parser.Parse(line);
-					writer.Write(instruction);
+						var instruction = parser.Parse(line);
+						writer.Write(instruction);
+					}
 				}
 			}
-			writer.Close();
-		    return stream;
+
+			return stream;
 		}
 	}
 }

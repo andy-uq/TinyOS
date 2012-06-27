@@ -60,6 +60,7 @@
     <Compile Include="OpCodeMetaInformation.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="PageInfo.cs" />
+    <Compile Include="PageStream.cs" />
     <Compile Include="PageTable.cs" />
     <Compile Include="ProcessContextBlock.cs" />
     <Compile Include="Program.cs" />

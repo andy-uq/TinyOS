@@ -10,13 +10,9 @@ namespace tinyOS
 		private const int IdleQuanta = 5;
 		private const int UserQuanta = 10;
 
-		public uint DefaultCodeSize { get; set; }
-		public uint StackSize { get; set; }
-		public uint GlobalDataSize { get; set; }
-
 		private readonly Dictionary<OpCode, Action<Cpu, uint[]>> _operations;
 		private readonly Dictionary<uint, ProcessContextBlock> _processes;
-		private uint _nextProcessId = 1;
+		private uint _nextProcessId = 1000;
 
 		public const int PriorityCount = 32;
 		public const int RegisterCount = 10;
@@ -61,23 +57,24 @@ namespace tinyOS
 			set { Registers[SpIndex] = value; }
 		}
 
-		public Cpu(uint ramSize = (4 << 20), uint frameSize = (1 << 10))
+		public Cpu(Ram ram)
 		{
-            DefaultCodeSize = frameSize;
-			GlobalDataSize = frameSize;
-			StackSize = frameSize;
-
-			Ram = new Ram(ramSize, frameSize);
+			Ram = ram;
 			ReadyQueue = new ReadyQueue(PriorityCount);
 			DeviceQueue = new DeviceQueue();
-			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId) (x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
-			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId) (x + Devices.Events)).Select(x => new Event(x)).ToArray();
+			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId)(x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
+			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId)(x + Devices.Events)).Select(x => new Event(x)).ToArray();
 			_processes = new Dictionary<uint, ProcessContextBlock>();
 			_operations = OpCodeMeta.OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMeta.OpCodeMetaInformationBuilder.BuildOperation);
 			IdleProcess = new ProcessContextBlock
 			{
-				Id = 0,
+				Id = 1,
 			};
+		}
+
+		public Cpu(uint ramSize = (4 << 20), uint frameSize = (1 << 10))
+			: this(new Ram(ramSize, frameSize))
+		{
 		}
 
 		public ProcessContextBlock IdleProcess { get; private set; }
@@ -146,8 +143,15 @@ namespace tinyOS
 			CurrentProcess.Ip++;
 			CurrentProcess.Quanta--;
 
-			_operations[instruction.OpCode](this, instruction.Parameters);
-			Console.WriteLine("{0}) {1}", pId, instruction);
+			Action<Cpu, uint[]> operation;
+			if (_operations.TryGetValue(instruction.OpCode, out operation))
+			{
+				operation(this, instruction.Parameters);
+				Console.WriteLine("{0}) {1}", pId, instruction);
+				return;
+			}
+
+			throw new InvalidOperationException("Bad instruction: " + instruction);
 		}
 
 		private ProcessContextBlock SwitchToNextProcess()
@@ -228,6 +232,8 @@ namespace tinyOS
             }
 
             page.Append(Ram.Allocate(CurrentProcess));
+			CurrentProcess.PageTable.Add(page);
+
 		    return page.Offset;
 		}
 
@@ -380,120 +386,19 @@ namespace tinyOS
 	    {
 	        return new PageStream(Ram, page);
 	    }
+
+		public void MemoryClear(uint vAddr, uint count)
+		{
+			var page = CurrentProcess.PageTable.Find(vAddr);
+			if ( page == null )
+				return;
+
+			using ( var stream = GetMemoryStream(page) )
+			{
+				stream.Position = vAddr - page.Offset;
+				while (count-- > 0)
+					stream.WriteByte(0);
+			}
+		}
 	}
-
-    public class PageStream : Stream
-    {
-        private readonly Ram _ram;
-        private readonly PageInfo _pageSet;
-        private Page _page;
-
-        public PageStream(Ram ram, PageInfo pageSet)
-        {
-            if (ram == null)
-                throw new ArgumentNullException("ram");
-
-            if (pageSet == null)
-                throw new ArgumentNullException("pageSet");
-
-            _ram = ram;
-            _pageSet = pageSet;
-            _page = pageSet.Pages.FirstOrDefault();
-        }
-
-        public override void Flush()
-        {
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            switch (origin)
-            {
-                case SeekOrigin.Begin:
-                    Position = Math.Max(offset, 0L);
-                    break;
-
-                case SeekOrigin.Current:
-                    Position += offset;
-                    break;
-
-                case SeekOrigin.End:
-                    Position = Math.Min(Length - offset, 0L);
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException("origin");
-            }
-
-            return Position;
-        }
-
-        public override void SetLength(long value)
-        {
-        }
-
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (count <= 0)
-                return 0;
-
-            var bytesRead = 0U;
-            var bytesRemaining = (uint)count;
-
-            var addr = new VirtualAddress((uint) (_pageSet.Offset + Position));
-            if (_page == null || _page.PageNumber != addr.PageNumber )
-                _page = _pageSet.Pages.Single(x => x.PageNumber == addr.PageNumber);
-
-            while (bytesRemaining > 0)
-            {
-                var current = _ram.GetStream(_page);
-                var remaining = _page.Size - addr.Offset;
-
-                var read = (uint )current.Read(buffer, offset, (int) Math.Min(remaining, bytesRemaining));
-                bytesRemaining -= read;
-                bytesRead += read;
-                offset += (int )read;
-
-                _page = _pageSet.Next(_page);
-                if (_page == null)
-                    break;
-
-                addr = _page.VirtualAddress;
-            }
-
-            return (int) bytesRead;
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-        }
-
-        public override bool CanRead
-        {
-            get { return true; }
-        }
-
-        public override bool CanSeek
-        {
-            get { return true; }
-        }
-
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
-
-        public override long Length
-        {
-            get { return _pageSet.Size; }
-        }
-
-        private long _position;
-
-        public override long Position
-        {
-            get { return _position; }
-            set { _position = value; }
-        }
-    }
 }

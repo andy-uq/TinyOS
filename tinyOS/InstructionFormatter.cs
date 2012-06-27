@@ -28,7 +28,15 @@ namespace tinyOS
 				format = "{0}{1};{2}";
 			}
 
-			var meta = OpCodeMetaInformation.Lookup[instruction.OpCode];
+			OpCodeMetaInformation meta;
+			if ( !OpCodeMetaInformation.Lookup.TryGetValue(instruction.OpCode, out meta) )
+				meta = new OpCodeMetaInformation
+				{
+					OpCode = instruction.OpCode, 
+					Comment = "Unknown instruction",
+					Parameters = instruction.Parameters.Select(x => new ParameterInfo { Name = "Unknown", Type = ParamType.None }).ToArray()
+				};
+
 			if (meta.Parameters.Length < instruction.Parameters.Length)
 			{
 				throw new InvalidOperationException(string.Format("Parameter mismatch: {0} ({1}, {2})", meta.OpCode, meta.Parameters.Length, instruction.Parameters.Length));
@@ -49,6 +57,9 @@ namespace tinyOS
 
 				case ParamType.Constant:
 					return string.Concat('$', value).PadRight(12);
+
+				case ParamType.None:
+					return string.Format("Unknown ({0})", value);
 
 				default:
 					throw new ArgumentOutOfRangeException();

@@ -27,6 +27,9 @@ namespace tinyOS
 				while (_codeStream.Position < _codeStream.Length )
 				{
 					var opCodeByte = (OpCode )reader.ReadByte();
+					if (opCodeByte == (OpCode )255)
+						yield break;
+
 					var pLength = reader.ReadByte();
 
 					yield return new Instruction

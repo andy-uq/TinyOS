@@ -44,5 +44,14 @@ namespace tinyOS
 	        var pageIndex = _pages.IndexOf(page) + 1;
             return pageIndex == _pages.Count ? null : _pages[pageIndex];
 	    }
+
+		public Page Find(uint pageNumber)
+		{
+			var page = Pages.SingleOrDefault(x => x.PageNumber == pageNumber);
+			if ( page != null )
+				return page;
+
+			throw new InvalidOperationException("Cannot find page " + pageNumber);
+		}
 	}
 }

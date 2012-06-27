@@ -32,7 +32,10 @@ namespace tinyOS
 
 	    public PageInfo Find(uint vAddr)
 	    {
-	        return Find(x => x.Offset <= vAddr && vAddr >= x.Offset + x.Size);
+	        return Find(x => 
+				vAddr >= x.Offset 
+				&& vAddr < x.Offset + x.Size
+			);
 	    }
 
         public void Add(PageInfo page)
