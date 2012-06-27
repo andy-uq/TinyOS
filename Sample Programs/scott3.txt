@@ -18,4 +18,4 @@
 11	r2		;print r2
 35	r2		;pop off the stack into r2
 11	r2		;print r2
-27               	;exit
+27  r2             	;exit

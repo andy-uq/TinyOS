@@ -7,4 +7,4 @@
 24 r1		;Release r4 (currently 10)
 25 r3		;Sleep r3 (currently 25)
 11 r3		;Print r3 (currently 25)
-27			;Exit
+27 r3			;Exit

@@ -5,9 +5,9 @@ using tinyOS.OpCodeMeta;
 
 namespace tinyOS
 {
-	public class InstructionFormatter
+	public class InstructionFormatter : IDisposable
 	{
-		private readonly TextWriter _streamWriter;
+		private TextWriter _streamWriter;
 
 		public InstructionFormatter(TextWriter streamWriter)
 		{
@@ -17,6 +17,20 @@ namespace tinyOS
 		public void Write(Instruction instruction)
 		{
 			_streamWriter.WriteLine(ToString(instruction));
+		}
+
+		public void Close()
+		{
+			if ( _streamWriter == null )
+				return;
+
+			_streamWriter.Close();
+			_streamWriter = null;
+		}
+
+		void IDisposable.Dispose()
+		{
+			Close();
 		}
 
 		public static string ToString(Instruction instruction)
@@ -44,7 +58,7 @@ namespace tinyOS
 
 			return string.Format(format,
 			                     instruction.OpCode.ToString().PadRight(10),
-			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters[i], x))).PadRight(20),
+			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters[i], x))).PadRight(24),
 			                     instruction.Comment);
 		}
 
@@ -64,11 +78,6 @@ namespace tinyOS
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		public void Close()
-		{
-			_streamWriter.Close();
 		}
 	}
 }

@@ -7,4 +7,4 @@
 25	r3		;Sleep r3 (current 0, will sleep forever)
 11	r3		;Print r3
 24	r1		;Release r1
-27			;Exit
+27	r1		;Exit

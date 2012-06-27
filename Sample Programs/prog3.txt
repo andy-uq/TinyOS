@@ -11,4 +11,4 @@
 6	r2 $100	;Move 100 into r2
 25	r2		;Sleep r2 (currently 100)
 11	r2		;Print r2
-27			;Exit
+27	r3		;Exit

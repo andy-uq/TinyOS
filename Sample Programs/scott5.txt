@@ -14,17 +14,17 @@
 14	r6, $12		;compare r6 and 12
 6	r7, $1		;jump over this exit
 13	r7
-27               ; this is exit.
+27  r7          ; this is exit.
 11	r1
 6 	r6, $12		;move 12 into r6
 14	r6, $14		;compare r6 and 14
 16	r7		; jlt over the exit
-27
+27	r7
 11 	r1
 6 	r6, $19		;move 12 into r6
 14	r6, $14		;compare r6 and 18
 17	r7		; jgt over the exit
-27
+27 r7
 11 	r1
 6 	r6, $14		;move 12 into r6
 14	r6, $14		;compare r6 and 18

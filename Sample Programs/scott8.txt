@@ -16,4 +16,4 @@
 6	r5, $55		;move 55 into r5
 6	r6, $66		;move 66 into r6
 24	r1
-27
+27  r1

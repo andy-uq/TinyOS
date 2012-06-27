@@ -9,4 +9,4 @@
 2	r2, $5	     	;increment r2 by 5       
 2	r2, $5	     	;increment r2 by 5       
 11  	r2    		;print r2
-27               	;exit.
+27      r2         	;exit.

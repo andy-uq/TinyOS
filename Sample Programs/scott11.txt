@@ -16,4 +16,4 @@
 24	r4		;release 1
 6	r5, $1		;event 1
 30	r5		;signal 1
-27
+27  r5

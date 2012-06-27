@@ -7,4 +7,4 @@
 6   	r3, $99      	;move 99 into r3
 7   	r4, r3      	;move r3 into r4
 11  	r4           	;print r4
-27               	;exit
+27      r4         	;exit

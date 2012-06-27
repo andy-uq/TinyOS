@@ -16,7 +16,7 @@
 6	r4, $11		;move 11 into r4
 9	r3, r4		;move r4 into memory at r3
 20	r3
-27			;ext
+27	r1		;ext
 6	r1, $55		;move 55 into r2
 21			;ret
 11	r1

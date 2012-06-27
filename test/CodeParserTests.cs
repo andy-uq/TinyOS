@@ -8,14 +8,28 @@ namespace ClassLibrary1
 	[TestFixture]
 	public class CodeParserTests
 	{
-		[Test]
-		public void OpenFile()
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog1.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog2.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog3.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott1.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott2.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott3.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott4.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott5.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott6.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott7.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott8.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott9.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott10.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott11.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott12.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt")]
+		public void OpenFile(string file)
 		{
-			var file = @"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt";
 			var parser = new TextParser();
-			var ms = new StringWriter();
-			var writer = new tinyOS.InstructionFormatter(ms);
-
+			var outputFile = Path.ChangeExtension(file, ".asm");
+			using (var stringWriter = File.CreateText(outputFile))
+			using (var writer = new InstructionFormatter(stringWriter))
 			using (var streamReader = File.OpenText(file))
 			{
 				string line;
@@ -25,22 +39,27 @@ namespace ClassLibrary1
 					writer.Write(i);
 				}
 			}
-
-			writer.Close();
-			Console.WriteLine(ms);
 		}
 
-		[Test]
-		public void Compile()
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog1.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog2.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog3.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott1.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott2.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott3.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott4.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott5.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott6.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott7.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott8.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott9.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott10.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott11.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott12.txt")]
+		[TestCase(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt")]
+		public void Decompile(string filename)
 		{
-			var objData = Compile(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
-			Console.WriteLine(BitConverter.ToString(objData));
-		}
-
-		[Test]
-		public void Decompile()
-		{
-			var objData = Compile(@"D:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt");
+			var objData = Compile(@filename);
 			var reader = new CodeReader(objData);
 			var writer = new InstructionFormatter(Console.Out);
 			foreach  (var instruction in reader.Instructions)
@@ -49,7 +68,7 @@ namespace ClassLibrary1
 			}
 		}
 
-		private static byte[] Compile(string file)
+		private byte[] Compile(string file)
 		{
 			var parser = new TextParser();
 			var ms = new MemoryStream();

@@ -26,23 +26,34 @@ namespace tinyOS
 				var reader = new BinaryReader(_codeStream);
 				while (_codeStream.Position < _codeStream.Length )
 				{
-					var opCodeByte = (OpCode )reader.ReadByte();
-					if (opCodeByte == (OpCode )255)
+					var instruction = BuildInstruction(reader);
+					if (instruction == null)
 						yield break;
 
-					var pLength = reader.ReadByte();
-
-					yield return new Instruction
-					{
-						OpCode = opCodeByte, 
-						Parameters = Enumerable
-							.Range(0, pLength)
-							.Select(x => reader.ReadUInt32())
-							.ToArray(),
-						Comment = reader.ReadString(),
-					};
+					yield return instruction;
 				}
 			}
+		}
+
+		private Instruction BuildInstruction(BinaryReader reader)
+		{
+			var opCodeByte = (OpCode)reader.ReadByte();
+			if ( opCodeByte == (OpCode)255 )
+				return null;
+
+			var pLength = reader.ReadByte();
+			var parameters = Enumerable
+				.Range(0, pLength)
+				.Select(x => reader.ReadUInt32())
+				.ToArray();
+			var comment = reader.ReadString();
+
+			return new Instruction
+			{
+				OpCode = opCodeByte,
+				Parameters = parameters,
+				Comment = comment,
+			};
 		}
 	}
 }
