@@ -22,6 +22,7 @@ namespace tinyOS
 
 		public ProcessContextBlock CurrentProcess { get; set; }
 		public Action<uint> PrintMethod { get; set; }
+		public InputDevice InputDevice { get; set; }
 		public Ram Ram { get; private set; }
 		public ReadyQueue ReadyQueue { get; private set; }
 		public DeviceQueue DeviceQueue { get; private set; }
@@ -69,6 +70,7 @@ namespace tinyOS
 			_processes = new Dictionary<uint, ProcessContextBlock>();
 			_operations = OpCodeMeta.OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMeta.OpCodeMetaInformationBuilder.BuildOperation);
 			IdleProcess = new ProcessContextBlock { Id = 1, };
+			InputDevice = new TerminalInputDevice();
 		}
 
 		public Cpu(uint ramSize = (4 << 20), uint frameSize = (1 << 10))
@@ -134,6 +136,8 @@ namespace tinyOS
 			}
 
 			TickSleepTimer();
+			CheckTerminal();
+
 			TickCount++;
 		}
 
@@ -143,9 +147,25 @@ namespace tinyOS
 			if (!SleepTimer.Tick(out sleepTimer)) 
 				return;
 
-			ProcessContextBlock wakingProcess;
+			BlockingProcess wakingProcess;
 			while ((wakingProcess = DeviceQueue.Dequeue(sleepTimer)) != null)
-				ReadyQueue.Enqueue(wakingProcess);
+				ReadyQueue.Enqueue(wakingProcess.Process);
+		}
+
+		private void CheckTerminal()
+		{
+			uint value;
+			if (!InputDevice.Get(out value)) 
+				return;
+			
+			BlockingProcess wakingProcess;
+			while ((wakingProcess = DeviceQueue.Dequeue(DeviceId.Terminal)) != null)
+			{
+				var process = wakingProcess.Process;
+				process.Registers[wakingProcess.Argument] = value;
+
+				ReadyQueue.Enqueue(process);
+			}
 		}
 
 		private void Execute(Instruction instruction)
@@ -340,12 +360,14 @@ namespace tinyOS
 			@lock.Owner = 0;
 			@lock.RefCount = 0;
 
-			var process = DeviceQueue.Dequeue(@lock.Handle);
-			if (process == null)
+			var blockingProcess = DeviceQueue.Dequeue(@lock.Handle);
+			if (blockingProcess == null)
 				return;
 
-			AcquireLock(process, @lock);
-			ReadyQueue.Enqueue(process);
+			var pcb = blockingProcess.Process;
+
+			AcquireLock(pcb, @lock);
+			ReadyQueue.Enqueue(pcb);
 		}
 
 		public void AcquireLock(uint lockNo)
@@ -378,10 +400,10 @@ namespace tinyOS
 
 			var ev = Events[eventNo - 1];
 
-			ProcessContextBlock process;
-			while ((process = DeviceQueue.Dequeue(ev.Handle)) != null)
+			BlockingProcess blockingProcess;
+			while ((blockingProcess = DeviceQueue.Dequeue(ev.Handle)) != null)
 			{
-				ReadyQueue.Enqueue(process);
+				ReadyQueue.Enqueue(blockingProcess.Process);
 			}
 		}
 
@@ -413,5 +435,37 @@ namespace tinyOS
 					stream.WriteByte(0);
 			}
 		}
+
+		public void Input(uint rX)
+		{
+			DeviceQueue.Enqueue(DeviceId.Terminal, CurrentProcess, rX);
+			CurrentProcess = null;
+		}
+	}
+
+	public class InputDevice
+	{
+		private readonly Stack<uint> _stack = new Stack<uint>();
+
+		public bool Get(out uint value)
+		{
+			if ( _stack.Count == 0 )
+			{
+				value = 0;
+				return false;
+			}
+
+			value = _stack.Pop();
+			return true;
+		}
+
+		public void Push(uint value)
+		{
+			_stack.Push(value);
+		}
+	}
+
+	public class TerminalInputDevice : InputDevice
+	{
 	}
 }

@@ -353,19 +353,11 @@ namespace tinyOS
             }
 		}
 
-		[OpCode(OpCode.Input, Comment = "Block process waiting for key press")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
-		public static void Input(Cpu cpu, uint rX, uint rY)
+		[OpCode(OpCode.Input, Comment = "Read the next 32-bit value into a register")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register to place the value")]
+		public static void Input(Cpu cpu, uint rX)
 		{
-			var vAddr = cpu.Registers[rX];
-		    var count = cpu.Registers[rY];
-
-            while (--count > 0)
-            {
-                cpu.Write(vAddr, 0);
-                vAddr += 4;
-            }
+			cpu.Input(rX);
 		}
 	}
 }

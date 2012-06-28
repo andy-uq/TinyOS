@@ -5,23 +5,37 @@ using System.Linq;
 
 namespace tinyOS
 {
-	public class DeviceQueue : IEnumerable<Tuple<DeviceId, ProcessContextBlock>>
+	public class BlockingProcess
 	{
-		private readonly Dictionary<DeviceId, Queue<ProcessContextBlock>> _deviceQueue;
+		public DeviceId DeviceId { get; set; }
+		public ProcessContextBlock Process { get; set; }
+		public uint Argument { get; set; }
+	}
+
+	public class DeviceQueue : IEnumerable<BlockingProcess>
+	{
+		private readonly Dictionary<DeviceId, Queue<BlockingProcess>> _deviceQueue;
 
 		public DeviceQueue()
 		{
 			_deviceQueue = Enum.GetValues(typeof (DeviceId))
 				.Cast<DeviceId>()
-				.ToDictionary(id => id, queue => new Queue<ProcessContextBlock>());
+				.ToDictionary(id => id, queue => new Queue<BlockingProcess>());
 		}
 
-		public void Enqueue(DeviceId deviceId, ProcessContextBlock pcb)
+		public void Enqueue(DeviceId deviceId, ProcessContextBlock pcb, uint arg1 = 0)
 		{
-			_deviceQueue[deviceId].Enqueue(pcb);
+			var blockingProcess = new BlockingProcess
+			{
+				Process = pcb,
+				Argument = arg1,
+				DeviceId = deviceId
+			};
+
+			_deviceQueue[deviceId].Enqueue(blockingProcess);
 		}
 
-		public ProcessContextBlock Dequeue(DeviceId deviceId)
+		public BlockingProcess Dequeue(DeviceId deviceId)
 		{
 			var queue = _deviceQueue[deviceId];
 			if ( queue.Count == 0 )
@@ -30,13 +44,13 @@ namespace tinyOS
 			return queue.Dequeue();
 		}
 
-		public IEnumerator<Tuple<DeviceId, ProcessContextBlock>> GetEnumerator()
+		public IEnumerator<BlockingProcess> GetEnumerator()
 		{
 			return
 				(
 					from e in _deviceQueue
-					from pcb in e.Value
-					select new Tuple<DeviceId, ProcessContextBlock>(e.Key, pcb)
+					from blockingProcess in e.Value
+					select blockingProcess
 				).GetEnumerator();
 		}
 

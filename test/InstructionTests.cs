@@ -18,6 +18,10 @@ namespace ClassLibrary1
 	[TestFixture]
 	public class InstructionTests
 	{
+		private class TestInput : InputDevice
+		{
+		}
+
 		private Cpu _cpu;
 		private int _heapOffset;
 		private readonly byte[] _ram = new byte[1024];
@@ -33,7 +37,9 @@ namespace ClassLibrary1
 			const uint pId = 10;
 
 			_cpu = new Cpu(new Ram(_ram, 128));
-		    var p = CreateProcess(pId);
+			_cpu.InputDevice = new InputDevice();
+
+			var p = CreateProcess(pId);
 			_cpu.CurrentProcess = p;
 
 			var heap = _cpu.Ram.Allocate(_cpu.IdleProcess);
@@ -247,7 +253,7 @@ namespace ClassLibrary1
 			Instructions.WaitEvent(_cpu, Register.A);
 
 			Assert.That(_cpu.CurrentProcess, Is.Null);
-			Assert.That(_cpu.DeviceQueue.Where(x => x.Item1 == DeviceId.Event1).Select(x => x.Item2), Contains.Item(pA));
+			Assert.That(_cpu.DeviceQueue.Where(x => x.DeviceId == DeviceId.Event1).Select(x => x.Process), Contains.Item(pA));
 		}
 
 		[Test]
@@ -266,6 +272,25 @@ namespace ClassLibrary1
 				_cpu.Tick();
 
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+		}
+
+		[Test]
+		public void Input()
+		{
+			IdleProcess.Initialise(_cpu);
+
+			var pA = _cpu.CurrentProcess;
+			Instructions.Input(_cpu, Register.C);
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
+			
+			_cpu.InputDevice.Push(10);
+			for ( int i = 0; i < 10; i++ )
+				_cpu.Tick();
+
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+			Assert.That(C, Is.EqualTo(10));
 		}
 
 
