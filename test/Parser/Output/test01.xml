@@ -1,0 +1,3 @@
+﻿<sequence name="file">
+	<recursive name="declaration_list"></recursive>
+</sequence>
