@@ -168,3 +168,5 @@ pip-log.txt
 *.user
 /tinyOS/bin
 /tinyOS/obj
+/_NCrunch_tinyOS
+/packages/Moq.4.0.10827
