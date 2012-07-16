@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Andy.TinyOS;
 
 namespace tinyOS
 {
@@ -42,8 +43,10 @@ namespace tinyOS
 			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
 
 			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
-			var writer = new CodeWriter(ms);
-			Array.ForEach(code ?? Instructions, writer.Write);
+			using (var writer = new CodeWriter(ms))
+			{
+				Array.ForEach(code ?? Instructions, writer.Write);
+			}
 		}
 	}
 }

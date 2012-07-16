@@ -1,3 +1,22 @@
-﻿<sequence name="file">
-	<recursive name="declaration_list"></recursive>
-</sequence>
+﻿<Sequence name="file">
+	<Recursive name="declaration_list">
+		<Choice name="declaration">
+			<Sequence name="comment_set"></Sequence>
+			<Plus name="declaration_content">
+				<Choice name="node">
+					<Sequence name="literal">
+						<Sequence name="int_literal">
+							<Choice name="unsigned_literal">
+								<Sequence name="decimal_literal">
+									<CharRange name="nonzero_digit">
+										1
+									</CharRange>
+								</Sequence>
+							</Choice>
+						</Sequence>
+					</Sequence>
+				</Choice>
+			</Plus>
+		</Choice>
+	</Recursive>
+</Sequence>

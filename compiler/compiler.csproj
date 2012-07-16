@@ -40,7 +40,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\parser\parser.csproj">
+      <Project>{BD0827A4-1D11-41A5-B4CD-B97E3E236CC3}</Project>
+      <Name>parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\tinyOS\tinyOS.csproj">
+      <Project>{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}</Project>
+      <Name>tinyOS</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

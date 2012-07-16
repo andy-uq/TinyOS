@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Linq;
+using Andy.TinyOS.Compiler;
 using Andy.TinyOS.Parser;
 using Jolt.Testing.Assertions;
 using Jolt.Testing.Assertions.NUnit.SyntaxHelpers;
@@ -18,6 +19,8 @@ namespace ClassLibrary1.Parser
 		[TestCase("test01.c")]
 		[TestCase("test02.c")]
 		[TestCase("test03.c")]
+		[TestCase("test04.c")]
+		[TestCase("larger.c")]
 		public void Can_parse(string source)
 		{
 			var sourceFile = Path.Combine(Source_Directory, source);
@@ -36,6 +39,53 @@ namespace ClassLibrary1.Parser
 			Console.WriteLine(expectedXml);
 
 			Assert.That(output.AsXml().CreateReader(), IsXml.EquivalentTo(expectedXml.CreateReader()));
+		}
+
+		[TestCase("0", true)]
+		[TestCase("1", true)]
+		[TestCase("10", true)]
+		[TestCase("100000000", true)]
+		[TestCase("-1", false)]
+		[TestCase("abc", false)]
+		public void Integer(string integer, bool expected)
+		{
+			var grammer = new AndyStructuralGrammer();
+			var p = new ParserState(integer);
+			
+			Assert.That(grammer.int_literal.Match(p), Is.EqualTo(expected));
+		}
+
+		[TestCase("0", true)]
+		[TestCase("1", true)]
+		[TestCase("10", true)]
+		[TestCase("-1", true)]
+		[TestCase("-10", true)]
+		[TestCase("-100000000", true)]
+		public void UnaryInteger(string integer, bool expected)
+		{
+			var grammer = new AndyStructuralGrammer();
+			var printer = new CppStructuralOutputAsXml();
+			var p = new ParserState(integer);
+
+			Assert.That(grammer.unary_expression.Match(p), Is.EqualTo(expected));
+			
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
+		}
+
+		[TestCase("1+1", true)]
+		[TestCase("1*2+3", true)]
+		[TestCase("1*2+3/2", true)]
+		public void Expression(string integer, bool expected)
+		{
+			var grammer = new AndyStructuralGrammer();
+			var printer = new CppStructuralOutputAsXml();
+			var p = new ParserState(integer);
+
+			Assert.That(grammer.expression.Match(p), Is.EqualTo(expected));
+
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
 		}
 
 		[Test]

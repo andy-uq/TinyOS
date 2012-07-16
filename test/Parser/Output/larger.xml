@@ -1,0 +1,210 @@
+﻿<Sequence name="file">
+	<Recursive name="declaration_list">
+		<Choice name="declaration">
+			<Sequence name="comment_set"></Sequence>
+			<Plus name="declaration_content">
+				<Choice name="node">
+					<Leaf name="identifier">
+						int
+					</Leaf>
+				</Choice>
+				<Choice name="node">
+					<Leaf name="identifier">
+						main
+					</Leaf>
+				</Choice>
+				<Choice name="node">
+					<Sequence name="paran_group">
+						<Recursive name="declaration_list"></Recursive>
+						)
+
+					</Sequence>
+				</Choice>
+				<Choice name="node">
+					<Sequence name="brace_group">
+						<Recursive name="declaration_list">
+							<Choice name="declaration">
+								<Sequence name="comment_set"></Sequence>
+								<Plus name="declaration_content">
+									<Choice name="node">
+										<Leaf name="identifier">
+											int
+										</Leaf>
+									</Choice>
+									<Choice name="node">
+										<Leaf name="identifier">
+											sum
+										</Leaf>
+									</Choice>
+									<Choice name="node">
+										<Sequence name="symbol">
+											=
+										</Sequence>
+									</Choice>
+									<Choice name="node">
+										<Sequence name="literal">
+											<Sequence name="int_literal">
+												<Choice name="unsigned_literal">
+													<Sequence name="octal_literal">
+														0
+													</Sequence>
+												</Choice>
+											</Sequence>
+										</Sequence>
+									</Choice>
+								</Plus>
+								<CharSequence name="semicolon">
+									;
+								</CharSequence>
+							</Choice>
+							<Choice name="declaration">
+								<Sequence name="comment_set"></Sequence>
+								<Plus name="declaration_content">
+									<Choice name="node">
+										<Leaf name="identifier">
+											for
+										</Leaf>
+									</Choice>
+									<Choice name="node">
+										<Sequence name="paran_group">
+											<Recursive name="declaration_list">
+												<Choice name="declaration">
+													<Sequence name="comment_set"></Sequence>
+													<Plus name="declaration_content">
+														<Choice name="node">
+															<Leaf name="identifier">
+																int
+															</Leaf>
+														</Choice>
+														<Choice name="node">
+															<Leaf name="identifier">
+																i
+															</Leaf>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																=
+															</Sequence>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="literal">
+																<Sequence name="int_literal">
+																	<Choice name="unsigned_literal">
+																		<Sequence name="octal_literal">
+																			0
+
+																		</Sequence>
+																	</Choice>
+																</Sequence>
+															</Sequence>
+														</Choice>
+													</Plus>
+													<CharSequence name="semicolon">
+														;
+													</CharSequence>
+												</Choice>
+												<Choice name="declaration">
+													<Sequence name="comment_set"></Sequence>
+													<Plus name="declaration_content">
+														<Choice name="node">
+															<Leaf name="identifier">
+																i
+															</Leaf>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																&lt;
+															</Sequence>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="literal">
+																<Sequence name="int_literal">
+																	<Choice name="unsigned_literal">
+																		<Sequence name="decimal_literal">
+																			<CharRange name="nonzero_digit">
+																				1
+																			</CharRange>
+																			<CharRange name="digit">
+																				0
+																			</CharRange>
+																		</Sequence>
+																	</Choice>
+																</Sequence>
+															</Sequence>
+														</Choice>
+													</Plus>
+													<CharSequence name="semicolon">
+														;
+													</CharSequence>
+												</Choice>
+												<Choice name="declaration">
+													<Sequence name="comment_set"></Sequence>
+													<Plus name="declaration_content">
+														<Choice name="node">
+															<Leaf name="identifier">
+																i
+															</Leaf>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																+
+															</Sequence>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																+
+															</Sequence>
+														</Choice>
+													</Plus>
+												</Choice>
+											</Recursive>
+											)
+
+										</Sequence>
+									</Choice>
+									<Choice name="node">
+										<Sequence name="brace_group">
+											<Recursive name="declaration_list">
+												<Choice name="declaration">
+													<Sequence name="comment_set"></Sequence>
+													<Plus name="declaration_content">
+														<Choice name="node">
+															<Leaf name="identifier">
+																sum
+															</Leaf>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																+
+															</Sequence>
+														</Choice>
+														<Choice name="node">
+															<Sequence name="symbol">
+																=
+															</Sequence>
+														</Choice>
+														<Choice name="node">
+															<Leaf name="identifier">
+																i
+															</Leaf>
+														</Choice>
+													</Plus>
+													<CharSequence name="semicolon">
+														;
+													</CharSequence>
+												</Choice>
+											</Recursive>
+											}
+
+										</Sequence>
+									</Choice>
+								</Plus>
+							</Choice>
+						</Recursive>
+						}
+					</Sequence>
+				</Choice>
+			</Plus>
+		</Choice>
+	</Recursive>
+</Sequence>

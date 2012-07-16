@@ -1,4 +1,5 @@
 ﻿using System;
+using Andy.TinyOS;
 using tinyOS.OpCodeMeta;
 
 namespace tinyOS
@@ -34,7 +35,7 @@ namespace tinyOS
 
 		[OpCode(OpCode.Addr, Comment = "Add the value of one register to another")]
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register to be increased")]
-		[Parameter("rY", Type = ParamType.Constant, Comment = "Register containing amount to increase by")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing amount to increase by")]
 		public static void Addr(Cpu cpu, uint rX, uint rY)
 		{
 			unchecked

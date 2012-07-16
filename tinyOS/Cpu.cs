@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Andy.TinyOS;
 
 namespace tinyOS
 {
@@ -110,6 +111,7 @@ namespace tinyOS
 
 			_processes.Add(block.Id, block);
 			ReadyQueue.Enqueue(block);
+			block.IsRunning = true;
 		}
 
 		private uint NextProcessId()
@@ -119,20 +121,24 @@ namespace tinyOS
 
 		public void Tick()
 		{
-			if (CurrentProcess == null || CurrentProcess.Quanta == 0)
+			if (CurrentProcess == null || CurrentProcess.Quanta == 0 || CurrentProcess == IdleProcess)
 			{
 				CurrentProcess = SwitchToNextProcess();
 			}
 
-			if ( CurrentProcess == IdleProcess && CurrentProcess.Code == null )
+			var codeReader = new CodeReader(GetMemoryStream(CurrentProcess.Code));
+			var instruction = codeReader[Ip];
+			if (instruction != null)
 			{
-				Execute(new Instruction { OpCode = OpCode.Noop });
+				Execute(instruction);
 			}
 			else
 			{
-				var codeReader = new CodeReader(GetMemoryStream(CurrentProcess.Code));
-				var instruction = codeReader.Instructions.ElementAt((int) Ip);
-				Execute(instruction);
+				foreach (var page in CurrentProcess.PageTable)
+					Ram.Free(page);
+
+				CurrentProcess.IsRunning = false;
+				CurrentProcess = null;
 			}
 
 			TickSleepTimer();
@@ -187,17 +193,8 @@ namespace tinyOS
 
 		private ProcessContextBlock SwitchToNextProcess()
 		{
-			var process = ReadyQueue.Dequeue();
-
-			if (process == null)
-			{
-				process = IdleProcess;
-				process.Quanta = IdleQuanta;
-			}
-			else
-			{
-				process.Quanta = UserQuanta;
-			}
+			var process = ReadyQueue.Dequeue() ?? IdleProcess;
+			process.Quanta = UserQuanta;
 
 			return process;
 		}
@@ -205,6 +202,7 @@ namespace tinyOS
 		public void Exit(uint exitCode)
 		{
 			CurrentProcess.ExitCode = exitCode;
+			CurrentProcess.IsRunning = false;
 
 			foreach (var page in CurrentProcess.PageTable)
 				Ram.Free(page);
@@ -225,6 +223,7 @@ namespace tinyOS
 				Ram.Free(page);
 
 			process.ExitCode = exitCode;
+			process.IsRunning = false;
 		}
 
 		public void Print(uint value)

@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractSyntaxTreeTextPrinter.cs" />
+    <Compile Include="AndyBaseGrammar.cs" />
     <Compile Include="BaseGrammar.cs" />
     <Compile Include="CppBaseGrammar.cs" />
     <Compile Include="CppFileSetParser.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="ParsingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rule.cs" />
+    <Compile Include="RuleType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

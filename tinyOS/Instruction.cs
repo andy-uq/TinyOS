@@ -1,4 +1,5 @@
-﻿using Andy.TinyOS.Utility;
+﻿using Andy.TinyOS;
+using Andy.TinyOS.Utility;
 
 namespace tinyOS
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Andy.TinyOS;
 using NUnit.Framework;
 using tinyOS;
 
@@ -25,9 +26,8 @@ namespace ClassLibrary1
 			writer.Close();
 
 			var codeReader = new CodeReader(cpu.GetMemoryStream(cpu.IdleProcess.Code));
-			var instructions = codeReader.Instructions;
-
-			var actual = instructions.GetEnumerator();
+			
+			var actual = codeReader.GetEnumerator();
 			var expected = IdleProcess.TerminatingIdle.Cast<Instruction>().GetEnumerator();
 
 			while ( actual.MoveNext() )

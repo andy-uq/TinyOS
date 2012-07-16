@@ -8,21 +8,45 @@
 						<Sequence name="int_literal">
 							<Choice name="unsigned_literal">
 								<Sequence name="decimal_literal">
-									<CharRange name="nonzero_digit">1</CharRange>
+									<CharRange name="nonzero_digit">
+										1
+									</CharRange>
 								</Sequence>
 							</Choice>
 						</Sequence>
 					</Sequence>
 				</Choice>
 				<Choice name="node">
-					<Sequence name="symbol">+</Sequence>
+					<Sequence name="symbol">
+						+
+					</Sequence>
 				</Choice>
 				<Choice name="node">
 					<Sequence name="literal">
 						<Sequence name="int_literal">
 							<Choice name="unsigned_literal">
 								<Sequence name="decimal_literal">
-									<CharRange name="nonzero_digit">2</CharRange>
+									<CharRange name="nonzero_digit">
+										2
+									</CharRange>
+								</Sequence>
+							</Choice>
+						</Sequence>
+					</Sequence>
+				</Choice>
+				<Choice name="node">
+					<Sequence name="symbol">
+						*
+					</Sequence>
+				</Choice>
+				<Choice name="node">
+					<Sequence name="literal">
+						<Sequence name="int_literal">
+							<Choice name="unsigned_literal">
+								<Sequence name="decimal_literal">
+									<CharRange name="nonzero_digit">
+										3
+									</CharRange>
 								</Sequence>
 							</Choice>
 						</Sequence>

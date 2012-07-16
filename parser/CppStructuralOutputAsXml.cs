@@ -12,14 +12,24 @@ namespace Andy.TinyOS.Parser
 	{
 		public XDocument AsXml()
 		{
-			return XDocument.Parse(ToString());
+			var xml = ToString();
+			return XDocument.Parse(xml);
 		}
 
-		public void PrintSimpleNode(ParseNode node)
+		private void PrintSimpleNode(ParseNode node)
 		{
 			string name = node.IsUnnamed() ? "" : " name='" + node.RuleName + "'";
-			string value = string.Format("<{0}{1}>{2}</{0}>", node.RuleType, name, node);
+			string value = string.Format("<{0}{1}>{2}</{0}>", node.RuleType, name, Escape(node));
 			WriteLine(value);
+		}
+
+		private string Escape(ParseNode node)
+		{
+			var value = node.ToString();
+			return value
+				.Replace("&", "&amp;")
+				.Replace("<", "&lt;")
+				.Replace("<", "&gt;");
 		}
 
 		protected override void Add(ParseNode node, int depth)
@@ -27,6 +37,9 @@ namespace Andy.TinyOS.Parser
 			Indent = new String(' ', depth*2);
 			if (node.IsUnnamed())
 			{
+				if (node.Count == 0)
+					WriteLine(Escape(node));
+
 				foreach (var child in node)
 					Add(child, depth);
 
@@ -50,7 +63,7 @@ namespace Andy.TinyOS.Parser
 
 			if (node.Count == 0)
 			{
-				WriteLine(node.ToString());
+				WriteLine(Escape(node));
 			}
 			else
 			{
@@ -66,9 +79,9 @@ namespace Andy.TinyOS.Parser
 			string r = "";
 
 			Assert(node.RuleName == "type_decl");
-			Assert(node.RuleType == "sequence");
+			Assert(node.RuleType == RuleType.Sequence);
 			Assert(node.Count == 2);
-			Assert(node[1].RuleType == "choice");
+			Assert(node[1].RuleType == RuleType.Choice);
 			Assert(node[1].Count == 1);
 
 			switch (node[1][0].RuleName)
@@ -78,7 +91,7 @@ namespace Andy.TinyOS.Parser
 				case "union_decl":
 				case "enum_decl":
 					Assert(node[1][0].Count >= 3);
-					Assert(node[1][0][1].RuleType == "opt");
+					Assert(node[1][0][1].RuleType == RuleType.Opt);
 
 					r += node[1][0] + " ";
 					ParseNode optIdent = node[1][0][1];
@@ -112,7 +125,7 @@ namespace Andy.TinyOS.Parser
 		{
 			Assert(child.Count == 2);
 			Assert(child[0].RuleName == "node");
-			Assert(child[0].RuleType == "choice");
+			Assert(child[0].RuleType == RuleType.Choice);
 			Assert(child[0].Count == 1);
 
 			ParseNode tmp = child[0][0];

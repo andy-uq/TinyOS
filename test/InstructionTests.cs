@@ -285,12 +285,12 @@ namespace ClassLibrary1
 			_cpu.Tick();
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
 			
-			_cpu.InputDevice.Push(10);
-			for ( int i = 0; i < 10; i++ )
+			_cpu.InputDevice.Push(99);
+			for ( int i = 0; i < 2; i++ )
 				_cpu.Tick();
 
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
-			Assert.That(C, Is.EqualTo(10));
+			Assert.That(C, Is.EqualTo(99));
 		}
 
 

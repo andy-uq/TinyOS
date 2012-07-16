@@ -206,7 +206,7 @@
 		/// <returns></returns>
 		public Rule CommaList(Rule r)
 		{
-			return r + Star(COMMA + r);
+			return r + Star(CharSeq(",") + r);
 		}
 
 		/// <summary>

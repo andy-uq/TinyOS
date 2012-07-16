@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Andy.TinyOS;
 using NUnit.Framework;
 using tinyOS;
 
@@ -44,30 +45,26 @@ namespace ClassLibrary1
 		public void RunRealCpu()
 		{
 			var cpu = new Cpu(2048, 256);
-			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
-			
-			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
-			var writer = new CodeWriter(ms);
-			Array.ForEach(IdleProcess.Instructions, writer.Write);
+			IdleProcess.Initialise(cpu, IdleProcess.Instructions);
 
-			cpu.Tick();
+ 			cpu.Tick();
 			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
 			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1));
 			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20));
-
-
 		}
 
 		[Test]
 		public void RunCpuWithProgram()
 		{
 			var cpu = new Cpu(2048, 256);
+			IdleProcess.Initialise(cpu, IdleProcess.Instructions);
+
 			var prog1 = cpu.Load();
 
 			cpu.Compile(prog1, _reallySimpleProgram);
 			cpu.Run(prog1);
 
-			while (prog1.ExitCode == 0)
+			while ( prog1.IsRunning )
 			{
 				cpu.Tick();
 			}
@@ -79,6 +76,8 @@ namespace ClassLibrary1
 		public void ProgramSignals()
 		{
 			var cpu = new Cpu(2048, 256);
+			IdleProcess.Initialise(cpu, IdleProcess.Instructions);
+			
 			var prog1 = cpu.Load();
 			var prog2 = cpu.Load();
 
@@ -88,7 +87,7 @@ namespace ClassLibrary1
 			cpu.Run(prog1);
 			cpu.Run(prog2);
 
-			while (prog1.ExitCode == 0 || prog2.ExitCode == 0)
+			while (prog1.IsRunning || prog2.IsRunning)
 			{
 				cpu.Tick();
 			}

@@ -1,29 +1,25 @@
-﻿<sequence name="file">
-	<recursive name="declaration_list">
-		<choice name="declaration">
-			<sequence name="comment_set"></sequence>
-			<plus name="declaration_content">
-				<choice name="node">
-					<leaf name="identifier">
-						int
-					</leaf>
-				</choice>
-				<choice name="node">
-					<leaf name="identifier">
-						main
-					</leaf>
-				</choice>
-				<choice name="node">
-					<sequence name="paran_group">
-						<recursive name="declaration_list"></recursive>
-					</sequence>
-				</choice>
-				<choice name="node">
-					<sequence name="brace_group">
-						<recursive name="declaration_list"></recursive>
-					</sequence>
-				</choice>
-			</plus>
-		</choice>
-	</recursive>
-</sequence>
+﻿<Sequence name="file">
+	<Recursive name="declaration_list">
+		<Choice name="declaration">
+			<Sequence name="comment_set"></Sequence>
+			<Plus name="declaration_content">
+				<Choice name="node">
+					<Sequence name="literal">
+						<Sequence name="int_literal">
+							<Choice name="unsigned_literal">
+								<Sequence name="decimal_literal">
+									<CharRange name="nonzero_digit">
+										1
+									</CharRange>
+									<CharRange name="digit">
+										1
+									</CharRange>
+								</Sequence>
+							</Choice>
+						</Sequence>
+					</Sequence>
+				</Choice>
+			</Plus>
+		</Choice>
+	</Recursive>
+</Sequence>

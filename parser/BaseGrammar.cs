@@ -245,16 +245,23 @@ namespace Andy.TinyOS.Parser
 		/// Given a grammar object, it will set the name of all fields of type Rule 
 		/// to have the name of the object.
 		/// </summary>
-		private void AssignRuleNames<T>()
+		private void AssignRuleNames<T>(bool throwOnMissing = true)
 		{
-			foreach (FieldInfo f in GetRuleFields<T>())
+			foreach ( FieldInfo f in GetRuleFields<T>() )
 			{
 				Object v = f.GetValue(this);
 				var r = v as Rule;
-				if (r != null)
-					r.SetName(f.Name);
+				if (r == null)
+				{
+					if (throwOnMissing)
+					{
+						throw new Exception("uninitialized rule " + f.Name);
+					}
+				}
 				else
-					throw new Exception("uninitialized rule " + f.Name);
+				{
+					r.SetName(f.Name);
+				}
 			}
 		}
 
@@ -274,13 +281,18 @@ namespace Andy.TinyOS.Parser
 		/// Returns all of the rules in a grammar, using reflection to iterate over the public fields
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<Rule> GetRules<T>()
+		public IEnumerable<Rule> GetRules<T>(bool throwOnMissing)
 		{
 			foreach (FieldInfo fi in GetRuleFields<T>())
 			{
 				var rule = fi.GetValue(this) as Rule;
 				if (rule == null)
+				{
+					if ( throwOnMissing == false )
+						continue;
+
 					throw new Exception("Uninitialized rule: " + fi.Name);
+				}
 
 				yield return rule;
 			}
@@ -290,9 +302,9 @@ namespace Andy.TinyOS.Parser
 		/// Flattens all exposed rules in a grammar.
 		/// </summary>
 		/// <param name="g"></param>
-		public void FlattenRules<T>()
+		private void FlattenRules<T>(bool throwOnMissing)
 		{
-			foreach (Rule r in GetRules<T>())
+			foreach (Rule r in GetRules<T>(throwOnMissing))
 				r.FlattenRules();
 		}
 
@@ -301,10 +313,10 @@ namespace Andy.TinyOS.Parser
 		/// and then flattens all unnamed sequence and choice rules.
 		/// </summary>
 		/// <typeparam name="T">The grammar type being initialized</typeparam>
-		public void InitializeRules<T>()
+		public void InitializeRules<T>(bool throwOnMissing = true)
 		{
-			AssignRuleNames<T>();
-			FlattenRules<T>();
+			AssignRuleNames<T>(throwOnMissing);
+			FlattenRules<T>(throwOnMissing);
 		}
 
 		#endregion

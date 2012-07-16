@@ -74,9 +74,9 @@ namespace Andy.TinyOS.Parser
 		/// Returns the type of the associated rule, or "" if no rule is available
 		/// (which is the case for root nodes).
 		/// </summary>
-		public string RuleType
+		public RuleType RuleType
 		{
-			get { return _rule == null ? "_root_" : _rule.RuleType; }
+			get { return _rule == null ? RuleType.Root : _rule.RuleType; }
 		}
 
 		/// <summary>
@@ -254,6 +254,11 @@ namespace Andy.TinyOS.Parser
 				yield return child;
 
 			yield return this;
+		}
+
+		public ParseNode GetNamedChild(string name)
+		{
+			return GetHierarchy().Single(x => x.RuleName == name);
 		}
 	}
 }

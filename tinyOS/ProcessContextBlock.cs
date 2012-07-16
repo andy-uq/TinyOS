@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Andy.TinyOS;
 using Andy.TinyOS.Utility;
 
 namespace tinyOS
@@ -35,6 +36,8 @@ namespace tinyOS
 	    public PageInfo Stack { get; set; }
 	    public PageInfo Code { get; set; }
 	    public PageInfo GlobalData { get; set; }
+
+		public bool IsRunning { get; set; }
 	}
 
 	public static class ProcessControlBlockExtensions
@@ -57,6 +60,18 @@ namespace tinyOS
 						writer.Write(instruction);
 					}
 				}
+			}
+
+			return stream;
+		}
+
+		public static Stream Compile(this Cpu cpu, ProcessContextBlock pcb, IEnumerable<Instruction> instructions)
+		{
+            var stream = cpu.GetMemoryStream(pcb.Code);
+			using ( var writer = new CodeWriter(stream) )
+			{
+				foreach (var instruction in instructions)
+					writer.Write(instruction);
 			}
 
 			return stream;

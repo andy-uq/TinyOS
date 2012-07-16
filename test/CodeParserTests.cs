@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Andy.TinyOS;
 using Andy.TinyOS.Utility;
 using NUnit.Framework;
 using tinyOS;
@@ -63,7 +64,7 @@ namespace ClassLibrary1
 			var objData = Compile(@filename);
 			var reader = new CodeReader(objData);
 			var writer = new InstructionTextWriter(Console.Out);
-			foreach  (var instruction in reader.Instructions)
+			foreach  (var instruction in reader)
 			{
 				writer.Write(instruction);
 			}
@@ -73,7 +74,7 @@ namespace ClassLibrary1
 		{
 			var parser = new InstructionTextReader();
 			var ms = new MemoryStream();
-			var writer = new tinyOS.CodeWriter(ms);
+			var writer = new CodeWriter(ms);
 
 			using (var streamReader = File.OpenText(file))
 			{
