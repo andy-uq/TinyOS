@@ -263,5 +263,10 @@ namespace Andy.TinyOS.Parser
 		{
 			return GetHierarchy().Single(x => x.RuleName == name);
 		}
+
+		public bool Is(Rule rule)
+		{
+			return _rule.Equals(rule);
+		}
 	}
 }

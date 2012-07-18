@@ -14,7 +14,7 @@ namespace Andy.TinyOS.Parser
 	/// The different kinds of rules, provide overrides of the abstract 
 	/// function InternalMatch to customize their own behavior.
 	/// </summary>
-	public abstract class Rule
+	public abstract class Rule : IEquatable<Rule>
 	{
 		#region private fields
 
@@ -99,7 +99,7 @@ namespace Andy.TinyOS.Parser
 		/// <summary>
 		/// Returns the name of the rule, or _unnamed_ if it is an unnamed rule.
 		/// </summary>
-		public string RuleName
+		public virtual string RuleName
 		{
 			get { return IsUnnamed() ? "_unnamed_" : Name; }
 		}
@@ -245,6 +245,36 @@ namespace Andy.TinyOS.Parser
 		public IEnumerable<Rule> GetChildren()
 		{
 			return Rules;
+		}
+
+		public bool Equals(Rule other)
+		{
+			if (ReferenceEquals(null, other)) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return Equals(other.RuleNameOrDefinition, RuleNameOrDefinition);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != typeof (Rule)) return false;
+			return Equals((Rule) obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return RuleNameOrDefinition.GetHashCode();
+		}
+
+		public static bool operator ==(Rule left, Rule right)
+		{
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(Rule left, Rule right)
+		{
+			return !Equals(left, right);
 		}
 	}
 
@@ -590,6 +620,11 @@ namespace Andy.TinyOS.Parser
 		public override RuleType RuleType
 		{
 			get { return RuleType.Recursive; }
+		}
+
+		public override string RuleName
+		{
+			get { return _func().RuleName; }
 		}
 
 		public override string RuleDefinition

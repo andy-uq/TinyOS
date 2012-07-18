@@ -6,6 +6,7 @@
 		public Rule factor;
 		public Rule add_expression;
 		public Rule relational_expression;
+		public Rule unary_expression;
 		public Rule expression;
 		public Rule expression_list;
 
@@ -21,7 +22,8 @@
 
 		public AndyStructuralGrammer()
 		{
-			term = int_literal | unary_operator + Recursive(() => term) | Recursive(() => CharSet("(") + expression + CharSet(")"));
+			unary_expression = unary_operator + Recursive(() => term);
+			term = int_literal | unary_expression | Recursive(() => CharSet("(") + expression + CharSet(")"));
 			factor = term + Star(multiply_operator + term);
 			add_expression = factor + Star(addition_operator + factor);
 			relational_expression = add_expression + Star(relational_operator + add_expression);

@@ -13,8 +13,8 @@ namespace ClassLibrary1.Parser
 	[TestFixture]
 	public class ParserTests
 	{
-		private const string Source_Directory = @"D:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Input";
-		private const string Output_Directory = @"D:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Output";
+		private const string Source_Directory = @"C:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Input";
+		private const string Output_Directory = @"C:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Output";
 
 		[TestCase("test01.c")]
 		[TestCase("test02.c")]
