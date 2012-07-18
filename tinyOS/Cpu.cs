@@ -95,7 +95,7 @@ namespace tinyOS
 				Priority = 16,
 			};
 
-		    processContextBlock.Code.Append(Ram.Allocate(processContextBlock));
+			processContextBlock.Code.Append(Ram.Allocate(processContextBlock));
 			return processContextBlock;
 		}
 
@@ -193,6 +193,11 @@ namespace tinyOS
 
 		private ProcessContextBlock SwitchToNextProcess()
 		{
+			if ( CurrentProcess != null )
+			{
+				ReadyQueue.Enqueue(CurrentProcess);
+			}
+
 			var process = ReadyQueue.Dequeue() ?? IdleProcess;
 			process.Quanta = UserQuanta;
 
@@ -253,18 +258,18 @@ namespace tinyOS
 
 		public uint Allocate(uint size)
 		{
-            var page = new PageInfo();
-		    
-            while (size > Ram.FrameSize)
-            {
-                size -= Ram.FrameSize;
-                page.Append(Ram.Allocate(CurrentProcess));
-            }
+			var page = new PageInfo();
+			
+			while (size > Ram.FrameSize)
+			{
+				size -= Ram.FrameSize;
+				page.Append(Ram.Allocate(CurrentProcess));
+			}
 
-            page.Append(Ram.Allocate(CurrentProcess));
+			page.Append(Ram.Allocate(CurrentProcess));
 			CurrentProcess.PageTable.Add(page);
 
-		    return page.Offset;
+			return page.Offset;
 		}
 
 		public void Free(uint offset)
@@ -272,55 +277,55 @@ namespace tinyOS
 			var page = CurrentProcess.PageTable.Find(x => x.Offset == offset);
 			if (page != null)
 			{
-                foreach (var p in page.Pages)
-                    Ram.Free(p);
+				foreach (var p in page.Pages)
+					Ram.Free(p);
 
-                CurrentProcess.PageTable.Free(page);
+				CurrentProcess.PageTable.Free(page);
 			}
 		}
 
 		public bool Write(uint vAddr, uint value)
 		{
-		    var page = CurrentProcess.PageTable.Find(vAddr);
-            if (page == null)
-                return false;
+			var page = CurrentProcess.PageTable.Find(vAddr);
+			if (page == null)
+				return false;
 
-            using (var stream = GetMemoryStream(page))
-            {
-                stream.Position = vAddr - page.Offset;
-                using (var writer = new BinaryWriter(stream))
-                    writer.Write(value);
-            }
+			using (var stream = GetMemoryStream(page))
+			{
+				stream.Position = vAddr - page.Offset;
+				using (var writer = new BinaryWriter(stream))
+					writer.Write(value);
+			}
 
-		    return true;
+			return true;
 		}
 
 		public uint Read(uint vAddr)
 		{
-            var page = CurrentProcess.PageTable.Find(vAddr);
-            if (page == null)
-                throw new InvalidOperationException(string.Format("Bad address: [0x{0:x8}]", vAddr));
-            
-            using (var stream = GetMemoryStream(page))
-            {
-                stream.Position = vAddr - page.Offset;
-                using (var writer = new BinaryReader(stream))
-                    return writer.ReadUInt32();
-            }
-        }
+			var page = CurrentProcess.PageTable.Find(vAddr);
+			if (page == null)
+				throw new InvalidOperationException(string.Format("Bad address: [0x{0:x8}]", vAddr));
+			
+			using (var stream = GetMemoryStream(page))
+			{
+				stream.Position = vAddr - page.Offset;
+				using (var writer = new BinaryReader(stream))
+					return writer.ReadUInt32();
+			}
+		}
 
 		public void Push(uint value)
 		{
 			if (Write(CurrentProcess.Stack.Offset + Sp, value))
 			{
-			    Sp += 4;
+				Sp += 4;
 			}
 		}
 
 		public uint Pop()
 		{
-            if (Sp == 0)
-                return 0;
+			if (Sp == 0)
+				return 0;
 
 			Sp -= 4;
 			var value = Read(CurrentProcess.Stack.Offset + Sp);
@@ -330,10 +335,10 @@ namespace tinyOS
 
 		public uint Peek()
 		{
-            if (Sp == 0)
-                return 0;
-            
-            return Read(CurrentProcess.Stack.Offset + (Sp - 4));
+			if (Sp == 0)
+				return 0;
+			
+			return Read(CurrentProcess.Stack.Offset + (Sp - 4));
 		}
 
 		public void Sleep(uint sleep)
@@ -416,10 +421,10 @@ namespace tinyOS
 			CurrentProcess = null;
 		}
 
-	    public Stream GetMemoryStream(PageInfo page)
-	    {
-	        return new PageStream(Ram, page);
-	    }
+		public Stream GetMemoryStream(PageInfo page)
+		{
+			return new PageStream(Ram, page);
+		}
 
 		public void MemoryClear(uint vAddr, uint count)
 		{

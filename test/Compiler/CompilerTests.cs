@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
 using Andy.TinyOS.Parser;
@@ -26,6 +27,8 @@ namespace ClassLibrary1.Compiler
 		[TestCase("10-1+5", 14U)]
 		[TestCase("(10-1)+5", 14U)]
 		[TestCase("10-(1+5)", 4U)]
+		[TestCase("2*(1+2)", 6U)]
+		[TestCase("2*1+2", 4U)]
 		public void SingleExpression(string source, uint result)
 		{
 			var grammar = new AndyStructuralGrammer();
@@ -43,10 +46,14 @@ namespace ClassLibrary1.Compiler
 
 		private uint Run(IEnumerable<Instruction> program)
 		{
-			Cpu cpu = new Cpu();
+			var cpu = new Cpu();
+			IdleProcess.Initialise(cpu);
+
 			var prog1 = cpu.Load();
 
-			cpu.Compile(prog1, program);
+			var stream = cpu.Compile(prog1, program);
+			Console.WriteLine("Code Size: {0} bytes", stream.Length);
+
 			cpu.Run(prog1);
 
 			while (prog1.IsRunning)

@@ -42,6 +42,7 @@ namespace Andy.TinyOS
 				_writer.Write(t);
 
 			_writer.Write(instruction.Comment ?? string.Empty);
+			_writer.Flush();
 		}
 
 		public void Close()
