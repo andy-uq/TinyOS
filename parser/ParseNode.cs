@@ -124,6 +124,11 @@ namespace Andy.TinyOS.Parser
 			get { return _begin == _end; }
 		}
 
+		public string Value
+		{
+			get { return _end > _begin ? _text.Substring(_begin, _end - _begin) : ""; }
+		}
+
 		#region IEnumerable<ParseNode> Members
 
 		/// <summary>
@@ -176,9 +181,7 @@ namespace Andy.TinyOS.Parser
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return _end > _begin
-			       	? _text.Substring(_begin, _end - _begin)
-			       	: "";
+			return Value;
 		}
 
 		/// <summary>

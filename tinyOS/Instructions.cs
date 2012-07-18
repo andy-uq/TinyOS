@@ -360,5 +360,66 @@ namespace tinyOS
 		{
 			cpu.Input(rX);
 		}
+
+		[OpCode(OpCode.Not, Comment = "Return the ones complement of a value")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register to containing value to flip")]
+		public static void Not(Cpu cpu, uint rX)
+		{
+			var value = cpu.Registers[rX];
+			cpu.Registers[rX] = ~value;
+		}
+
+		[OpCode(OpCode.Neg, Comment = "Return the twos complement of a value")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register to containing value to negate")]
+		public static void Neg(Cpu cpu, uint rX)
+		{
+			var value = cpu.Registers[rX];
+			cpu.Registers[rX] = ~value+1;
+		}
+
+		[OpCode(OpCode.Mul, Comment = "Return the result of multiplying one register with another")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
+		public static void Mul(Cpu cpu, uint rX, uint rY)
+		{
+			var value = cpu.Registers[rY];
+			cpu.Registers[rX] *= value;
+		}
+
+		[OpCode(OpCode.Div, Comment = "Return the result of dividing one register with another")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
+		public static void Div(Cpu cpu, uint rX, uint rY)
+		{
+			var value = cpu.Registers[rY];
+			cpu.Registers[rX] /= value;
+		}
+
+		[OpCode(OpCode.And, Comment = "Return the result of AND one register with another")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
+		public static void And(Cpu cpu, uint rX, uint rY)
+		{
+			var value = cpu.Registers[rY];
+			cpu.Registers[rX] &= value;
+		}
+
+		[OpCode(OpCode.Or, Comment = "Return the result of OR one register with another")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
+		public static void Or(Cpu cpu, uint rX, uint rY)
+		{
+			var value = cpu.Registers[rY];
+			cpu.Registers[rX] |= value;
+		}
+
+		[OpCode(OpCode.Xor, Comment = "Return the result of XOR one register with another")]
+		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
+		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
+		public static void Xor(Cpu cpu, uint rX, uint rY)
+		{
+			var value = cpu.Registers[rY];
+			cpu.Registers[rX] ^= value;
+		}
 	}
 }

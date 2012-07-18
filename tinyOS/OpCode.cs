@@ -41,5 +41,12 @@ namespace Andy.TinyOS
 		Popm,
 		Cmprm,
 		Jne,
+		Mul,
+		Div,
+		Not,
+		Neg,
+		And,
+		Or,
+		Xor,
 	}
 }

@@ -17,48 +17,138 @@ namespace Andy.TinyOS.Compiler
 		public Compiler(AndyStructuralGrammer grammer, ParserState parserState)
 		{
 			_grammar = grammer;
-			_codeGenerator = grammer.GetRules<AndyStructuralGrammer>(throwOnMissing: false)
+
+			var rules = grammer.GetRules<AndyStructuralGrammer>(throwOnMissing: false);
+			rules = rules.Concat(grammer.GetRules<AndyBaseGrammar>(throwOnMissing: false));
+
+			_codeGenerator = rules
+				.Distinct()
 				.ToDictionary(k => k, GetCodeGenerator);
 
 			_root = parserState.GetRoot();
 		}
 
-		public static Func<ParseNode, IEnumerable<Instruction>> GetCodeGenerator(Rule rule)
+		public Func<ParseNode, IEnumerable<Instruction>> GetCodeGenerator(Rule rule)
 		{
-			var name = rule.RuleName;
-			var method = typeof(Compiler).GetMethod(name, BindingFlags.IgnoreCase | BindingFlags.NonPublic);
+			var name = rule.RuleName.Replace("_", "");
+			var method = typeof(Compiler).GetMethod(name, BindingFlags.IgnoreCase | BindingFlags.NonPublic | BindingFlags.Instance);
 			if (method == null)
 				return null;
 
-			var p = Expression.Parameter(typeof(ParseNode));
-			var lambda = Expression.Lambda<Func<ParseNode, IEnumerable<Instruction>>>(
-				Expression.Call(method, p),
+			var p = System.Linq.Expressions.Expression.Parameter(typeof(ParseNode));
+			var instance = System.Linq.Expressions.Expression.Constant(this);
+			var lambda = System.Linq.Expressions.Expression.Lambda<Func<ParseNode, IEnumerable<Instruction>>>(
+				System.Linq.Expressions.Expression.Call(instance, method, p),
 				p
 			);
 
 			return lambda.Compile();
 		}
 
+		private IEnumerable<Instruction> IntLiteral(ParseNode node)
+		{
+			return new[]
+			{
+				new Instruction {OpCode = OpCode.Movi, Parameters = new uint[] {0, uint.Parse(node.ToString())}}
+			};
+		}
+
 		private IEnumerable<Instruction> Term(ParseNode node)
 		{
-			return new Instruction[]
+			var code = Compile(node[0]);
+
+			if (node[0].RuleName == "unary_operator")
 			{
-				new Instruction {OpCode = OpCode.Movi, Parameters = new uint[] {0, uint.Parse(node.ToString())}}
-			};
+				code = Compile(node[1]).Concat(code);
+			}
+
+			return code;
 		}
 
-		private IEnumerable<Instruction> Factor(ParseNode node)
+		private IEnumerable<Instruction> UnaryOperator(ParseNode node)
 		{
-			var factorOperator = node.SingleOrDefault(x => x.GetRule() == _grammar.multiply_operator);
-			if ( factorOperator == null )
-				return null;
+			Instruction unaryCode;
 
-			return new Instruction[]
+			switch (node.Value)
 			{
-				new Instruction {OpCode = OpCode.Movi, Parameters = new uint[] {0, uint.Parse(node.ToString())}}
-			};
+				case "!":
+					unaryCode = new Instruction {OpCode = OpCode.Not, Parameters = new uint[] {0}};
+					break;
+				case "-":
+					unaryCode = new Instruction {OpCode = OpCode.Neg, Parameters = new uint[] {0}};
+					break;
+				default:
+					throw new InvalidOperationException("Cannot determine unary operator: " + node.Value);
+			}
+
+			return new[] {unaryCode};
 		}
 
+		private IEnumerable<Instruction> Expression(ParseNode node)
+		{
+			var code = Compile(node[0]);
+
+			foreach ( var right in node[1] )
+			{
+				code = code.Concat(new[] {new Instruction {OpCode = OpCode.Movr, Parameters = new uint[] {1, 0}},});
+				var @operator = right[0];
+				code = code.Concat(Compile(right[1]));
+
+				Instruction logicalCode;
+				switch (@operator.Value)
+				{
+					case "&":
+						logicalCode = new Instruction {OpCode = OpCode.And, Parameters = new uint[] {0, 1}};
+						break;
+					case "|":
+						logicalCode = new Instruction {OpCode = OpCode.Or, Parameters = new uint[] {0, 1}};
+						break;
+					case "^":
+						logicalCode = new Instruction {OpCode = OpCode.Xor, Parameters = new uint[] {0, 1}};
+						break;
+					default:
+						throw new InvalidOperationException("Cannot determine logical operator: " + @operator.Value);
+				}
+
+				code = code.Concat(new[] {logicalCode});
+			}
+
+			return code;
+		}
+
+		private IEnumerable<Instruction> AddExpression(ParseNode node)
+		{
+			var code = Compile(node[0]);
+
+			foreach ( var right in node[1] )
+			{
+				code = code.Concat(new[] {new Instruction {OpCode = OpCode.Movr, Parameters = new uint[] {1, 0}},});
+				var @operator = right[0];
+				code = code.Concat(Compile(right[1]));
+
+				Instruction[] logicalCode;
+				switch ( @operator.Value )
+				{
+					case "+":
+						logicalCode = new[] {new Instruction {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}};
+						break;
+					case "-":
+						logicalCode = new[]
+						{
+							new Instruction {OpCode = OpCode.Neg, Parameters = new uint[] {0}},
+							new Instruction {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}
+						};
+						break;
+					default:
+						throw new InvalidOperationException("Cannot determine addition operator: " + @operator.Value);
+				}
+
+				code = code.Concat(logicalCode);
+			}
+
+			return code;
+		}
+		
 		public IEnumerable<Instruction> Compile()
 		{
 			return _root.SelectMany(Compile).Concat(new[] { 
@@ -70,50 +160,32 @@ namespace Andy.TinyOS.Compiler
 			});
 		}
 
-		public IEnumerable<Instruction> Compile(ParseNode node)
+		private IEnumerable<Instruction> Compile(IEnumerable<ParseNode> nodeSet)
 		{
+			return nodeSet.SelectMany(Compile);
+		}
+
+		private IEnumerable<Instruction> Compile(ParseNode node)
+		{
+			if ( node == null )
+				throw new ArgumentNullException("node");
+
 			var rule = node.GetRule();
-			var codeGenerator = _codeGenerator[rule];
-			if (codeGenerator != null)
-				return codeGenerator(node);
+			if ( !rule.IsUnnamed() )
+			{
+				Func<ParseNode, IEnumerable<Instruction>> codeGenerator;
+				if (!_codeGenerator.TryGetValue(rule, out codeGenerator))
+					throw new InvalidOperationException("Cannot find code generator: " + rule.RuleName );
+
+				if (codeGenerator != null)
+				{
+					var code = codeGenerator(node);
+					if ( code != null )
+						return code;
+				}
+			}
 
 			return node.SelectMany(Compile);
-		}
-
-		private IEnumerable<Instruction> Subtract(ParseNode node)
-		{
-			return new[]
-			{
-				new Instruction() {OpCode = OpCode.Movr, Parameters = new uint[] {1, 0}},
-				new Instruction() {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}
-			};
-		}
-
-		private IEnumerable<Instruction> Add(ParseNode node)
-		{
-			return new[]
-			{
-				new Instruction() {OpCode = OpCode.Movr, Parameters = new uint[] {1, 0}},
-				new Instruction() {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}
-			};
-		}
-
-		private IEnumerable<Instruction> Literal(ParseNode node)
-		{
-			var value = GetValue(node);
-			return new[]
-			{
-				new Instruction
-				{
-					OpCode = OpCode.Movi,
-					Parameters = new uint[] {0, value}
-				},
-			};
-		}
-
-		private uint GetValue(ParseNode node)
-		{
-			return uint.Parse(node.ToString());
 		}
 	}
 }

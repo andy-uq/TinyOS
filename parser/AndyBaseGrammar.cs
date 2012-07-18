@@ -4,7 +4,6 @@
 	{
 		public Rule term;
 		public Rule factor;
-		public Rule unary_expression;
 		public Rule add_expression;
 		public Rule relational_expression;
 		public Rule expression;
@@ -22,12 +21,11 @@
 
 		public AndyStructuralGrammer()
 		{
-			term = int_literal | Recursive(() => CharSet("(") + expression + CharSet(")"));
-			unary_expression = Opt(unary_operator) + term;
-			factor = unary_expression + Star(multiply_operator + unary_expression);
+			term = int_literal | unary_operator + Recursive(() => term) | Recursive(() => CharSet("(") + expression + CharSet(")"));
+			factor = term + Star(multiply_operator + term);
 			add_expression = factor + Star(addition_operator + factor);
-			relational_expression = add_expression + Star(CharSet("<>") + add_expression);
-			expression = relational_expression + Star(CharSet("&|") + relational_expression);
+			relational_expression = add_expression + Star(relational_operator + add_expression);
+			expression = relational_expression + Star(logical_operator + relational_expression);
 			expression_list = CommaList(expression);
 
 			InitializeRules<AndyStructuralGrammer>();
@@ -129,6 +127,8 @@
 			unary_operator = CharSet("-!~");
 			multiply_operator = CharSet("*/%");
 			addition_operator = CharSet("+-");
+			logical_operator = CharSet("&|^");
+			relational_operator = CharSet("<>") | CharSeq("<=") | CharSeq(">=");
 
 			#region identifiers
 
