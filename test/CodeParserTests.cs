@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Andy.TinyOS;
 using Andy.TinyOS.Utility;
@@ -10,24 +11,31 @@ namespace ClassLibrary1
 	[TestFixture]
 	public class CodeParserTests
 	{
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog1.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog2.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog3.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott1.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott2.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott3.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott4.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott5.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott6.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott7.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott8.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott9.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott10.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott11.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott12.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt")]
+		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
+		{
+			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"}
+		};
+
+		[TestCase(@"Sample Programs\prog1.txt")]
+		[TestCase(@"Sample Programs\prog2.txt")]
+		[TestCase(@"Sample Programs\prog3.txt")]
+		[TestCase(@"Sample Programs\scott1.txt")]
+		[TestCase(@"Sample Programs\scott2.txt")]
+		[TestCase(@"Sample Programs\scott3.txt")]
+		[TestCase(@"Sample Programs\scott4.txt")]
+		[TestCase(@"Sample Programs\scott5.txt")]
+		[TestCase(@"Sample Programs\scott6.txt")]
+		[TestCase(@"Sample Programs\scott7.txt")]
+		[TestCase(@"Sample Programs\scott8.txt")]
+		[TestCase(@"Sample Programs\scott9.txt")]
+		[TestCase(@"Sample Programs\scott10.txt")]
+		[TestCase(@"Sample Programs\scott11.txt")]
+		[TestCase(@"Sample Programs\scott12.txt")]
+		[TestCase(@"Sample Programs\scott13.txt")]
 		public void OpenFile(string file)
 		{
+			file = string.Concat(_testPaths[Environment.MachineName], file);
+			
 			var parser = new InstructionTextReader();
 			var outputFile = Path.ChangeExtension(file, ".asm");
 			using (var stringWriter = File.CreateText(outputFile))
@@ -43,25 +51,27 @@ namespace ClassLibrary1
 			}
 		}
 
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog1.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog2.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\prog3.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott1.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott2.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott3.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott4.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott5.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott6.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott7.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott8.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott9.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott10.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott11.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott12.txt")]
-		[TestCase(@"C:\Users\andy\Documents\GitHub\TinyOS\Sample Programs\scott13.txt")]
-		public void Decompile(string filename)
+		[TestCase(@"Sample Programs\prog1.txt")]
+		[TestCase(@"Sample Programs\prog2.txt")]
+		[TestCase(@"Sample Programs\prog3.txt")]
+		[TestCase(@"Sample Programs\scott1.txt")]
+		[TestCase(@"Sample Programs\scott2.txt")]
+		[TestCase(@"Sample Programs\scott3.txt")]
+		[TestCase(@"Sample Programs\scott4.txt")]
+		[TestCase(@"Sample Programs\scott5.txt")]
+		[TestCase(@"Sample Programs\scott6.txt")]
+		[TestCase(@"Sample Programs\scott7.txt")]
+		[TestCase(@"Sample Programs\scott8.txt")]
+		[TestCase(@"Sample Programs\scott9.txt")]
+		[TestCase(@"Sample Programs\scott10.txt")]
+		[TestCase(@"Sample Programs\scott11.txt")]
+		[TestCase(@"Sample Programs\scott12.txt")]
+		[TestCase(@"Sample Programs\scott13.txt")]
+		public void Decompile(string file)
 		{
-			var objData = Compile(@filename);
+			file = string.Concat(_testPaths[Environment.MachineName], file);
+
+			var objData = Compile(file);
 			var reader = new CodeReader(objData);
 			var writer = new InstructionTextWriter(Console.Out);
 			foreach  (var instruction in reader)

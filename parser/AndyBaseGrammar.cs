@@ -1,6 +1,6 @@
 ﻿namespace Andy.TinyOS.Parser
 {
-	public class AndyStructuralGrammer : AndyBaseGrammar
+	public class AndyStructuralGrammar : AndyBaseGrammar
 	{
 		public Rule term;
 		public Rule factor;
@@ -20,7 +20,7 @@
 			return r + Star(CharSeq(",") + r);
 		}
 
-		public AndyStructuralGrammer()
+		public AndyStructuralGrammar()
 		{
 			unary_expression = unary_operator + Recursive(() => term);
 			term = int_literal | unary_expression | Recursive(() => CharSet("(") + expression + CharSet(")"));
@@ -30,7 +30,7 @@
 			expression = relational_expression + Star(logical_operator + relational_expression);
 			expression_list = CommaList(expression);
 
-			InitializeRules<AndyStructuralGrammer>();
+			InitializeRules<AndyStructuralGrammar>();
 		}
 	}
 

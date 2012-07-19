@@ -99,7 +99,7 @@ namespace Andy.TinyOS.Parser
 		/// <summary>
 		/// Returns the name of the rule, or _unnamed_ if it is an unnamed rule.
 		/// </summary>
-		public virtual string RuleName
+		public string RuleName
 		{
 			get { return IsUnnamed() ? "_unnamed_" : Name; }
 		}
@@ -620,11 +620,6 @@ namespace Andy.TinyOS.Parser
 		public override RuleType RuleType
 		{
 			get { return RuleType.Recursive; }
-		}
-
-		public override string RuleName
-		{
-			get { return _func().RuleName; }
 		}
 
 		public override string RuleDefinition

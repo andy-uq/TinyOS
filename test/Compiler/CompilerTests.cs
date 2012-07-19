@@ -31,7 +31,7 @@ namespace ClassLibrary1.Compiler
 		[TestCase("2*1+2", 4U)]
 		public void SingleExpression(string source, uint result)
 		{
-			var grammar = new AndyStructuralGrammer();
+			var grammar = new AndyStructuralGrammar();
 			var parserState = new ParserState(source);
 
 			var parseResult = grammar.expression.Match(parserState);

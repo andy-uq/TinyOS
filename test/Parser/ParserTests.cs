@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
 using Andy.TinyOS.Compiler;
@@ -13,8 +14,19 @@ namespace ClassLibrary1.Parser
 	[TestFixture]
 	public class ParserTests
 	{
-		private const string Source_Directory = @"C:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Input";
-		private const string Output_Directory = @"C:\Users\andy\Documents\GitHub\TinyOS\test\Parser\Output";
+		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
+		{
+			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"}
+		};
+
+		private readonly string Source_Directory = @"test\Parser\Input";
+		private readonly string Output_Directory = @"test\Parser\Output";
+
+		public ParserTests()
+		{
+			Source_Directory = Path.Combine(_testPaths[Environment.MachineName], Source_Directory);
+			Output_Directory = Path.Combine(_testPaths[Environment.MachineName], Output_Directory);
+		}
 
 		[TestCase("test01.c")]
 		[TestCase("test02.c")]
@@ -24,6 +36,9 @@ namespace ClassLibrary1.Parser
 		public void Can_parse(string source)
 		{
 			var sourceFile = Path.Combine(Source_Directory, source);
+			if (!File.Exists(sourceFile))
+				Assert.Inconclusive("Cannot find filename " + sourceFile);
+
 			var output = new CppStructuralOutputAsXml();
             
 			var result = CppFileParser.Parse(sourceFile, output);
@@ -49,7 +64,7 @@ namespace ClassLibrary1.Parser
 		[TestCase("abc", false)]
 		public void Integer(string integer, bool expected)
 		{
-			var grammer = new AndyStructuralGrammer();
+			var grammer = new AndyStructuralGrammar();
 			var p = new ParserState(integer);
 			
 			Assert.That(grammer.int_literal.Match(p), Is.EqualTo(expected));
@@ -65,7 +80,7 @@ namespace ClassLibrary1.Parser
 		[TestCase("-(1)", true)]
 		public void UnaryInteger(string integer, bool expected)
 		{
-			var grammer = new AndyStructuralGrammer();
+			var grammer = new AndyStructuralGrammar();
 			var printer = new CppStructuralOutputAsXml();
 			var p = new ParserState(integer);
 
@@ -82,7 +97,7 @@ namespace ClassLibrary1.Parser
 		[TestCase("3&2&1", true)]
 		public void Expression(string integer, bool expected)
 		{
-			var grammer = new AndyStructuralGrammer();
+			var grammer = new AndyStructuralGrammar();
 			var printer = new CppStructuralOutputAsXml();
 			var p = new ParserState(integer);
 

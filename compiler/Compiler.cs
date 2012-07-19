@@ -12,14 +12,14 @@ namespace Andy.TinyOS.Compiler
 	{
 		private readonly Dictionary<Rule, Func<ParseNode, IEnumerable<Instruction>>> _codeGenerator;
 		private readonly ParseNode _root;
-		private AndyStructuralGrammer _grammar;
+		private readonly AndyStructuralGrammar _grammar;
 
-		public Compiler(AndyStructuralGrammer grammer, ParserState parserState)
+		public Compiler(AndyStructuralGrammar grammar, ParserState parserState)
 		{
-			_grammar = grammer;
+			_grammar = grammar;
 
-			var rules = grammer.GetRules<AndyStructuralGrammer>(throwOnMissing: false);
-			rules = rules.Concat(grammer.GetRules<AndyBaseGrammar>(throwOnMissing: false));
+			var rules = grammar.GetRules<AndyStructuralGrammar>(throwOnMissing: false);
+			rules = rules.Concat(grammar.GetRules<AndyBaseGrammar>(throwOnMissing: false));
 
 			_codeGenerator = rules
 				.Distinct()
