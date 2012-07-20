@@ -2,19 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Andy.TinyOS;
 using NUnit.Framework;
 using tinyOS;
 
 namespace ClassLibrary1
 {
-	public static class Register
-	{
-		public const uint A = 1;
-		public const uint B = 2;
-		public const uint C = 3;
-		public const uint Sp = 4;
-	}
-
 	[TestFixture]
 	public class InstructionTests
 	{
@@ -26,9 +19,9 @@ namespace ClassLibrary1
 		private int _heapOffset;
 		private readonly byte[] _ram = new byte[1024];
 
-		private uint A { get { return _cpu.Registers[1]; } }
-		private uint B { get { return _cpu.Registers[2]; } }
-		private uint C { get { return _cpu.Registers[3]; } }
+		private uint A { get { return _cpu.Registers[0]; } }
+		private uint B { get { return _cpu.Registers[1]; } }
+		private uint C { get { return _cpu.Registers[2]; } }
 		private uint Sp { get { return _cpu.Sp; } }
 
 		[SetUp]

@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeParserTests.cs" />
+    <Compile Include="CodeStreamTests.cs" />
     <Compile Include="CompilerTests.cs" />
     <Compile Include="Compiler\CompilerTests.cs" />
     <Compile Include="CpuTests.cs" />

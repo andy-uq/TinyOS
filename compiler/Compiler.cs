@@ -10,7 +10,7 @@ namespace Andy.TinyOS.Compiler
 {
 	public class Compiler
 	{
-		private readonly Dictionary<Rule, Func<ParseNode, IEnumerable<Instruction>>> _codeGenerator;
+		private readonly Dictionary<Rule, Func<CompilerContext, CompilerContext>> _codeGenerator;
 		private readonly ParseNode _root;
 		private readonly AndyStructuralGrammar _grammar;
 
@@ -28,16 +28,16 @@ namespace Andy.TinyOS.Compiler
 			_root = parserState.GetRoot();
 		}
 
-		public Func<ParseNode, IEnumerable<Instruction>> GetCodeGenerator(Rule rule)
+		public Func<CompilerContext, CompilerContext> GetCodeGenerator(Rule rule)
 		{
 			var name = rule.RuleName.Replace("_", "");
 			var method = typeof(Compiler).GetMethod(name, BindingFlags.IgnoreCase | BindingFlags.NonPublic | BindingFlags.Instance);
 			if (method == null)
 				return null;
 
-			var p = System.Linq.Expressions.Expression.Parameter(typeof(ParseNode));
+			var p = System.Linq.Expressions.Expression.Parameter(typeof(CompilerContext));
 			var instance = System.Linq.Expressions.Expression.Constant(this);
-			var lambda = System.Linq.Expressions.Expression.Lambda<Func<ParseNode, IEnumerable<Instruction>>>(
+			var lambda = System.Linq.Expressions.Expression.Lambda<Func<CompilerContext, CompilerContext>>(
 				System.Linq.Expressions.Expression.Call(instance, method, p),
 				p
 			);
@@ -45,188 +45,137 @@ namespace Andy.TinyOS.Compiler
 			return lambda.Compile();
 		}
 
-		private IEnumerable<Instruction> IntLiteral(ParseNode node)
+		private static CompilerContext CompileExpression(CompilerContext context, params Tuple<char, Action<FluentWriter>>[] codeWriters)
 		{
-			return new[]
-			{
-				new Instruction {OpCode = OpCode.Movi, Parameters = new uint[] {0, uint.Parse(node.ToString())}}
-			};
-		}
+			context.Compile(context.Node[0]);
+			var code = context.AsFluent();
+			var expressions = codeWriters.ToDictionary(k => k.Item1, v => v.Item2);
 
-		private IEnumerable<Instruction> Term(ParseNode node)
-		{
-			if ( node[0].Is(_grammar.unary_expression ))
+			foreach (var right in context.Node[1])
 			{
-				node = node[0];
-				return Compile(node[1]).Concat(Compile(node[0]));
+				code.Pushr(Register.A);
+
+				var @operator = right[0];
+				context.Compile(right[1]);
+
+				code.Popr(Register.B);
+
+				expressions[@operator.Value[0]](code);
 			}
 
-			return Compile(node[0]);
+			return context;
 		}
 
-		private IEnumerable<Instruction> UnaryOperator(ParseNode node)
+		private CompilerContext IntLiteral(CompilerContext context)
 		{
-			Instruction unaryCode;
+			context.AsFluent()
+				.Movi(Register.A, uint.Parse(context.Node.ToString()));
 
-			switch (node.Value)
+			return context;
+		}
+
+		private CompilerContext Term(CompilerContext context)
+		{
+			var rootNode = context.Node[0];
+			if ( rootNode.Is(_grammar.unary_expression) )
+			{
+				context.Compile(rootNode[1]);
+				context.Compile(rootNode[0]);
+			}
+			else
+			{
+				context.Compile(rootNode);
+			}
+
+			return context;
+		}
+
+		private CompilerContext UnaryOperator(CompilerContext context)
+		{
+			switch ( context.Node.Value )
 			{
 				case "!":
-					unaryCode = new Instruction {OpCode = OpCode.Not, Parameters = new uint[] {0}};
+					context.AsFluent()
+						.Not(Register.A);
 					break;
 				case "-":
-					unaryCode = new Instruction {OpCode = OpCode.Neg, Parameters = new uint[] {0}};
+					context.AsFluent()
+						.Neg(Register.A);
 					break;
 				default:
-					throw new InvalidOperationException("Cannot determine unary operator: " + node.Value);
+					throw new InvalidOperationException("Cannot determine unary operator: " + context.Node.Value );
 			}
 
-			return new[] {unaryCode};
+			return context;
 		}
 
-		private IEnumerable<Instruction> Expression(ParseNode node)
+		private CompilerContext AddExpression(CompilerContext context)
 		{
-			var code = Compile(node[0]);
-
-			foreach ( var right in node[1] )
-			{
-				code = code.Concat(new[] {new Instruction {OpCode = OpCode.Pushr, Parameters = new uint[] { 0 }},});
-				var @operator = right[0];
-				code = code.Concat(Compile(right[1]));
-
-				Instruction logicalCode;
-				switch (@operator.Value)
-				{
-					case "&":
-						logicalCode = new Instruction {OpCode = OpCode.And, Parameters = new uint[] {0, 1}};
-						break;
-					case "|":
-						logicalCode = new Instruction {OpCode = OpCode.Or, Parameters = new uint[] {0, 1}};
-						break;
-					case "^":
-						logicalCode = new Instruction {OpCode = OpCode.Xor, Parameters = new uint[] {0, 1}};
-						break;
-					default:
-						throw new InvalidOperationException("Cannot determine logical operator: " + @operator.Value);
-				}
-
-				code = code.Concat(new[]
-				                   	{
-										new Instruction {OpCode = OpCode.Popr, Parameters = new uint[] { 1 }},
-				                   		logicalCode
-				                   	});
-			}
-
-			return code;
+			return CompileExpression(context, 
+				new Tuple<char, Action<FluentWriter>>('+', code => code.Addr(Register.A, Register.B)),
+				new Tuple<char, Action<FluentWriter>>('-', code => code.Neg(Register.A).Addr(Register.A, Register.B))
+			);
 		}
 
-		private IEnumerable<Instruction> AddExpression(ParseNode node)
+		private CompilerContext Factor(CompilerContext context)
 		{
-			var code = Compile(node[0]);
-
-			foreach ( var right in node[1] )
-			{
-				code = code.Concat(new[] {new Instruction {OpCode = OpCode.Pushr, Parameters = new uint[] {0}},});
-				var @operator = right[0];
-				code = code.Concat(Compile(right[1]));
-
-				Instruction[] logicalCode;
-				switch (@operator.Value)
-				{
-					case "+":
-						logicalCode = new[] {new Instruction {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}};
-						break;
-					case "-":
-						logicalCode = new[]
-						              	{
-						              		new Instruction {OpCode = OpCode.Neg, Parameters = new uint[] {0}},
-						              		new Instruction {OpCode = OpCode.Addr, Parameters = new uint[] {0, 1}}
-						              	};
-						break;
-					default:
-						throw new InvalidOperationException("Cannot determine addition operator: " + @operator.Value);
-				}
-
-				code = code.Concat(new[]
-				                   	{
-				                   		new Instruction {OpCode = OpCode.Popr, Parameters = new uint[] {1}},
-				                   	}).Concat(logicalCode);
-			}
-
-			return code;
+			return CompileExpression(context, 
+				new Tuple<char, Action<FluentWriter>>('*', code => code.Mul(Register.A, Register.B)),
+				new Tuple<char, Action<FluentWriter>>('/', code => code.Div(Register.B, Register.A))
+			);
 		}
 
-		private IEnumerable<Instruction> Factor(ParseNode node)
+		private CompilerContext Expression(CompilerContext context)
 		{
-			var code = Compile(node[0]);
-
-			foreach ( var right in node[1] )
-			{
-				code = code.Concat(new[] {new Instruction {OpCode = OpCode.Pushr, Parameters = new uint[] {0}},});
-				var @operator = right[0];
-				code = code.Concat(Compile(right[1]));
-
-				Instruction[] logicalCode;
-				switch (@operator.Value)
-				{
-					case "*":
-						logicalCode = new[] {new Instruction {OpCode = OpCode.Mul, Parameters = new uint[] {0, 1}}};
-						break;
-					case "/":
-						logicalCode = new[]
-						              	{
-						              		new Instruction {OpCode = OpCode.Div, Parameters = new uint[] {0,1}},
-						              	};
-						break;
-					default:
-						throw new InvalidOperationException("Cannot determine addition operator: " + @operator.Value);
-				}
-
-				code = code.Concat(new[]
-				                   	{
-				                   		new Instruction {OpCode = OpCode.Popr, Parameters = new uint[] {1}},
-				                   	}).Concat(logicalCode);
-			}
-
-			return code;
+			return CompileExpression(context,
+				new Tuple<char, Action<FluentWriter>>('&', code => code.And(Register.A, Register.B)),
+				new Tuple<char, Action<FluentWriter>>('|', code => code.Or(Register.A, Register.B)),
+				new Tuple<char, Action<FluentWriter>>('^', code => code.Xor(Register.A, Register.B))
+			);
 		}
 		
 		public IEnumerable<Instruction> Compile()
 		{
-			return _root.SelectMany(Compile).Concat(new[] { 
-				new Instruction
-				{
-					OpCode = OpCode.Exit,
-					Parameters = new uint[] {0}
-				}
-			});
+			var context = new CompilerContext
+			{
+				Code = new CodeStream(),
+				Compiler = Compile,
+				Node = _root,
+				Parent = null,
+			};
+
+			foreach ( var node in context.Node )
+				context.Compile(node);
+
+			context.AsFluent()
+				.Exit(Register.A);
+
+			return context.Code;
 		}
 
-		private IEnumerable<Instruction> Compile(IEnumerable<ParseNode> nodeSet)
+		private CodeStream Compile(CompilerContext context)
 		{
-			return nodeSet.SelectMany(Compile);
-		}
-
-		private IEnumerable<Instruction> Compile(ParseNode node)
-		{
-			if ( node == null )
-				throw new ArgumentNullException("node");
-
-			var rule = node.GetRule();
+			if ( context == null )
+				throw new ArgumentNullException("context");
+			
+			var rule = context.Node.GetRule();
 			if ( !rule.IsUnnamed() )
 			{
-				Func<ParseNode, IEnumerable<Instruction>> codeGenerator;
+				Func<CompilerContext, CompilerContext> codeGenerator;
 				if (!_codeGenerator.TryGetValue(rule, out codeGenerator))
 					throw new InvalidOperationException("Cannot find code generator: " + rule.RuleName );
 
 				if (codeGenerator != null)
 				{
-					var code = codeGenerator(node);
-					if ( code != null )
-						return code;
+					codeGenerator(context);
+					return context.Code;
 				}
 			}
 
-			return node.SelectMany(Compile);
+			foreach ( var node in context.Node )
+				context.Compile(node);
+
+			return context.Code;
 		}
 	}
 }

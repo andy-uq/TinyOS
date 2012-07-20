@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeReader.cs" />
+    <Compile Include="CodeStream.cs" />
     <Compile Include="CodeWriter.cs" />
     <Compile Include="Cpu.cs" />
     <Compile Include="CpuSleepTimer.cs" />
@@ -51,8 +52,10 @@
     <Compile Include="DeviceQueue.cs" />
     <Compile Include="Devices.cs" />
     <Compile Include="Event.cs" />
+    <Compile Include="FluentWriter.cs" />
     <Compile Include="IdleProcess.cs" />
     <Compile Include="Instruction.cs" />
+    <Compile Include="Register.cs" />
     <Compile Include="Utility\InstructionFormatter.cs" />
     <Compile Include="Instructions.cs" />
     <Compile Include="Lock.cs" />
