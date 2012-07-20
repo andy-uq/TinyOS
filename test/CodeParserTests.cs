@@ -115,7 +115,7 @@ namespace ClassLibrary1
 		public void WriteBadOpCode()
 		{
 			var badInstruction = new Instruction {OpCode = (OpCode) 254 };
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^254$"));
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^254\s+;.*"));
 			
 			var ms = new StringWriter();
 			using (var writer = new InstructionTextWriter(ms))

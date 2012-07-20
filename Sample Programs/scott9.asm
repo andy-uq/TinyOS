@@ -6,4 +6,4 @@ Movi      r5          $55         ;move 55 into r5
 Movi      r6          $66         ;move 66 into r6
 Movi      r1          $1          ;move 1 into r1
 Signal    r1                      ;signal event #1
-Exit      r1                      
+Exit      r1                      ;Terminates the current process

@@ -1,8 +1,7 @@
-﻿using System;
-using Andy.TinyOS;
+﻿using tinyOS;
 using tinyOS.OpCodeMeta;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public static class Instructions
 	{

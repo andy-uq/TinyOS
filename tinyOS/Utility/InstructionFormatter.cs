@@ -16,17 +16,12 @@ namespace Andy.TinyOS.Utility
 
 		public static string ToString(OpCodeMetaInformation meta, Instruction instruction)
 		{
-			var format = "{0}{1}";
-
-			if (instruction.Comment != null)
-			{
-				format = "{0}{1};{2}";
-			}
-
+			var format = "{0}{1};{2}";
+			
 			return string.Format(format,
 			                     instruction.OpCode.ToString().PadRight(10),
 			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters, i, x))).PadRight(24),
-			                     instruction.Comment);
+			                     instruction.Comment ?? meta.Comment);
 		}
 
 		public static bool GetMetaData(Instruction instruction, out OpCodeMetaInformation result)

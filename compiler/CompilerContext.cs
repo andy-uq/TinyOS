@@ -9,6 +9,13 @@ namespace Andy.TinyOS.Compiler
 		public ParseNode Node { get; set; }
 		public CodeStream Code { get; set; }
 
+		public SymbolTable SymbolTable
+		{
+			get { return _symbolTable ?? Parent.SymbolTable; }
+			set { _symbolTable = value; }
+		}
+
+		private SymbolTable _symbolTable;
 		private Func<CompilerContext, CodeStream> _compiler;
 
 		public Func<CompilerContext, CodeStream> Compiler

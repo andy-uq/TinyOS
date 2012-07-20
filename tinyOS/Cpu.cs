@@ -106,8 +106,8 @@ namespace tinyOS
 
 			block.Stack.Append(Ram.Allocate(block));
 			block.GlobalData.Append(Ram.Allocate(block));
-			block.Registers[7] = block.Id;
-			block.Registers[8] = block.GlobalData.Offset;
+			block.Registers[Register.G] = block.Id;
+			block.Registers[Register.H] = block.GlobalData.Offset;
 
 			_processes.Add(block.Id, block);
 			ReadyQueue.Enqueue(block);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Andy.TinyOS;
 using Andy.TinyOS.Parser;
@@ -29,6 +30,7 @@ namespace ClassLibrary1.Compiler
 		[TestCase("10-(1+5)", 4U)]
 		[TestCase("2*(1+2)", 6U)]
 		[TestCase("2*1+2", 4U)]
+		[TestCase("a+1", 1U)]
 		public void SingleExpression(string source, uint result)
 		{
 			var grammar = new AndyStructuralGrammar();
@@ -40,13 +42,36 @@ namespace ClassLibrary1.Compiler
 			var compiler = new Andy.TinyOS.Compiler.Compiler(grammar, parserState);
 			var program = compiler.Compile();
 
-			var r = Run(program);
-			Assert.That(r, Is.EqualTo(result));
+			var r = Run(program, new Cpu());
+			Assert.That(r.ExitCode, Is.EqualTo(result));
+		}
+		
+		[TestCase("a=10", 10U)]
+		public void AssignmentExpression(string source, uint result)
+		{
+			var grammar = new AndyStructuralGrammar();
+			var parserState = new ParserState(source);
+
+			var parseResult = grammar.assignment_expression.Match(parserState);
+			Assert.That(parseResult, Is.True);
+
+			var compiler = new Andy.TinyOS.Compiler.Compiler(grammar, parserState);
+			var program = compiler.Compile();
+
+			var cpu = new Cpu();
+			var r = Run(program, cpu);
+			Assert.That(r.ExitCode, Is.EqualTo(result));
+
+			var variable = cpu.Ram.GetStream(r.GlobalData.Pages.First());
+			using (var reader = new BinaryReader(variable))
+			{
+				var value = reader.ReadUInt32();
+				Assert.That(value, Is.EqualTo(result));
+			}
 		}
 
-		private uint Run(IEnumerable<Instruction> program)
+		private ProcessContextBlock Run(IEnumerable<Instruction> program, Cpu cpu)
 		{
-			var cpu = new Cpu();
 			IdleProcess.Initialise(cpu);
 
 			var prog1 = cpu.Load();
@@ -59,7 +84,7 @@ namespace ClassLibrary1.Compiler
 			while (prog1.IsRunning)
 				cpu.Tick();
 
-			return prog1.ExitCode;
+			return prog1;
 		}
 	}
 }

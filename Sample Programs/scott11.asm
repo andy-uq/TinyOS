@@ -16,4 +16,4 @@ Addi      r2          $4          ;add 4
 Release   r4                      ;release 1
 Movi      r5          $1          ;event 1
 Signal    r5                      ;signal 1
-Exit      r5                      
+Exit      r5                      ;Terminates the current process

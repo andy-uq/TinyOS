@@ -1,39 +1,5 @@
 ﻿namespace Andy.TinyOS.Parser
 {
-	public class AndyStructuralGrammar : AndyBaseGrammar
-	{
-		public Rule term;
-		public Rule factor;
-		public Rule add_expression;
-		public Rule relational_expression;
-		public Rule unary_expression;
-		public Rule expression;
-		public Rule expression_list;
-
-		/// <summary>
-		/// Creates a rule that matches the rule R multiple times, delimited by commas. 
-		/// </summary>
-		/// <param name="r"></param>
-		/// <returns></returns>
-		public Rule CommaList(Rule r)
-		{
-			return r + Star(CharSeq(",") + r);
-		}
-
-		public AndyStructuralGrammar()
-		{
-			unary_expression = unary_operator + Recursive(() => term);
-			term = int_literal | unary_expression | Recursive(() => CharSet("(") + expression + CharSet(")"));
-			factor = term + Star(multiply_operator + term);
-			add_expression = factor + Star(addition_operator + factor);
-			relational_expression = add_expression + Star(relational_operator + add_expression);
-			expression = relational_expression + Star(logical_operator + relational_expression);
-			expression_list = CommaList(expression);
-
-			InitializeRules<AndyStructuralGrammar>();
-		}
-	}
-
 	public class AndyBaseGrammar : BaseGrammar
 	{
 		#region operators
@@ -121,6 +87,13 @@
 		public Rule unsigned_float;
 		public Rule unsigned_literal;
 		public Rule unsigned_suffix;
+
+		public Rule assignment_operator;
+		public Rule mul_assign;
+		public Rule div_assign;
+		public Rule mod_assign;
+		public Rule add_assign;
+		public Rule sub_assign;
 
 		#endregion
 
@@ -233,6 +206,14 @@
 				  | long_suffix + unsigned_suffix;
 			int_literal
 				= unsigned_literal + Not(dot) + Opt(integer_suffix);
+
+			mul_assign = CharSet("*=");
+			div_assign = CharSet("/=");
+			mod_assign = CharSet("%=");
+			add_assign = CharSet("+=");
+			sub_assign = CharSet("-=");
+			assignment_operator = CharSet("=") | mul_assign | div_assign | mod_assign | add_assign | sub_assign;
+
 
 			InitializeRules<AndyBaseGrammar>(false);
 		}

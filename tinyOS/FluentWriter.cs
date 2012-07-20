@@ -24,6 +24,37 @@ namespace Andy.TinyOS
 		}
 
 		/// <summary>
+		/// Assign a register a value from memory
+		/// </summary>
+		/// <param name="destination">Register being assigned</param>
+		/// <param name="sourceAddr">Register containing source address</param>
+		/// <param name="comment"></param>
+		/// <returns></returns>
+		public FluentWriter Movmr(Register destination, Register sourceAddr, string comment = null)
+		{
+			_codeStream.Add(OpCode.Movmr, comment, destination, sourceAddr);
+			return this;
+		}
+
+		public FluentWriter Movrm(Register destinationAddr, Register source, string comment = null)
+		{
+			_codeStream.Add(OpCode.Movrm, comment, destinationAddr, source);
+			return this;
+		}
+
+		/// <summary>
+		/// Assign a register to a constant value
+		/// </summary>
+		/// <param name="destination">Register receiving value</param>
+		/// <param name="value">Value to store in register</param>
+		/// <param name="comment">Instruction comment</param>
+		public FluentWriter Movi(Register destination, int value, string comment = null)
+		{
+			_codeStream.Add(OpCode.Movi, comment, destination, unchecked((uint)value));
+			return this;
+		}
+
+		/// <summary>
 		/// Assign a register the same value as another register
 		/// </summary>
 		/// <param name="destination">Register receiving value</param>
@@ -153,9 +184,69 @@ namespace Andy.TinyOS
 			return this;
 		}
 
-		public FluentWriter Div(Register numerator, Register denominator)
+		public FluentWriter Div(Register numerator, Register denominator, string comment = null)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		/// <summary>
+		/// Print the value in a register
+		/// </summary>
+		/// <param name="register">Register to print</param>
+		/// <param name="comment"></param>
+		public FluentWriter Printr(Register register, string comment = null)
+		{
+			_codeStream.Add(OpCode.Printr, comment, register);
+			return this;
+		}
+
+		/// <summary>
+		/// Jump the IP register the value indicated by the supplied register
+		/// </summary>
+		/// <param name="offset"></param>
+		/// <param name="comment"></param>
+		/// <returns></returns>
+		public FluentWriter Jmp(Register offset, string comment = null)
+		{
+			_codeStream.Add(OpCode.Jmp, comment, offset);
+			return this;
+		}
+
+		/// <summary>
+		/// Jump the IP register the value indicated by the supplied register if the SF flag is set
+		/// </summary>
+		/// <param name="offset"></param>
+		/// <param name="comment"></param>
+		/// <returns></returns>
+		public FluentWriter Jlt(Register offset, string comment = null)
+		{
+			_codeStream.Add(OpCode.Jlt, comment, offset);
+			return this;
+		}
+
+		/// <summary>
+		/// Increase the value in the supplied register by 1
+		/// </summary>
+		/// <param name="destination"></param>
+		/// <param name="comment"></param>
+		/// <returns></returns>
+		public FluentWriter Incr(Register destination, string comment = null)
+		{
+			_codeStream.Add(OpCode.Incr, comment, destination);
+			return this;
+		}
+
+		/// <summary>
+		/// Compare a register and a constant value. Set ZF if values are equal, SF if register &lt; value
+		/// </summary>
+		/// <param name="register"></param>
+		/// <param name="value"></param>
+		/// <param name="comment"></param>
+		/// <returns></returns>
+		public FluentWriter Cmpi(Register register, uint value, string comment = null)
+		{
+			_codeStream.Add(OpCode.Cmpi, comment, register, value);
+			return this;
 		}
 	}
 

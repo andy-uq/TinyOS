@@ -45,7 +45,7 @@ namespace Andy.TinyOS.Compiler
 			return lambda.Compile();
 		}
 
-		private static CompilerContext CompileExpression(CompilerContext context, params Tuple<char, Action<FluentWriter>>[] codeWriters)
+		private static CompilerContext CompileExpression(CompilerContext context, params Tuple<string, Action<FluentWriter>>[] codeWriters)
 		{
 			context.Compile(context.Node[0]);
 			var code = context.AsFluent();
@@ -60,7 +60,7 @@ namespace Andy.TinyOS.Compiler
 
 				code.Popr(Register.B);
 
-				expressions[@operator.Value[0]](code);
+				expressions[@operator.Value](code);
 			}
 
 			return context;
@@ -70,6 +70,19 @@ namespace Andy.TinyOS.Compiler
 		{
 			context.AsFluent()
 				.Movi(Register.A, uint.Parse(context.Node.ToString()));
+
+			return context;
+		}
+
+		private CompilerContext Identifier(CompilerContext context)
+		{
+			var name = context.Node.Value;
+			var symbol = context.SymbolTable[name];
+
+			context.AsFluent()
+				.Movi(Register.A, symbol.Address)
+				.Addr(Register.A, Register.H)
+				.Movmr(Register.A, Register.A);
 
 			return context;
 		}
@@ -112,25 +125,55 @@ namespace Andy.TinyOS.Compiler
 		private CompilerContext AddExpression(CompilerContext context)
 		{
 			return CompileExpression(context, 
-				new Tuple<char, Action<FluentWriter>>('+', code => code.Addr(Register.A, Register.B)),
-				new Tuple<char, Action<FluentWriter>>('-', code => code.Neg(Register.A).Addr(Register.A, Register.B))
+				new Tuple<string, Action<FluentWriter>>("+", code => code.Addr(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("-", code => code.Neg(Register.A).Addr(Register.A, Register.B))
 			);
 		}
 
 		private CompilerContext Factor(CompilerContext context)
 		{
 			return CompileExpression(context, 
-				new Tuple<char, Action<FluentWriter>>('*', code => code.Mul(Register.A, Register.B)),
-				new Tuple<char, Action<FluentWriter>>('/', code => code.Div(Register.B, Register.A))
+				new Tuple<string, Action<FluentWriter>>("*", code => code.Mul(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("/", code => code.Div(Register.B, Register.A))
 			);
 		}
 
 		private CompilerContext Expression(CompilerContext context)
 		{
 			return CompileExpression(context,
-				new Tuple<char, Action<FluentWriter>>('&', code => code.And(Register.A, Register.B)),
-				new Tuple<char, Action<FluentWriter>>('|', code => code.Or(Register.A, Register.B)),
-				new Tuple<char, Action<FluentWriter>>('^', code => code.Xor(Register.A, Register.B))
+				new Tuple<string, Action<FluentWriter>>("&", code => code.And(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("|", code => code.Or(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("^", code => code.Xor(Register.A, Register.B))
+			);
+		}
+
+		private CompilerContext AssignmentExpression(CompilerContext context)
+		{
+			var identifier = context.Node[0];
+			foreach (var right in context.Node[1])
+			{
+				context.Compile(right[1]);
+			}
+
+			var name = identifier.Value;
+			var symbol = context.SymbolTable[name];
+
+			context.AsFluent()
+				.Movi(Register.B, symbol.Address)
+				.Addr(Register.B, Register.H)
+				.Movrm(Register.B, Register.A);
+
+			return context;
+		}
+
+		private CompilerContext RelationalExpression(CompilerContext context)
+		{
+			return CompileExpression(context,
+				new Tuple<string, Action<FluentWriter>>("<", code => code.Cmpi(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("<=", code => code.Cmpi(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>(">", code => code.Cmpi(Register.B, Register.A)),
+				new Tuple<string, Action<FluentWriter>>(">=", code => code.Cmpi(Register.B, Register.A)),
+				new Tuple<string, Action<FluentWriter>>("==", code => code.Xor(Register.A, Register.B))
 			);
 		}
 		
@@ -142,7 +185,9 @@ namespace Andy.TinyOS.Compiler
 				Compiler = Compile,
 				Node = _root,
 				Parent = null,
+				SymbolTable = new SymbolTable(),
 			};
+
 
 			foreach ( var node in context.Node )
 				context.Compile(node);

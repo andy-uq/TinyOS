@@ -1,24 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using Andy.TinyOS;
+using tinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public static class IdleProcess
 	{
-		private static readonly Instruction[] _instructions = new[] 
-		{ 
-			new Instruction {OpCode = OpCode.Movi, Parameters = new[] { 0U, 20U } }, 
-			new Instruction {OpCode = OpCode.Movi, Parameters = new[] { 1U, unchecked((uint) (-1)) } }, 
-			new Instruction {OpCode = OpCode.Printr, Parameters = new[] { 0U } }, 
-			new Instruction {OpCode = OpCode.Jmp, Parameters = new[] { 1U } } 
-		};
-
 		private static readonly Instruction[] _terminatingIdle = new[]
 		{
 			new Instruction { Comment = "Set r2 as destination", OpCode = OpCode.Movi, Parameters = new[] {2U, unchecked((uint) -3)}},
 			new Instruction {Comment = "Assign r1 value 1", OpCode = OpCode.Movi, Parameters = new[] {1U, 1U}},
-			new Instruction {Comment = "Assign r1 value 1", OpCode = OpCode.Printr, Parameters = new[] {1U}},
+			new Instruction {Comment = "Print r1", OpCode = OpCode.Printr, Parameters = new[] {1U}},
 			new Instruction {Comment = "Increase r1", OpCode = OpCode.Incr, Parameters = new[] {1U}},
 			new Instruction {Comment = "r1 < 10?", OpCode = OpCode.Cmpi, Parameters = new[] {1U, 10U}},
 			new Instruction {Comment = "Jump to r2", OpCode = OpCode.Jlt, Parameters = new[] {2U}},
@@ -27,14 +18,37 @@ namespace tinyOS
 
 		public static Instruction[] TerminatingIdle
 		{
-			get { return _terminatingIdle; }
+			get
+			{
+				var code = new CodeStream();
+
+				code.AsFluent()
+					.Movi(Register.B, -3)
+					.Movi(Register.A, 1)
+					.Printr(Register.A)
+					.Incr(Register.A)
+					.Cmpi(Register.A, 10)
+					.Jlt(Register.B)
+					.Exit(Register.A)
+				;
+
+				return code.ToArray();
+			}
 		}
 
 		public static Instruction[] Instructions
 		{
 			get
 			{
-				return _instructions;
+				var code = new CodeStream();
+
+				code.AsFluent()
+					.Movi(Register.A, 20)
+					.Movi(Register.B, -1)
+					.Printr(Register.A)
+					.Jmp(Register.B);
+				
+				return code.ToArray();
 			}
 		}
 

@@ -95,6 +95,8 @@ namespace ClassLibrary1.Parser
 		[TestCase("1*2+3/2", true)]
 		[TestCase("3&2", true)]
 		[TestCase("3&2&1", true)]
+		[TestCase("a+1", true)]
+		[TestCase("a=10", true)]
 		public void Expression(string integer, bool expected)
 		{
 			var grammer = new AndyStructuralGrammar();
@@ -102,6 +104,19 @@ namespace ClassLibrary1.Parser
 			var p = new ParserState(integer);
 
 			Assert.That(grammer.expression.Match(p), Is.EqualTo(expected));
+
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
+		}
+
+		[TestCase("a", true)]
+		public void Variable(string expression, bool expected)
+		{
+			var grammer = new AndyStructuralGrammar();
+			var printer = new CppStructuralOutputAsXml();
+			var p = new ParserState(expression);
+
+			Assert.That(grammer.identifier.Match(p), Is.EqualTo(expected));
 
 			printer.Print(p.GetRoot());
 			Console.WriteLine(printer.AsXml());

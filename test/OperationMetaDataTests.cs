@@ -19,5 +19,15 @@ namespace ClassLibrary1
 			}
 		}
 
+		[Test]
+		public void EveryOpCodeHasComment()
+		{
+			foreach (var opcode in Enum.GetValues(typeof(OpCode)).Cast<OpCode>())
+			{
+				var meta = OpCodeMetaInformation.Lookup[opcode];
+				Assert.That(meta.Comment, Is.Not.Null.Or.Empty);
+			}
+		}
+
 	}
 }
