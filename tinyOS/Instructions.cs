@@ -357,7 +357,7 @@ namespace Andy.TinyOS
 		[Parameter("rX", Type = ParamType.Register, Comment = "Register to place the value")]
 		public static void Input(Cpu cpu, uint rX)
 		{
-			cpu.Input(rX);
+			cpu.Input(OpCodeFlag.Register, rX);
 		}
 
 		[OpCode(OpCode.Not, Comment = "Return the ones complement of a value")]

@@ -37,6 +37,7 @@ namespace Andy.TinyOS
 
 			_instructionTable.Add((ushort )_writer.BaseStream.Position);
 			_writer.Write((byte )instruction.OpCode);
+			_writer.Write(instruction.OpCodeMask);
 			_writer.Write((byte )instruction.Parameters.Length);
 			foreach (var t in instruction.Parameters)
 				_writer.Write(t);

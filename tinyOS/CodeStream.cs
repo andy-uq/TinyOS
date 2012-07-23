@@ -20,7 +20,8 @@ namespace Andy.TinyOS
 
 		public void Add(OpCode opCode, string comment = null, params uint[] opCodeParameters)
 		{
-			_instructions.Add(new Instruction { OpCode = opCode, Comment = comment, Parameters = opCodeParameters });
+			var instruction = new Instruction(opCode) { Comment = comment, Parameters = opCodeParameters};
+			_instructions.Add(instruction);
 		}
 
 		public CodeStream Add(Instruction instruction)

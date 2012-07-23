@@ -8,8 +8,8 @@ namespace Andy.TinyOS.Utility
 {
 	public class InstructionTextReader
 	{
-		private static readonly Regex _legacy = new Regex(@"^\s*(?<opcode>(\d+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
 		private static readonly Regex _asm = new Regex(@"^\s*(?<opcode>(\w+))(\s+(?!;)(?<value>\S+))*(\s*;\s*(?<comment>.*))?");
+		private static readonly Regex _memory = new Regex(@"\[r(?<m>\d+)\]");
 		private static readonly Regex _register = new Regex(@"r(?<r>\d+)");
 		private static readonly Regex _constant = new Regex(@"(\$(?<int>-?\d+))|(0x(?<hex>[0-9a-f]+))");
 
@@ -17,73 +17,69 @@ namespace Andy.TinyOS.Utility
 		{
 			Func<Match, Instruction> parse;
 
-			var match = _legacy.Match(line);
+			var match = _asm.Match(line);
 			if (match.Success)
-			{
-				parse = ParseLegacy;
-			}
-			else
-			{
-				match = _asm.Match(line);
-				parse = Parse;
-			}
+				return Parse(match);
 
-			if (match.Success)
-				return parse(match);
-
-			throw new InvalidOperationException("Cannot parse line");
-		}
-
-		private Instruction ParseLegacy(Match match)
-		{
-			var opCode = match.Groups["opcode"].Value;
-			var comment = match.Groups["comment"].Value;
-
-			return new Instruction
-			{
-				OpCode = (OpCode)int.Parse(opCode),
-				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
-				Parameters = match.Groups["value"]
-					.Captures
-					.Cast<Capture>()
-					.Select(x => DecodeValue(x.Value))
-					.ToArray(),
-			};
+			throw new InvalidOperationException("Cannot parse line: " + line);
 		}
 
 		private Instruction Parse(Match match)
 		{
-			var opCode = match.Groups["opcode"].Value;
+			var opCodeName = match.Groups["opcode"].Value;
 			var comment = match.Groups["comment"].Value;
-			
+
+			var opCode = new MaskedOpCode((OpCode) Enum.Parse(typeof (OpCode), opCodeName, true));
+			var parameters = match.Groups["value"].Captures
+				.Cast<Capture>()
+				.Select(x => DecodeValue(x.Value))
+				.ToArray();
+
+			switch (parameters.Length)
+			{
+				case 1:
+					opCode.SetSource(parameters[0].Item1);
+					if (parameters[0].Item1 != OpCodeFlag.Constant)
+						opCode.SetDest(parameters[0].Item1);
+					break;
+				case 2:
+					opCode.SetDest(parameters[0].Item1).SetSource(parameters[1].Item1);
+					break;
+			}
+
 			return new Instruction
 			{
-				OpCode = (OpCode)Enum.Parse(typeof(OpCode), opCode, true),
+				MaskedOpCode = opCode,
 				Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
-				Parameters = match.Groups["value"]
-					.Captures
-					.Cast<Capture>()
-					.Select(x => DecodeValue(x.Value))
-					.ToArray(),
+				Parameters = parameters.Select(x => x.Item2).ToArray(),
 			};
 		}
 
-		private static uint DecodeValue(string lValue)
+		private static Tuple<OpCodeFlag, uint> DecodeValue(string lValue)
 		{
 			if ( string.IsNullOrEmpty(lValue) )
-				return default(uint);
+				return new Tuple<OpCodeFlag, uint>(OpCodeFlag.None, 0);
 
 			Match match;
 			if ((match = _register.Match(lValue)).Success)
 			{
-				return uint.Parse(match.Groups["r"].Value) - 1;
+				var value = uint.Parse(match.Groups["r"].Value) - 1;
+				return new Tuple<OpCodeFlag, uint>(OpCodeFlag.Register, value);
+			}
+
+			if ((match = _memory.Match(lValue)).Success)
+			{
+				var value = uint.Parse(match.Groups["r"].Value) - 1;
+				return new Tuple<OpCodeFlag, uint>(OpCodeFlag.MemoryAddress, value);
 			}
 
 			if ( (match = _constant.Match(lValue)).Success )
 			{
-				return match.Groups["int"].Success
+				var value = match.Groups["int"].Success
 				       	? unchecked((uint) (long.Parse(match.Groups["int"].Value)))
 				       	: uint.Parse(match.Groups["hex"].Value, NumberStyles.AllowHexSpecifier);
+
+				return new Tuple<OpCodeFlag, uint>(OpCodeFlag.Constant, value);
 			}
 
 			throw new InvalidOperationException("Cannot parse value: " + lValue);

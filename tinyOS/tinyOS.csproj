@@ -46,6 +46,7 @@
     <Compile Include="CodeReader.cs" />
     <Compile Include="CodeStream.cs" />
     <Compile Include="CodeWriter.cs" />
+    <Compile Include="InstructionsWithCb.cs" />
     <Compile Include="Cpu.cs" />
     <Compile Include="CpuSleepTimer.cs" />
     <Compile Include="DeviceId.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="FluentWriter.cs" />
     <Compile Include="IdleProcess.cs" />
     <Compile Include="Instruction.cs" />
+    <Compile Include="MemoryAddress.cs" />
     <Compile Include="Register.cs" />
     <Compile Include="Utility\InstructionFormatter.cs" />
     <Compile Include="Instructions.cs" />

@@ -92,7 +92,7 @@ namespace ClassLibrary1
 			stream.AsFluent()
 				.Movi(Register.A, 0);
 
-			Assert.That(stream.First(), Is.EqualTo(new Instruction { OpCode = OpCode.Movi, Parameters = new[] { 0U, 0U } }).Using(new InstructionComparer()));
+			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Movi) { Parameters = new[] { 0U, 0U } }).Using(new InstructionComparer()));
 		}
 
 		[Test]
@@ -103,7 +103,7 @@ namespace ClassLibrary1
 			stream.AsFluent()
 				.Movr(Register.A, Register.B);
 
-			Assert.That(stream.First(), Is.EqualTo(new Instruction { OpCode = OpCode.Movr, Parameters = new[] { 0U, 1U } }).Using(new InstructionComparer()));
+			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Movr) { Parameters = new[] { 0U, 1U } }).Using(new InstructionComparer()));
 		}
 	}
 

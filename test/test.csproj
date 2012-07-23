@@ -61,8 +61,10 @@
     <Compile Include="CodeStreamTests.cs" />
     <Compile Include="CompilerTests.cs" />
     <Compile Include="Compiler\CompilerTests.cs" />
+    <Compile Include="InstructionWithCbTests.cs" />
     <Compile Include="CpuTests.cs" />
     <Compile Include="InstructionTests.cs" />
+    <Compile Include="OpCodeTests.cs" />
     <Compile Include="OperationMetaDataTests.cs" />
     <Compile Include="PageStreamTests.cs" />
     <Content Include="Parser\Input\test04.c" />

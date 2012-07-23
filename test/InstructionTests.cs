@@ -9,12 +9,8 @@ using tinyOS;
 namespace ClassLibrary1
 {
 	[TestFixture]
-	public class InstructionTests
+	public class InstructionWithCbTests
 	{
-		private class TestInput : InputDevice
-		{
-		}
-
 		private Cpu _cpu;
 		private int _heapOffset;
 		private readonly byte[] _ram = new byte[1024];
@@ -54,13 +50,29 @@ namespace ClassLibrary1
 			return new MemoryStream(_ram, (int) _heapOffset, (int) (_ram.Length - _heapOffset)).ToArray();
 		}
 
-		[Test]
-		public void Addi()
+		private byte Flags(OpCodeFlag dest, OpCodeFlag source)
 		{
-			Instructions.Addi(_cpu, Register.A, 100);
+			return (byte) (((byte) source << 0x2) | (byte) dest);
+		}
+
+		private byte Source(OpCodeFlag flag)
+		{
+			return (byte)((byte)flag << 0x2);
+		}
+
+		private byte Dest(OpCodeFlag flag)
+		{
+			return (byte) flag;
+		}
+
+		[Test]
+		public void Add()
+		{
+			InstructionsWithControlByte.Add(_cpu, Flags(OpCodeFlag.Register, OpCodeFlag.Constant), Register.A, 100);
+			InstructionsWithControlByte.Add(_cpu, Flags(OpCodeFlag.Register, OpCodeFlag.Constant), Register.B, 50);
 			Assert.That(A, Is.EqualTo(100));
 
-			Instructions.Addi(_cpu, Register.A, 50);
+			InstructionsWithControlByte.Add(_cpu, Flags(OpCodeFlag.Register, OpCodeFlag.Register), Register.A, Register.B);
 			Assert.That(A, Is.EqualTo(150));
 		}
 

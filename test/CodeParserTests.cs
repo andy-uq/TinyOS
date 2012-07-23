@@ -103,8 +103,8 @@ namespace ClassLibrary1
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void WriteExtraParameter()
 		{
-			var badInstruction = new Instruction { OpCode = OpCode.Ret, Parameters = new[] { 0U } };
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+Unknown \(0\)"));
+			var badInstruction = new Instruction(OpCode.Ret).Source(10);
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+Unknown \(10\)"));
 
 			var ms = new StringWriter();
 			using (var writer = new InstructionTextWriter(ms))
@@ -114,7 +114,7 @@ namespace ClassLibrary1
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void WriteBadOpCode()
 		{
-			var badInstruction = new Instruction {OpCode = (OpCode) 254 };
+			var badInstruction = new Instruction((OpCode) 254);
 			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^254\s+;.*"));
 			
 			var ms = new StringWriter();
@@ -125,7 +125,7 @@ namespace ClassLibrary1
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void WriteMissingParameter()
 		{
-			var badInstruction = new Instruction { OpCode = OpCode.Movi, Parameters = new[] { 0U } };
+			var badInstruction = new Instruction(OpCode.Movi) { Parameters = new[] { 0U } };
 			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Movi\s+r1"));
 
 			var ms = new StringWriter();

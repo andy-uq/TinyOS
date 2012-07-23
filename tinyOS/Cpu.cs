@@ -440,9 +440,9 @@ namespace tinyOS
 			}
 		}
 
-		public void Input(uint rX)
+		public void Input(OpCodeFlag flag, uint rX)
 		{
-			DeviceQueue.Enqueue(DeviceId.Terminal, CurrentProcess, rX);
+			DeviceQueue.Enqueue(DeviceId.Terminal, CurrentProcess, flag, rX);
 			CurrentProcess = null;
 		}
 	}

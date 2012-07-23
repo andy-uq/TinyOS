@@ -2,13 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using tinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class BlockingProcess
 	{
 		public DeviceId DeviceId { get; set; }
 		public ProcessContextBlock Process { get; set; }
+		public OpCodeFlag Flag { get; set; }
 		public uint Argument { get; set; }
 	}
 
@@ -23,11 +25,12 @@ namespace tinyOS
 				.ToDictionary(id => id, queue => new Queue<BlockingProcess>());
 		}
 
-		public void Enqueue(DeviceId deviceId, ProcessContextBlock pcb, uint arg1 = 0)
+		public void Enqueue(DeviceId deviceId, ProcessContextBlock pcb, OpCodeFlag flag = OpCodeFlag.Register, uint arg1 = 0)
 		{
 			var blockingProcess = new BlockingProcess
 			{
 				Process = pcb,
+				Flag = flag,
 				Argument = arg1,
 				DeviceId = deviceId
 			};

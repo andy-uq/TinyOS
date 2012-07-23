@@ -58,7 +58,8 @@ namespace tinyOS
 
 		private Instruction BuildInstruction(BinaryReader reader)
 		{
-			var opCodeByte = (OpCode)reader.ReadByte();
+			var opCodeByte = reader.ReadByte();
+			var opCodeMask = reader.ReadByte();
 
 			var pLength = reader.ReadByte();
 			var parameters = Enumerable
@@ -67,9 +68,9 @@ namespace tinyOS
 				.ToArray();
 			var comment = reader.ReadString();
 
-			return new Instruction
+			return new Instruction()
 			{
-				OpCode = opCodeByte,
+				MaskedOpCode = new MaskedOpCode((ushort )(opCodeMask << 8 | opCodeByte)),
 				Parameters = parameters,
 				Comment = comment,
 			};
