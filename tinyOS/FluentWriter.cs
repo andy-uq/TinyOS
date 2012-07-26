@@ -20,7 +20,7 @@ namespace Andy.TinyOS
 	public interface IFluentDestinationSourceInstructionWriter
 	{
 		FluentWriter RI(Register destination, int value);
-		FluentWriter RU(Register destination, uint value);
+		FluentWriter RU(Register destination, uint value, string comment = null);
 		FluentWriter RR(Register destination, Register source);
 		FluentWriter RM(Register destination, MemoryAddress sourceAddress);
 
@@ -94,9 +94,9 @@ namespace Andy.TinyOS
 				return _parent;
 			}
 
-			public FluentWriter RU(Register destination, uint value)
+			public FluentWriter RU(Register destination, uint value, string comment)
 			{
-				var instruction = new Instruction(_opCode).Destination(destination).Source(value);
+				var instruction = new Instruction(_opCode, comment).Destination(destination).Source(value);
 				_parent._codeStream.Add(instruction);
 				return _parent;
 			}

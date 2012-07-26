@@ -20,7 +20,7 @@ namespace Andy.TinyOS.Compiler
 				if (_symbols.TryGetValue(name, out symbol))
 					return symbol;
 
-				symbol = new Symbol {Name = name, Address = _offset++};
+				symbol = new Symbol {Name = name, Address = (_offset++) * 4 };
 				_symbols.Add(name, symbol);
 
 				return symbol;

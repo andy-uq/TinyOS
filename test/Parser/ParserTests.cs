@@ -97,6 +97,7 @@ namespace ClassLibrary1.Parser
 		[TestCase("3&2&1", true)]
 		[TestCase("a+1", true)]
 		[TestCase("a=10", true)]
+		[TestCase("a = 10", true)]
 		public void Expression(string integer, bool expected)
 		{
 			var grammer = new AndyStructuralGrammar();
@@ -118,6 +119,94 @@ namespace ClassLibrary1.Parser
 
 			Assert.That(grammer.identifier.Match(p), Is.EqualTo(expected));
 
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
+		}
+
+		[TestCase("a()", true)]
+		public void Function(string expression, bool expected)
+		{
+			var grammer = new AndyStructuralGrammar();
+			var printer = new CppStructuralOutputAsXml();
+			var p = new ParserState(expression);
+
+			Assert.That(grammer.function_call.Match(p), Is.EqualTo(expected));
+
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
+		}
+
+		[Test]
+		public void BuildIfStatement()
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("if");
+
+			Assert.That(grammer.if_keyword.Match(p), Is.True);
+			
+			p = new ParserState("if()");
+			var rule = grammer.if_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
+			Assert.That(rule.Match(p), Is.True);
+
+			p = new ParserState("if (a == b)");
+			Assert.That(grammer.if_condition.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			var if_block = grammer.if_condition + grammer.block;
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			if_block = grammer.if_condition + new RecursiveRule(() => grammer.block);
+			Assert.That(if_block.Match(p), Is.True);
+		}
+
+		[Test]
+		public void BuildElseStatement()
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("else");
+
+			Assert.That(grammer.else_keyword.Match(p), Is.True);
+
+			p = new ParserState("else { b=10; }");
+			Assert.That(grammer.else_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			var if_block = grammer.if_condition + grammer.block + new OptRule(grammer.else_block);
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}else{b=10;}");
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){ a=20; } else { b=10; }");
+			Assert.That(grammer.if_statement.Match(p), Is.True);
+		}
+
+		[TestCase("a = 10;", true)]
+		[TestCase("if ( a == 10 ) { a=20; }", true)]
+		[TestCase("if ( a == 10 ) { a=20; } else { a=10; }", true)]
+		public void Statement(string expression, bool expected)
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState(expression);
+
+			Assert.That(grammer.statement.Match(p), Is.EqualTo(expected));
+
+			var printer = new CppStructuralOutputAsXml();
+			printer.Print(p.GetRoot());
+			Console.WriteLine(printer.AsXml());
+		}
+
+		[TestCase("{ a = 10; }", true)]
+		[TestCase("{ a = 10; b = 20; c = a + b; }", true)]
+		public void Block(string expression, bool expected)
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState(expression);
+
+			Assert.That(grammer.block.Match(p), Is.EqualTo(expected));
+
+			var printer = new CppStructuralOutputAsXml();
 			printer.Print(p.GetRoot());
 			Console.WriteLine(printer.AsXml());
 		}

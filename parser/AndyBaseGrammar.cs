@@ -95,6 +95,12 @@
 		public Rule add_assign;
 		public Rule sub_assign;
 
+		public Rule statement_delimiter;
+
+
+		public Rule if_keyword;
+		public Rule else_keyword;
+
 		#endregion
 
 		public AndyBaseGrammar()
@@ -103,7 +109,7 @@
 			multiply_operator = CharSet("*/%");
 			addition_operator = CharSet("+-");
 			logical_operator = CharSet("&|^");
-			relational_operator = CharSet("<>") | CharSeq("<=") | CharSeq(">=");
+			relational_operator = CharSet("<>") | CharSeq("<=") | CharSeq(">=") | CharSeq("==") | CharSeq("!=");
 
 			#region identifiers
 
@@ -207,6 +213,8 @@
 			int_literal
 				= unsigned_literal + Not(dot) + Opt(integer_suffix);
 
+			statement_delimiter = CharSeq(";");
+
 			mul_assign = CharSet("*=");
 			div_assign = CharSet("/=");
 			mod_assign = CharSet("%=");
@@ -214,8 +222,21 @@
 			sub_assign = CharSet("-=");
 			assignment_operator = CharSet("=") | mul_assign | div_assign | mod_assign | add_assign | sub_assign;
 
+			if_keyword = Word("if");
+			else_keyword = Word("else");
 
 			InitializeRules<AndyBaseGrammar>(false);
+		}
+
+		/// <summary>
+		/// Creates a SkipRule that matches a sequence of characters, like CharSeq. It also assures that no other letters follows 
+		/// and will also eats whitespace. No node is created.
+		/// </summary>
+		/// <param name="s"></param>
+		/// <returns></returns>
+		public Rule Word(string s)
+		{
+			return Leaf(CharSeq(s) + Not(ident_next_char) + ws);
 		}
 	}
 }

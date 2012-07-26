@@ -261,7 +261,7 @@ namespace Andy.TinyOS.Parser
 
 		public ParseNode GetNamedChild(string name)
 		{
-			return GetHierarchy().SingleOrDefault(x => x.RuleName == name);
+			return GetHierarchy().FirstOrDefault(x => x.RuleName == name);
 		}
 
 		public IEnumerable<ParseNode> GetNamedChildren(string name)

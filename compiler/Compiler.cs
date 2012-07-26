@@ -157,7 +157,7 @@ namespace Andy.TinyOS.Compiler
 			var symbol = context.SymbolTable[name];
 
 			context.AsFluent()
-				.Mov.RU(Register.B, symbol.Address)
+				.Mov.RU(Register.B, symbol.Address, string.Format("Load variable {0} into rB", name))
 				.Add.RR(Register.B, Register.H)
 				.Mov.MR(MemoryAddress.B, Register.A);
 
@@ -173,6 +173,37 @@ namespace Andy.TinyOS.Compiler
 				new Tuple<string, Action<FluentWriter>>(">=", code => code.Cmpi.RR(Register.B, Register.A)),
 				new Tuple<string, Action<FluentWriter>>("==", code => code.Cmpi.RR(Register.A, Register.B))
 			);
+		}
+
+		private CompilerContext IfStatement(CompilerContext context)
+		{
+			var ifFalse = Enumerable.Empty<Instruction>();
+
+			var expression = context.Node.GetNamedChild("if_condition").GetNamedChild("relational_expression");
+			context.Compile(expression);
+			
+			var block = context.Node.GetNamedChild("block");
+			var child = context.Push(block);
+			CodeStream ifTrue = child.Compiler(child);
+
+			var elseBlock = context.Node.GetNamedChild("else_block");
+			if (elseBlock != null)
+			{
+				block = elseBlock.GetNamedChild("block");
+				child = context.Push(block);
+				ifFalse = child.Compiler(child);
+				ifTrue.AsFluent()
+					.Jmp.I(ifFalse.Count() + 1);
+			}
+
+			context.Code.AsFluent()
+				.Jne.I(ifTrue.Count() + 1);
+
+			context.Code += ifTrue;
+			context.Code += ifFalse;
+
+			
+			return context;
 		}
 		
 		public IEnumerable<Instruction> Compile()

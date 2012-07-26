@@ -46,13 +46,41 @@ namespace ClassLibrary1.Compiler
 			Assert.That(r.ExitCode, Is.EqualTo(result));
 		}
 		
-		[TestCase("a=10", 10U)]
+		[TestCase("{ result = 10; }", 10U)]
+		[TestCase("{ result = 0; a = 10; b = 20; result = a+b; }", 30U)]
+		[TestCase("{ result = 0; a = 10; b = 20; if (a == 10) { result = a+b; } }", 30U)]
 		public void AssignmentExpression(string source, uint result)
 		{
 			var grammar = new AndyStructuralGrammar();
 			var parserState = new ParserState(source);
 
-			var parseResult = grammar.assignment_expression.Match(parserState);
+			var parseResult = grammar.block.Match(parserState);
+			Assert.That(parseResult, Is.True);
+
+			var compiler = new Andy.TinyOS.Compiler.Compiler(grammar, parserState);
+			var program = compiler.Compile();
+
+			var cpu = new Cpu();
+			var r = Run(program, cpu);
+			Assert.That(r.ExitCode, Is.EqualTo(result));
+
+			var variable = cpu.Ram.GetStream(r.GlobalData.Pages.First());
+			using (var reader = new BinaryReader(variable))
+			{
+				var value = reader.ReadUInt32();
+				Assert.That(value, Is.EqualTo(result));
+			}
+		}
+
+		[TestCase("{ result = 0; a = 10; if (a == 10) { result = 30; } }", 30U)]
+		[TestCase("{ result = 5; a = 10; if (a == 20) { result = 30; } result = result; }", 5U)]
+		[TestCase("{ result = 5; a = 10; if (a == 20) { result = 30; } else { result = 20; } }", 20U)]
+		public void ControlFlow(string source, uint result)
+		{
+			var grammar = new AndyStructuralGrammar();
+			var parserState = new ParserState(source);
+
+			var parseResult = grammar.block.Match(parserState);
 			Assert.That(parseResult, Is.True);
 
 			var compiler = new Andy.TinyOS.Compiler.Compiler(grammar, parserState);
