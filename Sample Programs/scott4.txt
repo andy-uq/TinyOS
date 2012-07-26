@@ -1,21 +1,21 @@
-6	r1, $99
-4	r1
-6	r1, $11
-4	r1
-1	r1
-35	r1
-6	r3, $252
-12	r3
-6	r3, $150
-36	r3
-12	r3
-5	$88
-5	$77
-5	$66
-35	r2
-11	r2
-35	r2
-11	r2
-35	r2
-11	r2
-27  r2             ; this is exit.
+mov		r1 $99
+push	r1
+mov		r1 $11
+push	r1
+incr	r1
+pop		r1
+mov		r3 $252
+print	r3
+mov		r3 $150
+pop		[r3]
+print	[r3]
+push	$88
+push	$77
+push	$66
+pop		r2
+print	r2
+pop		r2
+print	r2
+pop		r2
+print	r2
+exit	r2             ; this is exit.

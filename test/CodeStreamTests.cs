@@ -78,7 +78,7 @@ namespace ClassLibrary1
 		{
 			var stream =new CodeStream
 			{
-				{ OpCode.Movi, null, 0, 1 }
+				new Instruction(OpCode.Mov)
 			};
 
 			Assert.That(stream.ToArray(), Is.Not.Empty);
@@ -90,9 +90,9 @@ namespace ClassLibrary1
 			var stream = new CodeStream();
 
 			stream.AsFluent()
-				.Movi(Register.A, 0);
+				.Mov.RI(Register.A, 0);
 
-			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Movi) { Parameters = new[] { 0U, 0U } }).Using(new InstructionComparer()));
+			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Mov).Destination(Register.A).Source(0)).Using(new InstructionComparer()));
 		}
 
 		[Test]
@@ -101,27 +101,10 @@ namespace ClassLibrary1
 			var stream = new CodeStream();
 
 			stream.AsFluent()
-				.Movr(Register.A, Register.B);
+				.Mov.RR(Register.A, Register.B);
 
-			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Movr) { Parameters = new[] { 0U, 1U } }).Using(new InstructionComparer()));
-		}
-	}
-
-	public class InstructionComparer : IEqualityComparer<Instruction>
-	{
-		public bool Equals(Instruction x, Instruction y)
-		{
-			if ( x.OpCode == y.OpCode && x.Parameters.Length == y.Parameters.Length )
-			{
-				return !x.Parameters.Where((t, i) => t != y.Parameters[i]).Any();
-			}
-
-			return false;
-		}
-
-		public int GetHashCode(Instruction obj)
-		{
-			throw new System.NotImplementedException();
+			var expected = new Instruction(OpCode.Mov).Source(Register.B).Destination(Register.A);
+			Assert.That(stream.First(), Is.EqualTo(expected).Using(new InstructionComparer()));
 		}
 	}
 }

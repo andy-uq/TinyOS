@@ -1,4 +1,7 @@
-﻿namespace Andy.TinyOS
+﻿using System;
+using System.Linq;
+
+namespace Andy.TinyOS
 {
 	public class Register
 	{
@@ -48,5 +51,29 @@
 
 		/// <summary>r10</summary>
 		public static readonly Register J = new Register(10);
+
+		private static Register[] _registers;
+
+		static Register()
+		{
+			_registers = typeof (Register)
+				.GetFields()
+				.Where(x => x.FieldType == typeof (Register))
+				.Select(x => x.GetValue(null))
+				.Cast<Register>()
+				.ToArray();
+		}
+
+		public static Register Parse(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				throw new ArgumentException("Register name must not be null or empty", "value");
+
+			if (value[0] != 'r')
+				throw new ArgumentException("Register name must start with an R", "value");
+
+			int num = int.Parse(value.Substring(1)) - 1;
+			return _registers[num];
+		}
 	}
 }

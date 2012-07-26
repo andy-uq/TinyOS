@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Andy.TinyOS.Parser;
-using tinyOS;
 
 namespace Andy.TinyOS.Compiler
 {
@@ -53,12 +51,12 @@ namespace Andy.TinyOS.Compiler
 
 			foreach (var right in context.Node[1])
 			{
-				code.Pushr(Register.A);
+				code.Push.R(Register.A);
 
 				var @operator = right[0];
 				context.Compile(right[1]);
 
-				code.Popr(Register.B);
+				code.Pop.R(Register.B);
 
 				expressions[@operator.Value](code);
 			}
@@ -69,7 +67,7 @@ namespace Andy.TinyOS.Compiler
 		private CompilerContext IntLiteral(CompilerContext context)
 		{
 			context.AsFluent()
-				.Movi(Register.A, uint.Parse(context.Node.ToString()));
+				.Mov.RU(Register.A, uint.Parse(context.Node.ToString()));
 
 			return context;
 		}
@@ -80,9 +78,9 @@ namespace Andy.TinyOS.Compiler
 			var symbol = context.SymbolTable[name];
 
 			context.AsFluent()
-				.Movi(Register.A, symbol.Address)
-				.Addr(Register.A, Register.H)
-				.Movmr(Register.A, Register.A);
+				.Mov.RU(Register.A, symbol.Address)
+				.Add.RR(Register.A, Register.H)
+				.Mov.RM(Register.A, MemoryAddress.A);
 
 			return context;
 		}
@@ -109,11 +107,11 @@ namespace Andy.TinyOS.Compiler
 			{
 				case "!":
 					context.AsFluent()
-						.Not(Register.A);
+						.Not.RR(Register.A, Register.A);
 					break;
 				case "-":
 					context.AsFluent()
-						.Neg(Register.A);
+						.Neg.RR(Register.A, Register.A);
 					break;
 				default:
 					throw new InvalidOperationException("Cannot determine unary operator: " + context.Node.Value );
@@ -124,26 +122,26 @@ namespace Andy.TinyOS.Compiler
 
 		private CompilerContext AddExpression(CompilerContext context)
 		{
-			return CompileExpression(context, 
-				new Tuple<string, Action<FluentWriter>>("+", code => code.Addr(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("-", code => code.Neg(Register.A).Addr(Register.A, Register.B))
+			return CompileExpression(context,
+				new Tuple<string, Action<FluentWriter>>("+", code => code.Add.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("-", code => code.Neg.RR(Register.A, Register.A).Add.RR(Register.A, Register.B))
 			);
 		}
 
 		private CompilerContext Factor(CompilerContext context)
 		{
-			return CompileExpression(context, 
-				new Tuple<string, Action<FluentWriter>>("*", code => code.Mul(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("/", code => code.Div(Register.B, Register.A))
+			return CompileExpression(context,
+				new Tuple<string, Action<FluentWriter>>("*", code => code.Mul.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("/", code => code.Div.RR(Register.B, Register.A))
 			);
 		}
 
 		private CompilerContext Expression(CompilerContext context)
 		{
 			return CompileExpression(context,
-				new Tuple<string, Action<FluentWriter>>("&", code => code.And(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("|", code => code.Or(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("^", code => code.Xor(Register.A, Register.B))
+				new Tuple<string, Action<FluentWriter>>("&", code => code.And.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("|", code => code.Or.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("^", code => code.Xor.RR(Register.A, Register.B))
 			);
 		}
 
@@ -159,9 +157,9 @@ namespace Andy.TinyOS.Compiler
 			var symbol = context.SymbolTable[name];
 
 			context.AsFluent()
-				.Movi(Register.B, symbol.Address)
-				.Addr(Register.B, Register.H)
-				.Movrm(Register.B, Register.A);
+				.Mov.RU(Register.B, symbol.Address)
+				.Add.RR(Register.B, Register.H)
+				.Mov.MR(MemoryAddress.B, Register.A);
 
 			return context;
 		}
@@ -169,11 +167,11 @@ namespace Andy.TinyOS.Compiler
 		private CompilerContext RelationalExpression(CompilerContext context)
 		{
 			return CompileExpression(context,
-				new Tuple<string, Action<FluentWriter>>("<", code => code.Cmpi(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("<=", code => code.Cmpi(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>(">", code => code.Cmpi(Register.B, Register.A)),
-				new Tuple<string, Action<FluentWriter>>(">=", code => code.Cmpi(Register.B, Register.A)),
-				new Tuple<string, Action<FluentWriter>>("==", code => code.Xor(Register.A, Register.B))
+				new Tuple<string, Action<FluentWriter>>("<", code => code.Cmpi.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>("<=", code => code.Cmpi.RR(Register.A, Register.B)),
+				new Tuple<string, Action<FluentWriter>>(">", code => code.Cmpi.RR(Register.B, Register.A)),
+				new Tuple<string, Action<FluentWriter>>(">=", code => code.Cmpi.RR(Register.B, Register.A)),
+				new Tuple<string, Action<FluentWriter>>("==", code => code.Cmpi.RR(Register.A, Register.B))
 			);
 		}
 		
@@ -188,12 +186,11 @@ namespace Andy.TinyOS.Compiler
 				SymbolTable = new SymbolTable(),
 			};
 
-
 			foreach ( var node in context.Node )
 				context.Compile(node);
 
 			context.AsFluent()
-				.Exit(Register.A);
+				.Exit.R(Register.A);
 
 			return context.Code;
 		}

@@ -1,10 +1,10 @@
-printr	r8		;Print r8
-movi	r1 $10	;Move 10 into r1
-movi	r2 $11	;Move 11 into r2
-movi	r3 $0	;Move 0 into r3
+print	r8		;Print r8
+mov	r1 $10	;Move 10 into r1
+mov	r2 $11	;Move 11 into r2
+mov	r3 $0	;Move 0 into r3
 acquire	r1		;Acquire lock in r1 (currently lock 10)
-printr	r2		;Print r2
+print	r2		;Print r2
 sleep	r3		;Sleep r3 (current 0, will sleep forever)
-printr	r3		;Print r3
+print	r3		;Print r3
 release	r1		;Release r1
 exit	r1		;Exit

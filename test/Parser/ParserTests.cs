@@ -81,11 +81,11 @@ namespace ClassLibrary1.Parser
 		public void UnaryInteger(string integer, bool expected)
 		{
 			var grammer = new AndyStructuralGrammar();
-			var printer = new CppStructuralOutputAsXml();
 			var p = new ParserState(integer);
 
 			Assert.That(grammer.term.Match(p), Is.EqualTo(expected));
 			
+			var printer = new CppStructuralOutputAsXml();
 			printer.Print(p.GetRoot());
 			Console.WriteLine(printer.AsXml());
 		}

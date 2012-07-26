@@ -1,5 +1,5 @@
-﻿using tinyOS;
-using tinyOS.OpCodeMeta;
+﻿using Andy.TinyOS.OpCodeMeta;
+using tinyOS;
 
 namespace Andy.TinyOS
 {

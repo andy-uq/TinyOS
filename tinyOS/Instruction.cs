@@ -22,9 +22,10 @@ namespace Andy.TinyOS
 			get { return MaskedOpCode.OpCodeMask; }
 		}
 
-		public Instruction(OpCode opCode) : this()
+		public Instruction(OpCode opCode, string commment = null) : this()
 		{
 			MaskedOpCode = new MaskedOpCode(opCode);
+			Comment = commment;
 		}
 
 		public Instruction()
@@ -42,7 +43,7 @@ namespace Andy.TinyOS
 	{
 		public static Instruction Destination(this Instruction instuction, Register value)
 		{
-			instuction.MaskedOpCode.SetDest(OpCodeFlag.Register);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetDest(OpCodeFlag.Register);
 			instuction.Parameters = instuction.Parameters.Length == 0
 			                        	? new uint[] {value}
 			                        	: new[] {value, instuction.Parameters[0]};
@@ -52,16 +53,17 @@ namespace Andy.TinyOS
 
 		public static Instruction Source(this Instruction instuction, Register value)
 		{
-			instuction.MaskedOpCode.SetSource(OpCodeFlag.Register);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetSource(OpCodeFlag.Register);
 			instuction.Parameters = instuction.Parameters.Length == 0
 			                        	? new uint[] {value}
 			                        	: new[] { instuction.Parameters[0], value };
 
 			return instuction;
 		}
+
 		public static Instruction Destination(this Instruction instuction, MemoryAddress value)
 		{
-			instuction.MaskedOpCode.SetDest(OpCodeFlag.MemoryAddress);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetDest(OpCodeFlag.MemoryAddress);
 			instuction.Parameters = instuction.Parameters.Length == 0
 			                        	? new uint[] {value}
 			                        	: new[] {value, instuction.Parameters[0]};
@@ -71,7 +73,7 @@ namespace Andy.TinyOS
 
 		public static Instruction Source(this Instruction instuction, MemoryAddress value)
 		{
-			instuction.MaskedOpCode.SetSource(OpCodeFlag.MemoryAddress);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetSource(OpCodeFlag.MemoryAddress);
 			instuction.Parameters = instuction.Parameters.Length == 0
 			                        	? new uint[] {value}
 			                        	: new[] { instuction.Parameters[0], value };
@@ -81,7 +83,7 @@ namespace Andy.TinyOS
 
 		public static Instruction Source(this Instruction instuction, uint value)
 		{
-			instuction.MaskedOpCode.SetSource(OpCodeFlag.Constant);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetSource(OpCodeFlag.Constant);
 			instuction.Parameters = instuction.Parameters.Length == 0
 			                        	? new[] {value}
 			                        	: new[] { instuction.Parameters[0], value };
@@ -91,7 +93,7 @@ namespace Andy.TinyOS
 
 		public static Instruction Source(this Instruction instuction, int value)
 		{
-			instuction.MaskedOpCode.SetSource(OpCodeFlag.Constant);
+			instuction.MaskedOpCode = instuction.MaskedOpCode.SetSource(OpCodeFlag.Constant);
 			instuction.Parameters = instuction.Parameters.Length == 0
 										? new [] { unchecked((uint)value) }
 			                        	: new [] { instuction.Parameters[0], unchecked ((uint )value) };
@@ -102,21 +104,6 @@ namespace Andy.TinyOS
 
 	public static class OpCodeExtensions
 	{
-		public static MaskedOpCode SetSource(this OpCode opCode, OpCodeFlag sourceFlag)
-		{
-			return new MaskedOpCode(opCode).SetSource(sourceFlag);
-		}
-
-		public static MaskedOpCode SetDest(this OpCode opCode, OpCodeFlag destFlag)
-		{
-			return new MaskedOpCode(opCode).SetDest(destFlag);
-		}
-
-		public static MaskedOpCode AsSigned(this OpCode opCode, OpCodeFlag destFlag)
-		{
-			return new MaskedOpCode(opCode).AsSigned();
-		}
-
 		public static MaskedOpCode SetSource(this MaskedOpCode opCode, OpCodeFlag sourceFlag)
 		{
 			var code = (ushort)opCode;

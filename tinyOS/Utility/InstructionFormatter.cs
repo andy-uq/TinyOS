@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
+using Andy.TinyOS.OpCodeMeta;
 using tinyOS;
-using tinyOS.OpCodeMeta;
 
 namespace Andy.TinyOS.Utility
 {
@@ -20,7 +20,7 @@ namespace Andy.TinyOS.Utility
 			
 			return string.Format(format,
 			                     instruction.OpCode.ToString().PadRight(10),
-			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters, i, x))).PadRight(24),
+			                     string.Join(string.Empty, instruction.Parameters.Select((x, i) => FormatValue(meta.Parameters, i, instruction.OpCodeMask, x))).PadRight(24),
 			                     instruction.Comment ?? meta.Comment);
 		}
 
@@ -62,20 +62,24 @@ namespace Andy.TinyOS.Utility
 			}
 		}
 
-		private static object FormatValue(ParameterInfo[] pInfos, int index, uint value)
+		private static object FormatValue(ParameterInfo[] pInfos, int index, byte controlFlag, uint value)
 		{
 			var pInfo = (index < pInfos.Length) ? pInfos[index] : new ParameterInfo();
+			var opType = (OpCodeFlag) (pInfo.Type == ParamType.Destination ? controlFlag & 3 : controlFlag >> 2 & 3);
 
-			switch (pInfo.Type)
+			switch (opType)
 			{
-				case ParamType.Register:
+				case OpCodeFlag.Register:
 					return string.Concat('r', value + 1).PadRight(12);
 
-				case ParamType.Constant:
+				case OpCodeFlag.Constant:
 					return string.Concat('$', value).PadRight(12);
 
-				case ParamType.None:
-					return string.Format("Unknown ({0})", value);
+				case OpCodeFlag.MemoryAddress:
+					return string.Concat("[r", value + 1, ']').PadRight(12);
+
+				case OpCodeFlag.None:
+					return string.Empty.PadRight(12);
 
 				default:
 					throw new ArgumentOutOfRangeException();

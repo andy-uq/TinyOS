@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Andy.TinyOS;
+using Andy.TinyOS.OpCodeMeta;
 
 namespace tinyOS
 {
@@ -11,7 +12,7 @@ namespace tinyOS
 		private const int IdleQuanta = 5;
 		private const int UserQuanta = 10;
 
-		private readonly Dictionary<OpCode, Action<Cpu, uint[]>> _operations;
+		private readonly Dictionary<OpCode, Action<Cpu, byte, uint[]>> _operations;
 		private readonly Dictionary<uint, ProcessContextBlock> _processes;
 		private uint _nextProcessId = 1000;
 
@@ -69,7 +70,7 @@ namespace tinyOS
 			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId)(x + Devices.Events)).Select(x => new Event(x)).ToArray();
 			SleepTimer = new CpuSleepTimer();
 			_processes = new Dictionary<uint, ProcessContextBlock>();
-			_operations = OpCodeMeta.OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMeta.OpCodeMetaInformationBuilder.BuildOperation);
+			_operations = OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode, OpCodeMetaInformationBuilder.BuildOperation);
 			IdleProcess = new ProcessContextBlock { Id = 1, };
 			InputDevice = new TerminalInputDevice();
 		}
@@ -174,16 +175,16 @@ namespace tinyOS
 			}
 		}
 
-		private void Execute(Instruction instruction)
+		public void Execute(Instruction instruction)
 		{
 			var pId = CurrentProcess.Id;
 			CurrentProcess.Ip++;
 			CurrentProcess.Quanta--;
 
-			Action<Cpu, uint[]> operation;
+			Action<Cpu, byte, uint[]> operation;
 			if (_operations.TryGetValue(instruction.OpCode, out operation))
 			{
-				operation(this, instruction.Parameters);
+				operation(this, instruction.OpCodeMask, instruction.Parameters);
 				Console.WriteLine("{0}) {1}", pId, instruction);
 				return;
 			}

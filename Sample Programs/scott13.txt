@@ -1,19 +1,19 @@
-6	r4, $4		;we'll need 4 bytes
-22	r4, r5		;ask for 4 bytes
-7	r2, r5		;save address in r2
-6	r4, $33		;we'll need 12 bytes
-22	r4, r5		;ask for 12 bytes
-7	r1, r5		;save address in r1
-28	r2		;release
-6	r6, $11		;put 11 in r6
-9	r5, r6		;put 11 in the new memory
-2	r5, $4
-9	r5, r6		;put 11 in the new memory
-2	r5, $4
-9	r5, r6		;put 11 in the new memory
-6	r4, $17		;we'll need 17 bytes
-22	r4, r5		;ask for 17 bytes
-7	r3, r5		;save address in r3
-28	r1
-28	r3
-27  $0             ; this is exit.
+mov	r4 $4		;we'll need 4 bytes
+alloc	r4 r5		;ask for 4 bytes
+mov	r2 r5		;save address in r2
+mov	r4 $33		;we'll need 12 bytes
+alloc	r4 r5		;ask for 12 bytes
+mov	r1 r5		;save address in r1
+free	r2		;release
+mov	r6 $11		;put 11 in r6
+mov	r5 r6		;put 11 in the new memory
+add	r5 $4
+mov	r5 r6		;put 11 in the new memory
+add	r5 $4
+mov	r5 r6		;put 11 in the new memory
+mov	r4 $17		;we'll need 17 bytes
+alloc	r4 r5		;ask for 17 bytes
+mov	r3 r5		;save address in r3
+free	r1
+free	r3
+exit  $0             ; this is exit.

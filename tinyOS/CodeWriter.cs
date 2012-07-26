@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Andy.TinyOS.OpCodeMeta;
 using tinyOS;
-using tinyOS.OpCodeMeta;
 
 namespace Andy.TinyOS
 {

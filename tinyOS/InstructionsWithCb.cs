@@ -1,6 +1,6 @@
 ﻿using System;
+using Andy.TinyOS.OpCodeMeta;
 using tinyOS;
-using tinyOS.OpCodeMeta;
 
 namespace Andy.TinyOS
 {
@@ -65,16 +65,13 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Incr, Comment = "Increase the value of a register by 1")]
-		[Parameter("rX", Type = ParamType.Register, Comment="Register to be increased")]
 		public static void Incr(Cpu cpu, byte flag, uint destination)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);
 			WriteValue(cpu, flag, destination, unchecked(value + 1));
 		}
 
-		[OpCode(OpCode.Addi, Comment = "Add a constant value to a register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to be increased")]
-		[Parameter("iValue", Type = ParamType.Constant, Comment = "Amount to increase")]
+		[OpCode(OpCode.Add, Comment = "Add a constant value to a register")]
 		public static void Add(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var a = ReadValue(cpu, Dest(flag), destination);
@@ -82,33 +79,28 @@ namespace Andy.TinyOS
 			WriteValue(cpu, Dest(flag), destination, unchecked (a+b));
 		}
 
-		[OpCode(OpCode.Pushr, Comment = "Push the value of a register onto the stack")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to be pushed")]
+		[OpCode(OpCode.Push, Comment = "Push the value of a register onto the stack")]
 		public static void Push(Cpu cpu, byte flag, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
 			cpu.Push(value);
 		}
 		
-		[OpCode(OpCode.Popr, Comment = "Pop a value off the stack into a register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to receive the value")]
+		[OpCode(OpCode.Pop, Comment = "Pop a value off the stack into a register")]
 		public static void Pop(Cpu cpu, byte flag, uint destination)
 		{
 			var value = cpu.Pop();
 			WriteValue(cpu, flag, destination, value);
 		}
 
-		[OpCode(OpCode.Movi, Comment = "Assign a register to a constant value")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register being assigned")]
-		[Parameter("iValue", Type = ParamType.Constant, Comment = "Assignment value")]
+		[OpCode(OpCode.Mov, Comment = "Assign a register to a constant value")]
 		public static void Mov(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
 			WriteValue(cpu, flag, destination, value);
 		}
 
-		[OpCode(OpCode.Printr, Comment = "Print the value in a register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to print")]
+		[OpCode(OpCode.Print, Comment = "Print the value in a register")]
 		public static void Print(Cpu cpu, byte flag, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
@@ -116,7 +108,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Jmp, Comment = "Jump to an instruction relative to the current instruction. Value may be negative.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Jmp(Cpu cpu, byte flag, uint source)
 		{
 			var uOffset = ReadValue(cpu, flag, source);
@@ -124,7 +115,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Jlt, Comment = "Jump to an instruction relative to the current instruction when Sf is set. Value may be negative.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Jlt(Cpu cpu, byte flag, uint source)
 		{
 			if (cpu.Sf)
@@ -135,7 +125,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Jgt, Comment = "Jump to an instruction relative to the current instruction when SF is unset. Value may be negative.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Jgt(Cpu cpu, byte flag, uint source)
 		{
 			if (!cpu.Sf)
@@ -146,7 +135,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Je, Comment = "Jump to an instruction relative to the current instruction when ZF is set. Value may be negative.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Je(Cpu cpu, byte flag, uint source)
 		{
 			if (cpu.Zf)
@@ -157,7 +145,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Jne, Comment = "Jump to an instruction relative to the current instruction when ZF is unset. Value may be negative.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing number of instructions to jump")]
 		public static void Jne(Cpu cpu, byte flag, uint source)
 		{
 			if (!cpu.Zf)
@@ -167,9 +154,7 @@ namespace Andy.TinyOS
 			}
 		}
 
-		[OpCode(OpCode.Cmpi, Comment = "Compare a register and a constant value. Set ZF if values are equal, SF if destination < source")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing value to compare")]
-		[Parameter("iValue", Type = ParamType.Constant, Comment = "Value to compare against")]
+		[OpCode(OpCode.Cmp, Comment = "Compare a register and a constant value. Set ZF if values are equal, SF if destination < source")]
 		public static void Cmp(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var lValue = ReadValue(cpu, flag, source);
@@ -180,7 +165,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Call, Comment = "Call the function offset from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the instruction offset")]
 		public static void Call(Cpu cpu, byte flag, uint source)
 		{
 			var uOffset = ReadValue(cpu, flag, source);
@@ -188,14 +172,12 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Ret, Comment = "Returns control to the next instruction after the last call")]
-		public static void Return(Cpu cpu)
+		public static void Return(Cpu cpu, byte flag)
 		{
 			cpu.Return();
 		}
 
 		[OpCode(OpCode.Alloc, Comment = "CreatePage memory")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Size required")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register to hold allocated address (0 if allocation was not successful)")]
 		public static void Alloc(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			uint size = ReadValue(cpu, flag, source);
@@ -204,7 +186,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Acquire, Comment = "Acquire the operating system lock whose number is provided in the register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the lock number")]
 		public static void AcquireLock(Cpu cpu, byte flag, uint source)
 		{
 			var lockNo = ReadValue(cpu, flag, source);
@@ -212,7 +193,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Release, Comment = "Release the lock whose number is provided in the register; If the lock is not held by the current process, the instruction is a no-op")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the lock number")]
 		public static void ReleaseLock(Cpu cpu, byte flag, uint source)
 		{
 			var lockNo = ReadValue(cpu, flag, source);
@@ -220,7 +200,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Signal, Comment = "Signal the operating system event whose number is provided in the register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
 		public static void SignalEvent(Cpu cpu, byte flag, uint source)
 		{
 			var eventNo = ReadValue(cpu, flag, source);
@@ -228,7 +207,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Wait, Comment = "Wait for an operating system event to become signalled")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the event number")]
 		public static void WaitEvent(Cpu cpu, byte flag, uint source)
 		{
 			var eventNo = ReadValue(cpu, flag, source);
@@ -236,7 +214,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Sleep, Comment = "Sleep the number of clock cycles as indicated in r1. If the time to sleep is 0, the process sleeps infinitely")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the number of ticks to sleep")]
 		public static void Sleep(Cpu cpu, byte flag, uint source)
 		{
 			var sleep = ReadValue(cpu, flag, source);
@@ -244,7 +221,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.SetP, Comment = "Set the priority of the current process to the value in register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the new priority")]
 		public static void SetPriority(Cpu cpu, byte flag, uint source)
 		{
 			var priority = ReadValue(cpu, flag, source);
@@ -252,7 +228,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Exit, Comment = "Terminates the current process")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Published exit code")]
 		public static void Exit(Cpu cpu, byte flag, uint source)
 		{
 			var exitCode = ReadValue(cpu, flag, source);
@@ -260,8 +235,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.TermP, Comment = "Terminates another process")]
-		[Parameter("destination", Type = ParamType.Register, Comment = "Register pointing to process to terminate")]
-		[Parameter("source", Type = ParamType.Register, Comment = "Published exit code")]
 		public static void TerminateProcess(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var pId = ReadValue(cpu, flag, destination);
@@ -270,7 +243,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Free, Comment = "Free memory previously allocated, pointed to by a register ")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to free")]
 		public static void FreeMemory(Cpu cpu, byte flag, uint destination)
 		{
 			var offset = ReadValue(cpu, Dest(flag), destination);
@@ -278,8 +250,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Clear, Comment = "Zero-out memory pointed to by a register for X bytes")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
 		public static void MemoryClear(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var vAddr = ReadValue(cpu, Dest(flag), destination);
@@ -288,22 +258,18 @@ namespace Andy.TinyOS
 			cpu.MemoryClear(vAddr, count);
 		}
 
-		[OpCode(OpCode.MapShared, Comment = "Map a shared memory portion into the address space")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the address to clear")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the number of bytes to clear")]
-		public static void MapShared(Cpu cpu, byte flag, uint destination, uint source)
+		[OpCode(OpCode.Map, Comment = "Map a shared memory portion into the address space")]
+		public static void Map(Cpu cpu, byte flag, uint destination, uint source)
 		{
 		}
 
 		[OpCode(OpCode.Input, Comment = "Read the next 32-bit value into a register")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to place the value")]
 		public static void Input(Cpu cpu, byte flag, uint destination)
 		{
 			cpu.Input(Dest(flag), destination);
 		}
 
 		[OpCode(OpCode.Not, Comment = "Return the ones complement of a value")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to containing value to flip")]
 		public static void Not(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
@@ -311,7 +277,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Neg, Comment = "Return the twos complement of a value")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register to containing value to negate")]
 		public static void Neg(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
@@ -319,8 +284,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Mul, Comment = "Return the result of multiplying one register with another")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
 		public static void Mul(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);
@@ -329,8 +292,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Div, Comment = "Return the result of dividing one register with another")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
 		public static void Div(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);
@@ -339,8 +300,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.And, Comment = "Return the result of AND one register with another")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
 		public static void And(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);
@@ -349,8 +308,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Or, Comment = "Return the result of OR one register with another")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
 		public static void Or(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);
@@ -359,8 +316,6 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Xor, Comment = "Return the result of XOR one register with another")]
-		[Parameter("rX", Type = ParamType.Register, Comment = "Register containing the first value and the result")]
-		[Parameter("rY", Type = ParamType.Register, Comment = "Register containing the second operand")]
 		public static void Xor(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, Dest(flag), destination);

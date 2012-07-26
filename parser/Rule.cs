@@ -438,7 +438,9 @@ namespace Andy.TinyOS.Parser
 
 		protected override bool InternalMatch(ParserState p)
 		{
-			Trace.Assert(!p.AtEndOfInput());
+			if (p.AtEndOfInput())
+				return false;
+
 			p.Index++;
 			return true;
 		}
@@ -490,7 +492,9 @@ namespace Andy.TinyOS.Parser
 
 		protected override bool InternalMatch(ParserState p)
 		{
-			Trace.Assert(Rules.Count == 1);
+			if (Rules.Count != 1)
+				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+
 			Rule r = Rules[0];
 			while (true)
 			{
@@ -528,7 +532,9 @@ namespace Andy.TinyOS.Parser
 
 		protected override bool InternalMatch(ParserState p)
 		{
-			Trace.Assert(Rules.Count == 1);
+			if ( Rules.Count != 1 )
+				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+
 			Rule r = Rules[0];
 			if (!r.Match(p))
 				return false;
@@ -568,7 +574,9 @@ namespace Andy.TinyOS.Parser
 
 		protected override bool InternalMatch(ParserState p)
 		{
-			Trace.Assert(Rules.Count == 1);
+			if ( Rules.Count != 1 )
+				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+
 			Rule r = Rules[0];
 			if (r.Match(p))
 				return false;
@@ -643,8 +651,10 @@ namespace Andy.TinyOS.Parser
 
 		public CharSeqRule(string s)
 		{
+			if (string.IsNullOrEmpty(s))
+				throw new ArgumentException("Parameter must not be empty or null", "s");
+
 			_value = s;
-			Trace.Assert(s.Length > 0);
 		}
 
 		public override RuleType RuleType

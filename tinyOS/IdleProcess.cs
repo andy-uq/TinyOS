@@ -12,13 +12,13 @@ namespace Andy.TinyOS
 				var code = new CodeStream();
 
 				code.AsFluent()
-					.Movi(Register.B, -3)
-					.Movi(Register.A, 1)
-					.Printr(Register.A)
-					.Incr(Register.A)
-					.Cmpi(Register.A, 10)
-					.Jlt(Register.B)
-					.Exit(Register.A)
+					.Mov.RI(Register.B, -3)
+					.Mov.RI(Register.A, 1)
+					.Print.R(Register.A)
+					.Incr.R(Register.A)
+					.Cmpi.RI(Register.A, 10)
+					.Jlt.R(Register.B)
+					.Exit.R(Register.A)
 				;
 
 				return code.ToArray();
@@ -32,10 +32,10 @@ namespace Andy.TinyOS
 				var code = new CodeStream();
 
 				code.AsFluent()
-					.Movi(Register.A, 20)
-					.Movi(Register.B, -1)
-					.Printr(Register.A)
-					.Jmp(Register.B);
+					.Mov.RI(Register.A, 20)
+					.Mov.RI(Register.B, -1)
+					.Print.R(Register.A)
+					.Jmp.R(Register.B);
 				
 				return code.ToArray();
 			}

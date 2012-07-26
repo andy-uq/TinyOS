@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Andy.TinyOS
 {
 	public class MemoryAddress
@@ -48,5 +50,23 @@ namespace Andy.TinyOS
 
 		/// <summary>[r10]</summary>
 		public static readonly MemoryAddress J = new MemoryAddress(10);
+		
+		private static MemoryAddress[] _memoryAddresses;
+
+		static MemoryAddress()
+		{
+			_memoryAddresses = typeof(MemoryAddress)
+				.GetFields()
+				.Where(x => x.FieldType == typeof(MemoryAddress))
+				.Select(x => x.GetValue(null))
+				.Cast<MemoryAddress>()
+				.ToArray();
+		}
+
+		public static MemoryAddress Parse(string value)
+		{
+			var register = Register.Parse(value);
+			return _memoryAddresses[register.Index];
+		}
 	}
 }

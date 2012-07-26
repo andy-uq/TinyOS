@@ -113,7 +113,7 @@ namespace Andy.TinyOS.Parser
 		/// <returns></returns>
 		public ParseNode this[string s]
 		{
-			get { return _children.FirstOrDefault(pn => pn.RuleName == s); }
+			get { return GetHierarchy().FirstOrDefault(pn => pn.RuleName == s); }
 		}
 
 		/// <summary>
@@ -261,11 +261,19 @@ namespace Andy.TinyOS.Parser
 
 		public ParseNode GetNamedChild(string name)
 		{
-			return GetHierarchy().Single(x => x.RuleName == name);
+			return GetHierarchy().SingleOrDefault(x => x.RuleName == name);
+		}
+
+		public IEnumerable<ParseNode> GetNamedChildren(string name)
+		{
+			return GetHierarchy().Where(x => x.RuleName == name);
 		}
 
 		public bool Is(Rule rule)
 		{
+			if ( _rule == null )
+				return false;
+
 			return _rule.Equals(rule);
 		}
 	}

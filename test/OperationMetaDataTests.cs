@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Andy.TinyOS;
+using Andy.TinyOS.OpCodeMeta;
 using NUnit.Framework;
 using tinyOS;
-using tinyOS.OpCodeMeta;
 
 namespace ClassLibrary1
 {
@@ -15,6 +15,9 @@ namespace ClassLibrary1
 		{
 			foreach (var opcode in Enum.GetValues(typeof(OpCode)).Cast<OpCode>())
 			{
+				if ( opcode.ToString().EndsWith("X") )
+					continue;
+
 				Assert.That(OpCodeMetaInformation.Lookup.Keys, Contains.Item(opcode));
 			}
 		}
@@ -24,6 +27,9 @@ namespace ClassLibrary1
 		{
 			foreach (var opcode in Enum.GetValues(typeof(OpCode)).Cast<OpCode>())
 			{
+				if ( opcode.ToString().EndsWith("X") )
+					continue;
+
 				var meta = OpCodeMetaInformation.Lookup[opcode];
 				Assert.That(meta.Comment, Is.Not.Null.Or.Empty);
 			}

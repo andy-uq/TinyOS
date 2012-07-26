@@ -10,24 +10,6 @@ namespace ClassLibrary1
 	[TestFixture]
 	public class CpuTests
 	{
-		const string _reallySimpleProgram = @"
-			movi r1 $1
-			exit r1
-		";
-		const string _p1 = @"
-			movi r1 $1
-			acquire r1
-			wait r1
-			release r1
-			exit r1
-		";
-		const string _p2 = @"
-			movi r1 $1
-			signal r1
-			acquire r1
-			release r1
-			exit r1
-		";
 
 		[Test]
 		public void RunCpu()
@@ -61,7 +43,7 @@ namespace ClassLibrary1
 
 			var prog1 = cpu.Load();
 
-			cpu.Compile(prog1, _reallySimpleProgram);
+			cpu.Compile(prog1, TestPrograms.ReallySimpleProgram);
 			cpu.Run(prog1);
 
 			while ( prog1.IsRunning )
@@ -81,8 +63,8 @@ namespace ClassLibrary1
 			var prog1 = cpu.Load();
 			var prog2 = cpu.Load();
 
-			cpu.Compile(prog1, _p1);
-			cpu.Compile(prog2, _p2);
+			cpu.Compile(prog1, TestPrograms.P1);
+			cpu.Compile(prog2, TestPrograms.P2);
 			
 			cpu.Run(prog1);
 			cpu.Run(prog2);

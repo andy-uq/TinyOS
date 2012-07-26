@@ -43,6 +43,8 @@
     <Compile Include="AbstractSyntaxTreeTextPrinter.cs" />
     <Compile Include="AndyBaseGrammar.cs" />
     <Compile Include="AndyStructuralGrammar.cs" />
+    <Compile Include="AsmBaseGrammar.cs" />
+    <Compile Include="AsmStructuralGrammar.cs" />
     <Compile Include="BaseGrammar.cs" />
     <Compile Include="CppBaseGrammar.cs" />
     <Compile Include="CppFileSetParser.cs" />

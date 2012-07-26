@@ -52,6 +52,11 @@ namespace ClassLibrary1
 			return new MemoryStream(_ram, (int) _heapOffset, (int) (_ram.Length - _heapOffset)).ToArray();
 		}
 
+		private void Invoke(Instruction instruction)
+		{
+			_cpu.Execute(instruction);
+		}
+
 		private void Invoke(Action<Cpu, byte, uint> instruction, uint source)
 		{
 			instruction(_cpu, (byte) OpCodeFlag.Constant << 2, source);
@@ -100,6 +105,17 @@ namespace ClassLibrary1
 			Assert.That(A, Is.EqualTo(100));
 
 			Invoke(InstructionsWithControlByte.Add, Register.A, Register.B);
+			Assert.That(A, Is.EqualTo(150));
+		}
+
+		[Test]
+		public void WithDynamic()
+		{
+			Invoke(new Instruction(OpCode.Mov).Destination(Register.A).Source(100));
+			Invoke(new Instruction(OpCode.Mov).Destination(Register.B).Source(50));
+			Assert.That(A, Is.EqualTo(100));
+
+			Invoke(new Instruction(OpCode.Add).Destination(Register.A).Source(Register.B));
 			Assert.That(A, Is.EqualTo(150));
 		}
 

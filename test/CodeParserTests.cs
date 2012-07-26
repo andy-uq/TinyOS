@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Andy.TinyOS;
+using Andy.TinyOS.Compiler;
+using Andy.TinyOS.Parser;
 using Andy.TinyOS.Utility;
 using NUnit.Framework;
 using tinyOS;
@@ -34,20 +37,24 @@ namespace ClassLibrary1
 		[TestCase(@"Sample Programs\scott13.txt")]
 		public void OpenFile(string file)
 		{
+			var grammar = new AsmStructuralGrammar();
 			file = string.Concat(_testPaths[Environment.MachineName], file);
 			
-			var parser = new InstructionTextReader();
 			var outputFile = Path.ChangeExtension(file, ".asm");
 			using (var stringWriter = File.CreateText(outputFile))
 			using (var writer = new InstructionTextWriter(stringWriter))
-			using (var streamReader = File.OpenText(file))
 			{
-				string line;
-				while ((line = streamReader.ReadLine()) != null)
-				{
-					var i = parser.Parse(line);
-					writer.Write(i);
-				}
+				string source = File.ReadAllText(file);
+				var parser = new ParserState(source);
+				var result = grammar.program.Match(parser);
+				Assert.That(result, Is.True);
+
+				var printer = new CppStructuralOutputAsXml();
+				printer.Print(parser.GetRoot());
+				Console.WriteLine(printer.AsXml());
+
+				var assembler = new Assembler(parser);
+				assembler.Assemble().ToList().ForEach(writer.Write);
 			}
 		}
 
@@ -82,29 +89,31 @@ namespace ClassLibrary1
 
 		private byte[] Compile(string file)
 		{
-			var parser = new InstructionTextReader();
 			var ms = new MemoryStream();
-			var writer = new CodeWriter(ms);
-
-			using (var streamReader = File.OpenText(file))
+			using (var writer = new CodeWriter(ms))
 			{
-				string line;
-				while ((line = streamReader.ReadLine()) != null)
-				{
-					var i = parser.Parse(line);
-					writer.Write(i);
-				}
+				string source = File.ReadAllText(file);
+				var assembler = new Assembler(source);
+				assembler.Assemble().ToList().ForEach(writer.Write);
 			}
 
-			writer.Close();
 			return ms.ToArray();
+		}
+
+		[Test]
+		public void ParseExpression()
+		{
+			var instruction = new Instruction(OpCode.Mov).Destination(Register.A).Source(10);
+			Assert.That(instruction.OpCode, Is.EqualTo(OpCode.Mov));
+			Assert.That(instruction.OpCodeMask, Is.EqualTo(13));
+			Assert.That(instruction.ToString(), Is.StringMatching(@"^Mov\s+r1\s+\$10"));
 		}
 
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void WriteExtraParameter()
 		{
 			var badInstruction = new Instruction(OpCode.Ret).Source(10);
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+Unknown \(10\)"));
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+\$10"));
 
 			var ms = new StringWriter();
 			using (var writer = new InstructionTextWriter(ms))
@@ -125,8 +134,8 @@ namespace ClassLibrary1
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void WriteMissingParameter()
 		{
-			var badInstruction = new Instruction(OpCode.Movi) { Parameters = new[] { 0U } };
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Movi\s+r1"));
+			var badInstruction = new Instruction(OpCode.Mov).Source(10);
+			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Mov"));
 
 			var ms = new StringWriter();
 			using (var writer = new InstructionTextWriter(ms))

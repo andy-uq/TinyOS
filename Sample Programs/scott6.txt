@@ -1,21 +1,21 @@
-6	r1, $1		;move 1 into r2
-11	r1
-1	r1
-11	r1
-1	r1
-11	r1
-1	r1
-11	r1
-6	r2, $43		;jump 43 bytes forward
-19	r2
-1	r1
-11	r1
-6	r3, $150	;move 150 into r3
-6	r4, $11		;move 11 into r4
-9	r3, r4		;move r4 into memory at r3
-20	r3
-27	r3		;ext
-6	r1, $55		;move 55 into r2
-21			;ret
-11	r1
-21
+mov	r1 $1		;move 1 into r2
+print	r1
+incr	r1
+print	r1
+incr	r1
+print	r1
+incr	r1
+print	r1
+mov	r2 $43		;jump 43 bytes forward
+jmp	r2
+incr	r1
+print	r1
+mov	r3 $150	;move 150 into r3
+mov	r4 $11		;move 11 into r4
+mov	[r3] r4		;move r4 into memory at r3
+call	[r3]
+exit	r3		;ext
+mov	r1 $55		;move 55 into r2
+ret				;ret
+print	r1
+ret
