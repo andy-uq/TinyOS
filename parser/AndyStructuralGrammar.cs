@@ -13,9 +13,11 @@ namespace Andy.TinyOS.Parser
 		public Rule statement;
 		public Rule block;
 		public Rule function_call;
-		private Rule control_statement;
+		public Rule control_statement;
 		public Rule if_statement;
 		public Rule if_condition;
+		public Rule while_statement;
+		public Rule while_condition;
 		public Rule else_block;
 
 		/// <summary>
@@ -51,7 +53,12 @@ namespace Andy.TinyOS.Parser
 			if_condition = if_keyword + Delimiter("(") + relational_expression + Delimiter(")");
 			else_block = else_keyword + ws + Recursive(() => block);
 			if_statement = if_condition + Recursive(() => block) + Opt(else_block);
-			control_statement = if_statement;
+
+			while_condition = while_keyword + Delimiter("(") + relational_expression + Delimiter(")");
+			while_statement = while_condition + Recursive(() => block);
+			control_statement = 
+				if_statement 
+				| while_statement;
 
 			statement = 
 				Opt(assignment_expression) + ws + statement_delimiter 

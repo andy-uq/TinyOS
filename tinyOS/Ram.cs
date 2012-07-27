@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using tinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
  	public class Ram
 	{
 		private readonly byte[] _ram;
 		private readonly List<Frame>[] _pageTable;
-		
+ 		private Frame[] _shared;
+ 		public VirtualAddressCalculator VirtualAddressCalculator { get; private set; }
+
         public int Size
 		{
 			get { return _ram.Length; }
@@ -20,6 +24,7 @@ namespace tinyOS
 
         public Ram(byte[] ram, uint frameSize)
         {
+        	VirtualAddressCalculator = new VirtualAddressCalculator(frameSize);
             FrameSize = frameSize;
             _ram = ram;
             _pageTable = Enumerable.Range(0, (int) (ram.Length/frameSize))
@@ -28,11 +33,43 @@ namespace tinyOS
                 .ToArray();
         }
 
- 	    public Ram(uint size, uint frameSize) : this(new byte[size], frameSize)
+ 		public Ram(uint size, uint frameSize) : this(new byte[size], frameSize)
 		{
 		}
 
-	    private Frame CreateFrame(uint processId, uint frameNumber)
+		public uint AllocateShared(uint size)
+		{
+			if (size == 0)
+				throw new ArgumentException("Size must be greater than zero");
+
+			_shared = Enumerable
+				.Range(1, (int )(size/FrameSize))
+				.Select(CreateSharedFrame)
+				.ToArray();
+
+			return _shared.Select(x => x.FrameAddress).First();
+		}
+
+		private Frame CreateSharedFrame(int i)
+		{
+			var frame =
+				(
+					from f in LiveFrames
+					where f.ProcessId == 0
+					select f
+				).FirstOrDefault();
+
+			if (frame == null)
+				throw new InvalidOperationException("Cannot allocate space for shared memory");
+
+			frame.Pinned = true;
+			frame.PageNumber = (uint) i;
+			frame.ProcessId = uint.MaxValue;
+
+			return frame;
+		}
+
+ 		private Frame CreateFrame(uint processId, uint frameNumber)
 	    {
 	        return new Frame
 	                   {
@@ -42,6 +79,11 @@ namespace tinyOS
                            Live = true,
 	                   };
 	    }
+
+		public VirtualAddress ToVirtualAddress(Page page)
+		{
+			return VirtualAddressCalculator.New(0, (int)page.PageNumber);
+		}
 
 	    public uint ToPhysicalAddress(uint processId, VirtualAddress vaddr)
 		{
@@ -53,8 +95,29 @@ namespace tinyOS
 			return frame.FrameAddress + vaddr.Offset;
 		}
 
-        public Page Allocate(ProcessContextBlock pcb)
+		public IEnumerable<Page> AllocateFromShared(ProcessContextBlock pcb, uint size)
+		{
+			long remaining = size;
+
+			var index = 0;
+			while ( remaining > 0 )
+			{
+				var sharedFrame = _shared[index];
+				var page = pcb.PageTable.CreatePage(this);
+				page.Size = FrameSize;
+				page.FrameNumber = sharedFrame.FrameNumber;
+				yield return page;
+
+				remaining -= FrameSize;
+				index++;
+			}
+		}
+
+ 		public Page Allocate(ProcessContextBlock pcb)
         {
+			if (pcb == null)
+				throw new ArgumentNullException("pcb");
+
             var firstFreeFrame =
                 (
                     from frame in LiveFrames
@@ -65,7 +128,7 @@ namespace tinyOS
             if (firstFreeFrame == null)
                 return null;
 
-            var page = pcb.PageTable.CreatePage();
+            var page = pcb.PageTable.CreatePage(this);
             firstFreeFrame.ProcessId = pcb.Id;
             firstFreeFrame.PageNumber = page.PageNumber;
             page.Size = FrameSize;
@@ -117,68 +180,42 @@ namespace tinyOS
 			public bool Pinned { get; set; }
 			public uint FrameAddress { get; set; }
 		}
+
 	}
+
 
 	public struct VirtualAddress
 	{
-		private const int PAGE_SHIFT = 12;
-		private const ushort OFFSET_MASK = 0xfff;
-
+		private readonly VirtualAddressCalculator _calculator;
 		public ushort Offset { get; private set; }
 		public uint PageNumber { get; private set; }
 
 		public uint Address
 		{
-			get { return (PageNumber << PAGE_SHIFT) | Offset; }
+			get { return _calculator.Address(this); }
 		}
 
-		public VirtualAddress(int offset, int pageNumber) : this()
+		public VirtualAddress(VirtualAddressCalculator calculator, int offset, int pageNumber)
+			: this()
 		{
-			if (offset < 0 || offset > OFFSET_MASK)
-				throw new ArgumentOutOfRangeException("offset", offset, "Offset must be greater than zero and less than " + OFFSET_MASK);
-
-			if (pageNumber < 0)
-				throw new ArgumentOutOfRangeException("pageNumber", offset, "Page PageNumber must be greater than zero");
-
+			_calculator = calculator;
 			Offset = (ushort )offset;
 			PageNumber = (uint) pageNumber;
 		}
 
-		public VirtualAddress(uint address) : this()
-		{
-			PageNumber = address >> PAGE_SHIFT;
-			Offset = (ushort) (address & OFFSET_MASK);
-		}
-
         public static VirtualAddress operator +(VirtualAddress address, uint offset)
         {
-            return new VirtualAddress(address.Address + offset);
-        }
+			return address._calculator.New(address.Address + offset);
+		}
 
         public static VirtualAddress operator -(VirtualAddress address, uint offset)
         {
-            return new VirtualAddress(address.Address - offset);
-        }
+			return address._calculator.New(address.Address - offset);
+		}
 
 	    public override string ToString()
 		{
-			return string.Format("[0x{0:x8}] Page: {1:n0}, Offset {2}", Address, PageNumber, Offset);
+			return string.Format("[0x{0:x8}] Page: {1:n0}, Offset: {2}", Address, PageNumber, Offset);
 		}
-
-        public static uint ToAddress(Page page, int offset = 0)
-        {
-            var virtualAddress = new VirtualAddress(offset, (int) page.PageNumber);
-            return virtualAddress.Address;
-        }
-	}
-
-	public static class VirtualAddressLookup
-	{
-
-	}
-
-	public class TranslationLookasideBuffer
-	{
-		
 	}
 }

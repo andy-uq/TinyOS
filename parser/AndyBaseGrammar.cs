@@ -97,9 +97,9 @@
 
 		public Rule statement_delimiter;
 
-
 		public Rule if_keyword;
 		public Rule else_keyword;
+		public Rule while_keyword;
 
 		#endregion
 
@@ -224,6 +224,7 @@
 
 			if_keyword = Word("if");
 			else_keyword = Word("else");
+			while_keyword = Word("while");
 
 			InitializeRules<AndyBaseGrammar>(false);
 		}

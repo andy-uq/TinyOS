@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using tinyOS;
 
 namespace Andy.TinyOS
@@ -42,13 +43,15 @@ namespace Andy.TinyOS
 		}
 
 		public static void Initialise(Cpu cpu, Instruction[] code = null)
-		{
-			cpu.IdleProcess.Code.Append(cpu.Ram.Allocate(cpu.IdleProcess));
-
-			var ms = cpu.GetMemoryStream(cpu.IdleProcess.Code);
+		{			
+			var ms = new MemoryStream();
 			using (var writer = new CodeWriter(ms))
 			{
 				Array.ForEach(code ?? Instructions, writer.Write);
+				writer.Close();
+
+				var codeBlock = cpu.AllocateCodeBlock(cpu.IdleProcess, (uint )ms.Length);
+				ms.WriteTo(codeBlock);
 			}
 		}
 	}

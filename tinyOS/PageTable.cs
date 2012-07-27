@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Andy.TinyOS;
 
 namespace tinyOS
 {
@@ -16,10 +17,10 @@ namespace tinyOS
 		    _nextPageNo = 1;
 		}
 
-		public Page CreatePage()
+		public Page CreatePage(Ram ram)
 		{
 		    uint pageNumber = _nextPageNo;
-		    var page = new Page {PageNumber = pageNumber };
+		    var page = new Page(ram) {PageNumber = pageNumber };
 
 		    _nextPageNo++;
 		    return page;

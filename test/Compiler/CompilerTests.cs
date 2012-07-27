@@ -75,6 +75,9 @@ namespace ClassLibrary1.Compiler
 		[TestCase("{ result = 0; a = 10; if (a == 10) { result = 30; } }", 30U)]
 		[TestCase("{ result = 5; a = 10; if (a == 20) { result = 30; } result = result; }", 5U)]
 		[TestCase("{ result = 5; a = 10; if (a == 20) { result = 30; } else { result = 20; } }", 20U)]
+		[TestCase("{ result = 5; a = 10; if (a < 20) { result = 30; } else { result = 20; } }", 30U)]
+		[TestCase("{ result = 0; a = 10; while (a > 0) { result = result + 2; a = a - 1; } result = result; }", 20U)]
+		[TestCase("{ result = 0; a = 0; while (a < 10) { result = result + 2; a = a + 1; } result = result; }", 20U)]
 		public void ControlFlow(string source, uint result)
 		{
 			var grammar = new AndyStructuralGrammar();
@@ -104,13 +107,19 @@ namespace ClassLibrary1.Compiler
 
 			var prog1 = cpu.Load();
 
-			var stream = cpu.Compile(prog1, program);
-			Console.WriteLine("Code Size: {0} bytes", stream.Length);
+			var codeSize = cpu.Compile(prog1, program);
+			Console.WriteLine("Code Size: {0} bytes", codeSize);
 
 			cpu.Run(prog1);
 
+			var timeout = 1000;
 			while (prog1.IsRunning)
+			{
 				cpu.Tick();
+				timeout--;
+				if (timeout == 0)
+					throw new Exception("Timed out while running program");
+			}
 
 			return prog1;
 		}

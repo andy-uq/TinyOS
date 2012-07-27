@@ -110,6 +110,7 @@
     <Compile Include="Ram.cs" />
     <Compile Include="ReadyQueue.cs" />
     <Compile Include="Utility\InstructionTextWriter.cs" />
+    <Compile Include="VirtualAddressCalculator.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,13 +1,21 @@
-using System.IO;
-
-namespace tinyOS
+namespace Andy.TinyOS
 {
     public class Page
     {
-        public uint PageNumber { get; set; }
-        public uint Size { get; set; }
-        public uint FrameNumber { get; set; }
+    	private readonly Ram _ram;
 
-        public VirtualAddress VirtualAddress { get { return new VirtualAddress(0, (int )PageNumber); } }
+    	public uint PageNumber { get; set; }
+		public uint Size { get; set; }
+		public uint FrameNumber { get; set; }
+
+    	public Page(Ram ram)
+    	{
+    		_ram = ram;
+    	}
+		
+    	public VirtualAddress VirtualAddress
+    	{
+    		get { return _ram.ToVirtualAddress(this); }
+    	}
     }
 }

@@ -13,7 +13,7 @@ Print     r1                      ;Print the value in a register
 Mov       r3          $150        ;move 150 into r3
 Mov       r4          $11         ;move 11 into r4
 Mov       [r3]        r4          ;move r4 into memory at r3
-Call      [r3]                    ;Call the function offset from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.
+Call      [r3]                    ;Call the function absolute from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.
 Exit      r3                      ;ext
 Mov       r1          $55         ;move 55 into r2
 Ret                               ;ret

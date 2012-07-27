@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Andy.TinyOS.OpCodeMeta;
-using tinyOS;
 
 namespace Andy.TinyOS.Utility
 {

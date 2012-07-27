@@ -205,6 +205,27 @@ namespace Andy.TinyOS.Compiler
 			
 			return context;
 		}
+
+		private CompilerContext WhileStatement(CompilerContext context)
+		{
+			var expression = context.Node.GetNamedChild("while_condition").GetNamedChild("relational_expression");
+
+			var conditionPtr = context.Code.Position;
+			context.Compile(expression);
+			
+			var block = context.Node.GetNamedChild("block");
+			var child = context.Push(block);
+			
+			var blockCode = child.Compiler(child);
+			context.Code.AsFluent()
+				.Je.I(blockCode.Count() + 2);
+
+			context.Code += blockCode;
+			context.Code.AsFluent()
+				.Jmp.I(conditionPtr - context.Code.Position);
+			
+			return context;
+		}
 		
 		public IEnumerable<Instruction> Compile()
 		{

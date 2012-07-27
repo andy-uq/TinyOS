@@ -164,7 +164,7 @@ namespace Andy.TinyOS
 			cpu.Zf = (lValue == rValue);
 		}
 
-		[OpCode(OpCode.Call, Comment = "Call the function offset from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
+		[OpCode(OpCode.Call, Comment = "Call the function absolute from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
 		public static void Call(Cpu cpu, byte flag, uint source)
 		{
 			var uOffset = ReadValue(cpu, flag, source);
@@ -261,6 +261,9 @@ namespace Andy.TinyOS
 		[OpCode(OpCode.Map, Comment = "Map a shared memory portion into the address space")]
 		public static void Map(Cpu cpu, byte flag, uint destination, uint source)
 		{
+			uint size = ReadValue(cpu, flag, source);
+			var offset = cpu.AllocateShared(size);
+			WriteValue(cpu, flag, destination, offset);
 		}
 
 		[OpCode(OpCode.Input, Comment = "Read the next 32-bit value into a register")]

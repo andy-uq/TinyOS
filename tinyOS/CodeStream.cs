@@ -18,6 +18,11 @@ namespace Andy.TinyOS
 			_instructions = new List<Instruction>(instructions);
 		}
 
+		public int Position
+		{
+			get { return _instructions.Count; }
+		}
+
 		public CodeStream Add(Instruction instruction)
 		{
 			_instructions.Add(instruction);

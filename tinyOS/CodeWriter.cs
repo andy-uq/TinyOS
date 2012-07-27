@@ -59,13 +59,14 @@ namespace Andy.TinyOS
 			_writer.Write((ushort)_instructionTable.Count);
 			_writer.Write(endOfInstructions);
 
-			_writer.Close();
-			_writer = null;
+			_writer.Flush();
 		}
 
 		public void Dispose()
 		{
 			Close();
+			_writer.Close();
+			_writer = null;
 		}
 	}
 }

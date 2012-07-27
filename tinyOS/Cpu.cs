@@ -96,8 +96,23 @@ namespace tinyOS
 				Priority = 16,
 			};
 
-			processContextBlock.Code.Append(Ram.Allocate(processContextBlock));
 			return processContextBlock;
+		}
+		
+		public Stream AllocateCodeBlock(ProcessContextBlock pcb, uint length)
+		{
+			var page = new PageInfo();
+
+			while ( length > Ram.FrameSize )
+			{
+				length -= Ram.FrameSize;
+				page.Append(Ram.Allocate(pcb));
+			}
+
+			page.Append(Ram.Allocate(pcb));
+			pcb.Code = page;
+
+			return GetMemoryStream(page);
 		}
 
 		public void Run(ProcessContextBlock block)
@@ -127,7 +142,8 @@ namespace tinyOS
 				CurrentProcess = SwitchToNextProcess();
 			}
 
-			var codeReader = new CodeReader(GetMemoryStream(CurrentProcess.Code));
+			Stream codeStream = GetMemoryStream(CurrentProcess.Code);
+			var codeReader = new CodeReader(codeStream);
 			var instruction = codeReader[Ip];
 			if (instruction != null)
 			{
@@ -254,7 +270,17 @@ namespace tinyOS
 		public void Call(uint value)
 		{
 			Push(Ip);
-			Jump(value);
+			CurrentProcess.Ip = value;
+		}
+
+		public uint AllocateShared(uint size)
+		{
+			var page = new PageInfo();
+			var pageSet = Ram.AllocateFromShared(CurrentProcess, size).ToList();
+			pageSet.ForEach(page.Append);
+			
+			CurrentProcess.PageTable.Add(page);
+			return page.Offset;
 		}
 
 		public uint Allocate(uint size)

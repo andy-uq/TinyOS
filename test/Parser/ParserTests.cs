@@ -137,6 +137,32 @@ namespace ClassLibrary1.Parser
 		}
 
 		[Test]
+		public void BuildWhileStatement()
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("while");
+
+			Assert.That(grammer.while_keyword.Match(p), Is.True);
+
+			p = new ParserState("while()");
+			var rule = grammer.while_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
+			Assert.That(rule.Match(p), Is.True);
+
+			p = new ParserState("while (a == b)");
+			Assert.That(grammer.while_condition.Match(p), Is.True);
+			
+			p = new ParserState("while(a == 10){a=20;}");
+			var while_block = grammer.while_condition + grammer.block;
+			Assert.That(while_block.Match(p), Is.True);
+			
+			p = new ParserState("while(a == 10){a=20;}");
+			Assert.That(grammer.while_statement.Match(p), Is.True);
+
+			p = new ParserState("while(a == 10){a=20;}");
+			Assert.That(grammer.control_statement.Match(p), Is.True);
+		}
+
+		[Test]
 		public void BuildIfStatement()
 		{
 			var grammer = new AndyStructuralGrammar();
@@ -158,6 +184,9 @@ namespace ClassLibrary1.Parser
 			p = new ParserState("if(a == 10){a=20;}");
 			if_block = grammer.if_condition + new RecursiveRule(() => grammer.block);
 			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			Assert.That(grammer.control_statement.Match(p), Is.True);
 		}
 
 		[Test]

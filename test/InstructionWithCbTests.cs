@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Andy.TinyOS;
 using NUnit.Framework;
@@ -13,6 +12,7 @@ namespace ClassLibrary1
 	{
 		private Cpu _cpu;
 		private int _heapOffset;
+		private int _sharedOffset;
 		private readonly byte[] _ram = new byte[1024];
 
 		private uint A { get { return _cpu.Registers[Register.A]; } }
@@ -26,7 +26,10 @@ namespace ClassLibrary1
 		{
 			const uint pId = 10;
 
-			_cpu = new Cpu(new Ram(_ram, 128));
+			var ram = new Ram(_ram, 16);
+			_sharedOffset  = (int) ram.AllocateShared(256);
+
+			_cpu = new Cpu(ram);
 			_cpu.InputDevice = new InputDevice();
 
 			var p = CreateProcess(pId);
@@ -45,11 +48,6 @@ namespace ClassLibrary1
 			p.Code.Append(_cpu.Ram.Allocate(p));
 			p.GlobalData.Append(_cpu.Ram.Allocate(p));
 			return p;
-		}
-
-		private byte[] GetHeap()
-		{
-			return new MemoryStream(_ram, (int) _heapOffset, (int) (_ram.Length - _heapOffset)).ToArray();
 		}
 
 		private void Invoke(Instruction instruction)
@@ -95,6 +93,11 @@ namespace ClassLibrary1
 		private void Invoke(Action<Cpu, byte, uint, uint> instruction, MemoryAddress destination, Register source)
 		{
 			instruction(_cpu, (byte) OpCodeFlag.MemoryAddress | (byte) OpCodeFlag.Register << 2, destination, source);
+		}
+
+		private void Invoke(Action<Cpu, byte, uint, uint> instruction, Register destination, MemoryAddress source)
+		{
+			instruction(_cpu, (byte) OpCodeFlag.Register | (byte) OpCodeFlag.MemoryAddress << 2, destination, source);
 		}
 
 		[Test]
@@ -255,6 +258,41 @@ namespace ClassLibrary1
 		}
 
 		[Test]
+		public void Map()
+		{
+            int count = _cpu.CurrentProcess.PageTable.Count();
+			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
+			Invoke(InstructionsWithControlByte.Map, Register.B, Register.A);
+			
+			Assert.That(B, Is.Not.EqualTo(0));
+			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(count + 1));
+
+			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, 8088);
+			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
+			var value = BitConverter.ToUInt32(_ram, _sharedOffset);
+			Assert.That(value, Is.EqualTo(8088));
+			Assert.That(C, Is.EqualTo(8088));
+		}
+
+		[Test]
+		public void MapIsShared()
+		{
+			var pA = _cpu.CurrentProcess;
+			_cpu.CurrentProcess = new ProcessContextBlock();
+
+			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
+			Invoke(InstructionsWithControlByte.Map, Register.B, Register.A);
+			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, 8088);
+
+			_cpu.CurrentProcess = pA;
+			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
+			Invoke(InstructionsWithControlByte.Map, Register.B, Register.A);
+			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
+
+			Assert.That(C, Is.EqualTo(8088));
+		}
+
+		[Test]
 		public void WaitEvent()
 		{
 			var pA = _cpu.CurrentProcess;
@@ -327,6 +365,17 @@ namespace ClassLibrary1
 
 			var value = BitConverter.ToUInt32(_ram, _heapOffset);
 			Assert.That(value, Is.EqualTo(88));
+		}
+
+		[Test]
+		public void Movmr()
+		{
+			Invoke(InstructionsWithControlByte.Alloc, Register.B, 10);
+			Invoke(InstructionsWithControlByte.Mov, Register.A, 88);
+			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
+			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
+			
+			Assert.That(C, Is.EqualTo(88));
 		}
 
 		[Test]

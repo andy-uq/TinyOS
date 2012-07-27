@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Andy.TinyOS;
 using NUnit.Framework;
 using tinyOS;
 
@@ -16,7 +17,25 @@ namespace ClassLibrary1
             Assert.That(ram.FrameCount, Is.EqualTo(4));
         }
 
-        [Test]
+		[Test]
+		public void CreateShared()
+		{
+			var ram = new Ram(1024, 256);
+			var offset = ram.AllocateShared(512);
+			Assert.That(offset, Is.EqualTo(0));
+
+			var pcb = new ProcessContextBlock {Id = 10};
+			var p1 = ram.Allocate(pcb);
+			var p2 = ram.Allocate(pcb);
+
+			var p1Offset = ram.ToPhysicalAddress(10, p1.VirtualAddress);
+			var p2Offset = ram.ToPhysicalAddress(10, p2.VirtualAddress);
+			Assert.That(p1Offset, Is.GreaterThan(offset));
+			Assert.That(p2Offset, Is.GreaterThan(offset));
+			Assert.That(p2Offset, Is.GreaterThan(p1Offset));
+		}
+
+    	[Test]
         public void Allocate()
         {
             var ram = new Ram(2, 1);
@@ -79,5 +98,13 @@ namespace ClassLibrary1
             s.WriteByte(99);
             Assert.That(s.ToArray(), Is.EquivalentTo(new[] {99, 2, 3}));
         }
+
+		[Test]
+		public void VirtualAddressCalculations()
+		{
+			var c = new VirtualAddressCalculator(16);
+			Assert.That(c.PageSize, Is.EqualTo(16));
+			Assert.That(c.MaxPages, Is.EqualTo(1 << 28));
+		}
     }
 }

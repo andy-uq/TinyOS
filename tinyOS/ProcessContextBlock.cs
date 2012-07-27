@@ -42,16 +42,20 @@ namespace tinyOS
 
 	public static class ProcessControlBlockExtensions
 	{
-		public static Stream Compile(this Cpu cpu, ProcessContextBlock pcb, IEnumerable<Instruction> instructions)
+		public static uint Compile(this Cpu cpu, ProcessContextBlock pcb, IEnumerable<Instruction> instructions)
 		{
-            var stream = cpu.GetMemoryStream(pcb.Code);
+            var stream = new MemoryStream();
 			using ( var writer = new CodeWriter(stream) )
 			{
 				foreach (var instruction in instructions)
 					writer.Write(instruction);
-			}
 
-			return stream;
+				writer.Close();
+				using (var ps = cpu.AllocateCodeBlock(pcb, (uint) stream.Length))
+					stream.WriteTo(ps);
+
+				return (uint) stream.Length;
+			}
 		}
 	}
 }
