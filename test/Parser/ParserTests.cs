@@ -16,7 +16,8 @@ namespace ClassLibrary1.Parser
 	{
 		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
 		{
-			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"}
+			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"},
+			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"}
 		};
 
 		private readonly string Source_Directory = @"test\Parser\Input";
