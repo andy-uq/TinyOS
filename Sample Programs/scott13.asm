@@ -7,9 +7,9 @@ Mov       r1          r5          ;save address in r1
 Free      r2                      ;release
 Mov       r6          $11         ;put 11 in r6
 Mov       r5          r6          ;put 11 in the new memory
-Add       r5          $4          ;Add a constant value to a register
+Add       r5          $4          ;Add a value to a register
 Mov       r5          r6          ;put 11 in the new memory
-Add       r5          $4          ;Add a constant value to a register
+Add       r5          $4          ;Add a value to a register
 Mov       r5          r6          ;put 11 in the new memory
 Mov       r4          $17         ;we'll need 17 bytes
 Alloc     r4          r5          ;ask for 17 bytes

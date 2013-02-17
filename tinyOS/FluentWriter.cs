@@ -164,6 +164,11 @@ namespace Andy.TinyOS
 			get { return new FluentInstructionWriter(this, OpCode.Mul); }
 		}
 
+		public IFluentSourceInstructionWriter UnaryOp(OpCode opCode)
+		{
+			return new FluentInstructionWriter(this, opCode);
+		}
+
 		public IFluentDestinationSourceInstructionWriter Div
 		{
 			get { return new FluentInstructionWriter(this, OpCode.Div); }

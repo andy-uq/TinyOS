@@ -45,9 +45,14 @@ namespace Andy.TinyOS.Compiler
 
 		private static CompilerContext CompileExpression(CompilerContext context, params Tuple<string, Action<FluentWriter>>[] codeWriters)
 		{
+			return CompileExpression(context, codeWriters.Select(x => new Tuple<string, Action<FluentWriter>, OpCode>(x.Item1, x.Item2, OpCode.Noop)).ToArray());
+		}
+
+		private static CompilerContext CompileExpression(CompilerContext context, params Tuple<string, Action<FluentWriter>, OpCode>[] codeWriters)
+		{
 			context.Compile(context.Node[0]);
 			var code = context.AsFluent();
-			var expressions = codeWriters.ToDictionary(k => k.Item1, v => v.Item2);
+			var expressions = codeWriters.ToDictionary(k => k.Item1, v => new { writer = v.Item2, jumpCode = v.Item3 });
 
 			foreach (var right in context.Node[1])
 			{
@@ -58,7 +63,10 @@ namespace Andy.TinyOS.Compiler
 
 				code.Pop.R(Register.B);
 
-				expressions[@operator.Value](code);
+				var expr = expressions[@operator.Value];
+				expr.writer(code);
+
+				context.JumpExpression = expr.jumpCode;
 			}
 
 			return context;
@@ -167,11 +175,11 @@ namespace Andy.TinyOS.Compiler
 		private CompilerContext RelationalExpression(CompilerContext context)
 		{
 			return CompileExpression(context,
-				new Tuple<string, Action<FluentWriter>>("<", code => code.Cmpi.RR(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>("<=", code => code.Cmpi.RR(Register.A, Register.B)),
-				new Tuple<string, Action<FluentWriter>>(">", code => code.Cmpi.RR(Register.B, Register.A)),
-				new Tuple<string, Action<FluentWriter>>(">=", code => code.Cmpi.RR(Register.B, Register.A)),
-				new Tuple<string, Action<FluentWriter>>("==", code => code.Cmpi.RR(Register.A, Register.B))
+				new Tuple<string, Action<FluentWriter>, OpCode>("<", code => code.Cmpi.RR(Register.A, Register.B), OpCode.Jlt),
+				new Tuple<string, Action<FluentWriter>, OpCode>("<=", code => code.Cmpi.RR(Register.A, Register.B), OpCode.Jlt),
+				new Tuple<string, Action<FluentWriter>, OpCode>(">", code => code.Cmpi.RR(Register.B, Register.A), OpCode.Jlt),
+				new Tuple<string, Action<FluentWriter>, OpCode>(">=", code => code.Cmpi.RR(Register.B, Register.A), OpCode.Jlt),
+				new Tuple<string, Action<FluentWriter>, OpCode>("==", code => code.Cmpi.RR(Register.A, Register.B), OpCode.Jne)
 			);
 		}
 
@@ -181,7 +189,8 @@ namespace Andy.TinyOS.Compiler
 
 			var expression = context.Node.GetNamedChild("if_condition").GetNamedChild("relational_expression");
 			context.Compile(expression);
-			
+			var jumpCode = context.JumpExpression;
+
 			var block = context.Node.GetNamedChild("block");
 			var child = context.Push(block);
 			CodeStream ifTrue = child.Compiler(child);
@@ -197,12 +206,23 @@ namespace Andy.TinyOS.Compiler
 			}
 
 			context.Code.AsFluent()
-				.Jne.I(ifTrue.Count() + 1);
+				.UnaryOp(jumpCode).I(ifTrue.Count() + 1);
 
 			context.Code += ifTrue;
 			context.Code += ifFalse;
-
 			
+			return context;
+		}
+		
+		private CompilerContext Statement(CompilerContext context)
+		{
+			context.Code.Add(new Instruction(OpCode.Noop, context.Node.ToString()));
+			foreach ( var expression in context.Node )
+			{
+				var child = context.Push(expression);
+				context.Code += child.Compiler(child);
+			}
+
 			return context;
 		}
 

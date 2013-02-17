@@ -24,6 +24,18 @@ namespace Andy.TinyOS.Compiler
 			set { _compiler = value; }
 		}
 
+		private OpCode _jumpExpression;
+		public OpCode JumpExpression
+		{
+			get { return _jumpExpression; }
+			set
+			{
+				_jumpExpression = value;
+				if ( Parent != null )
+					Parent.JumpExpression = value;
+			}
+		}
+
 		public CompilerContext Push(ParseNode node)
 		{
 			if ( node == null )
@@ -33,7 +45,8 @@ namespace Andy.TinyOS.Compiler
 			{
 				Code = new CodeStream(),
 				Node = node,
-				Parent = this
+				Parent = this,
+				JumpExpression = OpCode.Noop,
 			};
 		}
 

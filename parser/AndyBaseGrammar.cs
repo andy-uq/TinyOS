@@ -109,7 +109,7 @@
 			multiply_operator = CharSet("*/%");
 			addition_operator = CharSet("+-");
 			logical_operator = CharSet("&|^");
-			relational_operator = CharSet("<>") | CharSeq("<=") | CharSeq(">=") | CharSeq("==") | CharSeq("!=");
+			relational_operator = CharSeq(">=") | CharSeq("<=") | CharSeq("==") | CharSeq("!=") | CharSet("<>");
 
 			#region identifiers
 

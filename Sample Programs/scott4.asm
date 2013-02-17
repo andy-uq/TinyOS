@@ -1,12 +1,12 @@
-Mov       r1          $99         ;Assign a register to a constant value
+Mov       r1          $99         ;Assign a register a value
 Push      r1                      ;Push the value of a register onto the stack
-Mov       r1          $11         ;Assign a register to a constant value
+Mov       r1          $11         ;Assign a register a value
 Push      r1                      ;Push the value of a register onto the stack
 Incr      r1                      ;Increase the value of a register by 1
 Pop       r1                      ;Pop a value off the stack into a register
-Mov       r3          $252        ;Assign a register to a constant value
+Mov       r3          $252        ;Assign a register a value
 Print     r3                      ;Print the value in a register
-Mov       r3          $150        ;Assign a register to a constant value
+Mov       r3          $150        ;Assign a register a value
 Pop       [r3]                    ;Pop a value off the stack into a register
 Print     [r3]                    ;Print the value in a register
 Push      $88                     ;Push the value of a register onto the stack

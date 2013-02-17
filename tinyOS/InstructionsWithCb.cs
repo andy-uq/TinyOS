@@ -71,7 +71,7 @@ namespace Andy.TinyOS
 			WriteValue(cpu, flag, destination, unchecked(value + 1));
 		}
 
-		[OpCode(OpCode.Add, Comment = "Add a constant value to a register")]
+		[OpCode(OpCode.Add, Comment = "Add a value to a register")]
 		public static void Add(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var a = ReadValue(cpu, Dest(flag), destination);
@@ -93,7 +93,7 @@ namespace Andy.TinyOS
 			WriteValue(cpu, flag, destination, value);
 		}
 
-		[OpCode(OpCode.Mov, Comment = "Assign a register to a constant value")]
+		[OpCode(OpCode.Mov, Comment = "Assign a register a value")]
 		public static void Mov(Cpu cpu, byte flag, uint destination, uint source)
 		{
 			var value = ReadValue(cpu, flag, source);
@@ -162,6 +162,8 @@ namespace Andy.TinyOS
 
 			cpu.Sf = (rValue < lValue);
 			cpu.Zf = (lValue == rValue);
+
+			Console.WriteLine("{0} < {1} : Sf: {2} Zf: {3}", rValue, lValue, cpu.Sf, cpu.Zf);
 		}
 
 		[OpCode(OpCode.Call, Comment = "Call the function absolute from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]
