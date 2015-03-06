@@ -17,7 +17,8 @@ namespace ClassLibrary1
 		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
 		{
 			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"},
-			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"}
+			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"},
+			{"ANDYCLARKE",@"C:\Dotnet\TinyOS\"}
 		};
 
 		[TestCase(@"Sample Programs\prog1.txt")]
