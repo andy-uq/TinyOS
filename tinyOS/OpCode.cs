@@ -7,7 +7,7 @@ namespace Andy.TinyOS
 		Add,
 		Push,
 		Mov,
-		Print,
+		Output,
 		Jmp,
 		Cmp,
 		Jlt,

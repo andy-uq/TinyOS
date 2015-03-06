@@ -30,8 +30,10 @@ namespace ClassLibrary1
 			IdleProcess.Initialise(cpu, IdleProcess.Instructions);
 
  			cpu.Tick();
-			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
+ 			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
 			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1));
+			
+			cpu.Tick();
 			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20));
 		}
 

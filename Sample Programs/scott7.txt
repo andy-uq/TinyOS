@@ -1,17 +1,22 @@
 mov		r1		$1		;move 1 into r2
 mov		r5		$11		;move 11 into r5
 sleep	r5				;sleep 11 - because we sleep, this program must be launch with another app like idle to take up those sleep cycles
-print	r1
+mov r7 $128
+output r7		r1
 incr	r1
-print	r1
+mov r7 $128
+output r7		r1
 incr	r1
-print	r1
+mov r7 $128
+output r7		r1
 incr	r1
-print	r1
+mov r7 $128
+output r7		r1
 jmp		$7				;jump 7 instructions forward
 call	r2
 incr	r1
-print	r1
+mov r7 $128
+output r7		r1
 mov		[r3]	$150	;move 150 into r3
 mov		r4		$11		;move 11 into r4
 mov		[r3]	r4		;move r4 into memory at r3
@@ -19,5 +24,6 @@ call	r3
 exit	r1				;ext
 mov		r1  $55			;move 55 into r2
 ret						;ret
-print	r1
+mov r7 $128
+output r7		r1
 ret

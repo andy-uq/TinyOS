@@ -13,9 +13,10 @@ namespace Andy.TinyOS
 				var code = new CodeStream();
 
 				code.AsFluent()
+					.Mov.RI(Register.E, (int )DeviceId.Terminal)
 					.Mov.RI(Register.B, -3)
 					.Mov.RI(Register.A, 1)
-					.Print.R(Register.A)
+					.Output.RR(Register.A, Register.E)
 					.Incr.R(Register.A)
 					.Cmpi.RI(Register.A, 10)
 					.Jlt.R(Register.B)
@@ -33,9 +34,10 @@ namespace Andy.TinyOS
 				var code = new CodeStream();
 
 				code.AsFluent()
+					.Mov.RI(Register.E, (int) DeviceId.Terminal)
 					.Mov.RI(Register.A, 20)
 					.Mov.RI(Register.B, -1)
-					.Print.R(Register.A)
+					.Output.RR(Register.A, Register.E)
 					.Jmp.R(Register.B);
 				
 				return code.ToArray();

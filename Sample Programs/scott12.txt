@@ -1,14 +1,19 @@
 mov	r1 $1		;move 1 into r1
 map	r1 r2		;map shared mem region #r1 return addr inr2
-print	r2		;print r2
+mov r7 $128
+output r7		r2		;print r2
 mov	r5 $1		;event 1
 wait	r5		;wait on 1
-print	r2		;print out shared mem
+mov r7 $128
+output r7	r2		;print out shared mem
 add	r2 $4		;add 4
-print	r2
+mov r7 $128
+output r7		r2
 add	r2 $4		;add 4
-print	r2
+mov r7 $128
+output r7		r2
 add	r2 $4		;add 4
-print	r2
+mov r7 $128
+output r7		r2
 add	r2 $4		;add 4
 exit  r2

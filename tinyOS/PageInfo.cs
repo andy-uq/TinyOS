@@ -15,7 +15,6 @@ namespace tinyOS
             _pages = new List<Page>();
 	    }
 
-	    public uint Owner { get; private set; }
         public uint Offset { get { return _page == null ? 0 : _page.VirtualAddress.Address; } }
         public uint Size { get { return (uint) _pages.Sum(x => x.Size); } }
 

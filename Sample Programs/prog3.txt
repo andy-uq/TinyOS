@@ -1,4 +1,5 @@
-print	r8		;Print r8
+mov r7 $128 ; print to r7
+output r7	r8		;Print r8
 mov	r1 $10	;Move 10 into r1
 acquire	r1		;Acquire Lock in r1 (currently 10)
 add	r1 $1	;Addi 1 to r1
@@ -7,8 +8,10 @@ acquire	r1		;Acquire r1 (currently 11, INVALID -> NOOP)
 add	r1 $1	;Addi 1 to r1
 sleep	r1		;Sleep r1 (currently 12)
 acquire  r1		;Acquire r1 (currently 12, INVALUD -> NOOP)
-print	r1		;Print r1 (currently 12)
+mov r7 $128 ; print to r7
+output r7	r1		;Print r1 (currently 12)
 mov	r2 $100	;Move 100 into r2
 sleep	r2		;Sleep r2 (currently 100)
-print	r2		;Print r2
+mov r7 $128 ; print to r7
+output r7	r2		;Print r2
 exit	r3		;Exit

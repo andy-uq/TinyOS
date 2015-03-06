@@ -5,7 +5,7 @@ namespace Andy.TinyOS
 {
 	public class Register
 	{
-		private int _index;
+		private readonly int _index;
 
 		private Register(int i)
 		{

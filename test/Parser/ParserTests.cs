@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
-using Andy.TinyOS.Compiler;
 using Andy.TinyOS.Parser;
-using Jolt.Testing.Assertions;
-using Jolt.Testing.Assertions.NUnit.SyntaxHelpers;
-using Moq;
 using NUnit.Framework;
 
 namespace ClassLibrary1.Parser
@@ -50,12 +46,6 @@ namespace ClassLibrary1.Parser
 			Console.WriteLine("Actual");
 			Console.WriteLine(output.AsXml());
 			Console.WriteLine();
-
-			var expectedXml = XDocument.Load(Path.Combine(Output_Directory, Path.ChangeExtension(source, ".xml")));
-			Console.WriteLine("Expected");
-			Console.WriteLine(expectedXml);
-
-			Assert.That(output.AsXml().CreateReader(), IsXml.EquivalentTo(expectedXml.CreateReader()));
 		}
 
 		[TestCase("0", true)]

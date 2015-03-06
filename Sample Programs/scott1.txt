@@ -1,6 +1,8 @@
 mov   	r1 $3276834	;move a big number into r1
 mov   	r2 r1			;move r1 to r2
-print  	r2   			;print r2
+mov r7 $128 ; print to r7
+output r7  	r2   			;mov r7 $128 ; print to r7
+output r7 r2
 add		r2 $5	     	;increment r2 by 5       
 add		r2 $5	     	;increment r2 by 5       
 add		r2 $5	     	;increment r2 by 5       
@@ -8,5 +10,7 @@ add		r2 $5	     	;increment r2 by 5
 add		r2 $5	     	;increment r2 by 5       
 add		r2 $5	     	;increment r2 by 5       
 add		r2 $5	     	;increment r2 by 5       
-print  	r2 			;print r2
+mov r7 $128 ; print to r7
+output r7  	r2 			;mov r7 $128 ; print to r7
+output r7 r2
 exit	r2 	    	;exit.

@@ -100,6 +100,14 @@ namespace ClassLibrary1
 			instruction(_cpu, (byte) OpCodeFlag.Register | (byte) OpCodeFlag.MemoryAddress << 2, destination, source);
 		}
 
+		private static uint AsUint(int value)
+		{
+			unchecked
+			{
+				return (uint) value;
+			}
+		}
+
 		[Test]
 		public void Add()
 		{
@@ -239,14 +247,6 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
-		private static uint AsUint(int value)
-		{
-			unchecked
-			{
-				return (uint) value;
-			}
-		}
-
 		[Test]
 		public void Alloc()
 		{
@@ -300,7 +300,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.WaitEvent, 1);
 
 			Assert.That(_cpu.CurrentProcess, Is.Null);
-			Assert.That(_cpu.DeviceQueue.Where(x => x.DeviceId == DeviceId.Event1).Select(x => x.Process), Contains.Item(pA));
+			Assert.That(_cpu.DeviceReadQueue.Where(x => x.DeviceId == DeviceId.Event1).Select(x => x.Process), Contains.Item(pA));
 		}
 
 		[Test]
@@ -326,7 +326,7 @@ namespace ClassLibrary1
 			IdleProcess.Initialise(_cpu);
 
 			var pA = _cpu.CurrentProcess;
-			Invoke(InstructionsWithControlByte.Input, Register.C);
+			Invoke(InstructionsWithControlByte.Input, Register.C, (uint )DeviceId.Terminal);
 
 			_cpu.Tick();
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
@@ -337,6 +337,72 @@ namespace ClassLibrary1
 
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
 			Assert.That(C, Is.EqualTo(99));
+		}
+
+		[Test]
+		public void Printr()
+		{
+			IdleProcess.Initialise(_cpu);
+			var pA = _cpu.CurrentProcess;
+
+			var printStack = new Stack<uint>();
+			_cpu.OutputMethod = printStack.Push;
+
+			Invoke(InstructionsWithControlByte.Mov, Register.A, (uint)DeviceId.Terminal);
+			Invoke(InstructionsWithControlByte.Mov, Register.B, 10);
+			Invoke(InstructionsWithControlByte.Output, Register.A, Register.B);
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+
+			Assert.That(printStack.Peek(), Is.EqualTo(10));
+		}
+
+		[Test]
+		public void Printc()
+		{
+			IdleProcess.Initialise(_cpu);
+			var pA = _cpu.CurrentProcess;
+
+			var printStack = new Stack<uint>();
+			_cpu.OutputMethod = printStack.Push;
+
+			Invoke(InstructionsWithControlByte.Mov, Register.A, (uint)DeviceId.Terminal);
+			Invoke(InstructionsWithControlByte.Output, Register.A, 10);
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+
+			Assert.That(printStack.Peek(), Is.EqualTo(10));
+		}
+
+		[Test]
+		public void Printm()
+		{
+			IdleProcess.Initialise(_cpu);
+			var pA = _cpu.CurrentProcess;
+			
+			var printStack = new Stack<uint>();
+			_cpu.OutputMethod = printStack.Push;
+
+			Invoke(InstructionsWithControlByte.Alloc, Register.B, 4);
+			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, 99);
+			Invoke(InstructionsWithControlByte.Mov, Register.A, (uint)DeviceId.Terminal);
+			Invoke(InstructionsWithControlByte.Output, Register.A, MemoryAddress.B);
+			
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(_cpu.IdleProcess));
+
+			_cpu.Tick();
+			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
+
+			Assert.That(printStack.Peek(), Is.EqualTo(99));
 		}
 
 
@@ -353,7 +419,7 @@ namespace ClassLibrary1
 
 			Assert.That(_cpu.CurrentProcess, Is.EqualTo(pB));
 			Assert.That(_cpu.ReadyQueue, Contains.Item(pA));
-			Assert.That(_cpu.DeviceQueue, Is.Empty);
+			Assert.That(_cpu.DeviceReadQueue, Is.Empty);
 		}
 
 		[Test]
@@ -429,28 +495,6 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 4);
 			Assert.That(B, Is.Not.EqualTo(0));
 			Invoke(InstructionsWithControlByte.FreeMemory, Register.B);
-		}
-
-		[Test]
-		public void Printr()
-		{
-			var printStack = new Stack<uint>();
-			_cpu.PrintMethod = printStack.Push;
-
-			Invoke(InstructionsWithControlByte.Print, 10);
-			Assert.That(printStack.Peek(), Is.EqualTo(10));
-		}
-
-		[Test]
-		public void Printm()
-		{
-			var printStack = new Stack<uint>();
-			_cpu.PrintMethod = printStack.Push;
-
-			Invoke(InstructionsWithControlByte.Alloc, Register.B, 4);
-			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, 99);
-			Invoke(InstructionsWithControlByte.Print, MemoryAddress.B);
-			Assert.That(printStack.Peek(), Is.EqualTo(99));
 		}
 	}
 }

@@ -5,17 +5,22 @@ push	r1
 incr	r1
 pop		r1
 mov		r3 $252
-print	r3
+mov r7 $128 ; print to r7
+output r7	r3
 mov		r3 $150
 pop		[r3]
-print	[r3]
+mov r7 $128 ; print to r7
+output r7	[r3]
 push	$88
 push	$77
 push	$66
 pop		r2
-print	r2
+mov r7 $128 ; print to r7
+output r7	r2
 pop		r2
-print	r2
+mov r7 $128 ; print to r7
+output r7	r2
 pop		r2
-print	r2
+mov r7 $128 ; print to r7
+output r7	r2
 exit	r2             ; this is exit.

@@ -239,9 +239,9 @@ namespace Andy.TinyOS
 			get { return new FluentInstructionWriter(this, OpCode.Jne); }
 		}
 
-		public IFluentSourceInstructionWriter Print
+		public IFluentDestinationSourceInstructionWriter Output
 		{
-			get { return new FluentInstructionWriter(this, OpCode.Print); }
+			get { return new FluentInstructionWriter(this, OpCode.Output); }
 		}
 
 		public IFluentDestinationInstructionWriter Incr

@@ -1,6 +1,8 @@
 mov	r1 $1		;move 1 into r1
 map	r1 r2		;map shared mem region #r1 return addr inr2
-print	r2		;print r2 (the memory address)
+mov r7 $128 ; print to r7
+output r7	r2		;mov r7 $128 ; print to r7
+output r7 r2 (the memory address)
 mov	r3 r2		;copy the memory address into r3 (we might need it)
 mov	r4 $1		;lock 1
 acquire	r4		;lock r4 (lock #1)

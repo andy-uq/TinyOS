@@ -42,7 +42,7 @@ namespace Andy.TinyOS
 					break;
 				case OpCodeFlag.MemoryAddress:
 					cpu.Write(cpu.Registers[param], value);
-					break;
+					break;					
 				default:
 					throw new ArgumentOutOfRangeException("flag");
 			}
@@ -98,13 +98,6 @@ namespace Andy.TinyOS
 		{
 			var value = ReadValue(cpu, flag, source);
 			WriteValue(cpu, flag, destination, value);
-		}
-
-		[OpCode(OpCode.Print, Comment = "Print the value in a register")]
-		public static void Print(Cpu cpu, byte flag, uint source)
-		{
-			var value = ReadValue(cpu, flag, source);
-			cpu.Print(value);
 		}
 
 		[OpCode(OpCode.Jmp, Comment = "Jump to an instruction relative to the current instruction. Value may be negative.")]
@@ -269,9 +262,17 @@ namespace Andy.TinyOS
 		}
 
 		[OpCode(OpCode.Input, Comment = "Read the next 32-bit value into a register")]
-		public static void Input(Cpu cpu, byte flag, uint destination)
+		public static void Input(Cpu cpu, byte flag, uint destination, uint source)
 		{
-			cpu.Input(Dest(flag), destination);
+			cpu.Input((DeviceId )source, Dest(flag), destination);
+		}
+
+		[OpCode(OpCode.Output, Comment = "Output a value to the device pointed to by the register")]
+		public static void Output(Cpu cpu, byte flag, uint destination, uint source)
+		{
+			var deviceId = (DeviceId)ReadValue(cpu, Dest(flag), destination);
+			var value = ReadValue(cpu, Source(flag), source);
+			cpu.Output(deviceId, value);
 		}
 
 		[OpCode(OpCode.Not, Comment = "Return the ones complement of a value")]

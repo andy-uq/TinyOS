@@ -23,11 +23,12 @@ namespace tinyOS
 		public const int SpIndex = RegisterCount - 1;
 
 		public ProcessContextBlock CurrentProcess { get; set; }
-		public Action<uint> PrintMethod { get; set; }
+		public Action<uint> OutputMethod { get; set; }
 		public InputDevice InputDevice { get; set; }
 		public Ram Ram { get; private set; }
 		public ReadyQueue ReadyQueue { get; private set; }
-		public DeviceQueue DeviceQueue { get; private set; }
+		public DeviceQueue DeviceReadQueue { get; private set; }
+		public DeviceQueue DeviceWriteQueue { get; private set; }
 		public CpuSleepTimer SleepTimer { get; private set; }
 		public Lock[] Locks { get; set; }
 		public Event[] Events { get; set; }
@@ -65,7 +66,8 @@ namespace tinyOS
 		{
 			Ram = ram;
 			ReadyQueue = new ReadyQueue(PriorityCount);
-			DeviceQueue = new DeviceQueue();
+			DeviceReadQueue = new DeviceQueue();
+			DeviceWriteQueue = new DeviceQueue();
 			Locks = Enumerable.Range(1, LockCount).Select(x => (DeviceId)(x + Devices.Locks)).Select(x => new Lock(x)).ToArray();
 			Events = Enumerable.Range(1, EventCount).Select(x => (DeviceId)(x + Devices.Events)).Select(x => new Event(x)).ToArray();
 			SleepTimer = new CpuSleepTimer();
@@ -159,7 +161,8 @@ namespace tinyOS
 			}
 
 			TickSleepTimer();
-			CheckTerminal();
+			ReadTerminal();
+			WriteTerminal();
 
 			TickCount++;
 		}
@@ -171,18 +174,29 @@ namespace tinyOS
 				return;
 
 			BlockingProcess wakingProcess;
-			while ((wakingProcess = DeviceQueue.Dequeue(sleepTimer)) != null)
+			while ((wakingProcess = DeviceReadQueue.Dequeue(sleepTimer)) != null)
 				ReadyQueue.Enqueue(wakingProcess.Process);
 		}
 
-		private void CheckTerminal()
+		private void WriteTerminal()
+		{
+			BlockingProcess wakingProcess;
+			while ((wakingProcess = DeviceWriteQueue.Dequeue(DeviceId.Terminal)) != null)
+			{
+				var process = wakingProcess.Process;
+				(OutputMethod ?? Console.WriteLine)(wakingProcess.Argument);
+				ReadyQueue.Enqueue(process);
+			}
+		}
+
+		private void ReadTerminal()
 		{
 			uint value;
 			if (!InputDevice.Get(out value)) 
 				return;
 			
 			BlockingProcess wakingProcess;
-			while ((wakingProcess = DeviceQueue.Dequeue(DeviceId.Terminal)) != null)
+			while ((wakingProcess = DeviceReadQueue.Dequeue(DeviceId.Terminal)) != null)
 			{
 				var process = wakingProcess.Process;
 				process.Registers[wakingProcess.Argument] = value;
@@ -246,11 +260,6 @@ namespace tinyOS
 
 			process.ExitCode = exitCode;
 			process.IsRunning = false;
-		}
-
-		public void Print(uint value)
-		{
-			(PrintMethod ?? Console.WriteLine)(value);
 		}
 
 		public void Jump(uint uOffset)
@@ -371,7 +380,7 @@ namespace tinyOS
 		public void Sleep(uint sleep)
 		{
 			var handle = SleepTimer.Register(sleep);
-			DeviceQueue.Enqueue(handle, CurrentProcess);
+			DeviceReadQueue.Enqueue(handle, CurrentProcess);
 			CurrentProcess = null;
 		}
 
@@ -391,7 +400,7 @@ namespace tinyOS
 			@lock.Owner = 0;
 			@lock.RefCount = 0;
 
-			var blockingProcess = DeviceQueue.Dequeue(@lock.Handle);
+			var blockingProcess = DeviceReadQueue.Dequeue(@lock.Handle);
 			if (blockingProcess == null)
 				return;
 
@@ -413,7 +422,7 @@ namespace tinyOS
 				return;
 			}
 
-			DeviceQueue.Enqueue(@lock.Handle, CurrentProcess);
+			DeviceReadQueue.Enqueue(@lock.Handle, CurrentProcess);
 			CurrentProcess = null;
 		}
 
@@ -432,7 +441,7 @@ namespace tinyOS
 			var ev = Events[eventNo - 1];
 
 			BlockingProcess blockingProcess;
-			while ((blockingProcess = DeviceQueue.Dequeue(ev.Handle)) != null)
+			while ((blockingProcess = DeviceReadQueue.Dequeue(ev.Handle)) != null)
 			{
 				ReadyQueue.Enqueue(blockingProcess.Process);
 			}
@@ -444,7 +453,7 @@ namespace tinyOS
 				return;
 
 			var ev = Events[eventNo - 1];
-			DeviceQueue.Enqueue(ev.Handle, CurrentProcess);
+			DeviceReadQueue.Enqueue(ev.Handle, CurrentProcess);
 			CurrentProcess = null;
 		}
 
@@ -467,10 +476,31 @@ namespace tinyOS
 			}
 		}
 
-		public void Input(OpCodeFlag flag, uint rX)
+		public void Input(DeviceId deviceId, OpCodeFlag flag, uint rX)
 		{
-			DeviceQueue.Enqueue(DeviceId.Terminal, CurrentProcess, flag, rX);
-			CurrentProcess = null;
+			if (Enum.IsDefined(typeof (DeviceId), deviceId))
+			{
+				DeviceReadQueue.Enqueue(deviceId, CurrentProcess, flag, rX);
+				CurrentProcess = null;
+			}
+			else
+			{
+				CurrentProcess.Zf = true;
+			}
+		}
+
+		public void Output(DeviceId deviceId, uint value)
+		{
+			if (Enum.IsDefined(typeof (DeviceId), deviceId))
+			{
+				DeviceWriteQueue.Enqueue(deviceId, CurrentProcess, OpCodeFlag.None, value);
+				CurrentProcess.Zf = false;
+				CurrentProcess = null;
+			}
+			else
+			{
+				CurrentProcess.Zf = true;
+			}
 		}
 	}
 

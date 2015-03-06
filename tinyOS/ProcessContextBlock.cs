@@ -38,6 +38,11 @@ namespace tinyOS
 	    public PageInfo GlobalData { get; set; }
 
 		public bool IsRunning { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("PID:{0}", Id);
+		}
 	}
 
 	public static class ProcessControlBlockExtensions

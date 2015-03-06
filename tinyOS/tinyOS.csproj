@@ -81,7 +81,7 @@
     <Compile Include="Instruction.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="InstructionsWithCb.cs" />
+    <Compile Include="InstructionsWithControlByte.cs" />
     <Compile Include="Cpu.cs" />
     <Compile Include="CpuSleepTimer.cs" />
     <Compile Include="DeviceId.cs" />
@@ -110,6 +110,7 @@
     <Compile Include="Ram.cs" />
     <Compile Include="ReadyQueue.cs" />
     <Compile Include="Utility\InstructionTextWriter.cs" />
+    <Compile Include="VirtualAddress.cs" />
     <Compile Include="VirtualAddressCalculator.cs" />
   </ItemGroup>
   <ItemGroup />

@@ -3,7 +3,8 @@
 6	r6, $14		;how many bytes to jump forward to exit
 26	r4		;lower our priority TO 0
 6	r1, $20 	;move 20 into r1
-11	r1		;print the number 20
+11	r1		;mov r7 $128 ; print to r7
+output r7 the number 20
 1	r3		;incr r3 (our counter)
 15	r3, r5		;compare r3 and r5
 18	r6		;if r3 and r5 equal, jump r6

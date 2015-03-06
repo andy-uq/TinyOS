@@ -5,17 +5,22 @@ push	r1				; push r1 onto the stack
 incr	r1				; incr r1
 pop		r1				; pop off the stack into r1
 mov		r3 $252			; move 252 into r3
-print	[r3]			; print memory at r3
+mov r7 $128
+output r7		[r3]			; print memory at r3
 mov		r3 $150			; put 150 into r3
 pop		[r3]			; pop off the stack into memory at r3
-print	[r3]			; print memory at r3
+mov r7 $128
+output r7		[r3]			; print memory at r3
 push	$88				; push 88 onto the stack
 push	$77				; push 77 onto the stack
 push	$66				; push 66 onto the stack
 pop		r2				; pop off the stack into r2
-print	r2				; print r2
+mov r7 $128
+output r7		r2				; print r2
 pop		r2				; pop off the stack into r2
-print	r2				; print r2
+mov r7 $128
+output r7		r2				; print r2
 pop		r2				; pop off the stack into r2
-print	r2				; print r2
+mov r7 $128
+output r7		r2				; print r2
 exit	r2				; exit
