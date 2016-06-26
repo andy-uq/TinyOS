@@ -3,9 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Andy.TinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class CodeReader : IEnumerable<Instruction>
 	{
@@ -21,7 +20,7 @@ namespace tinyOS
 	    public CodeReader(Stream codeStream)
 	    {
 			if (codeStream == null)
-				throw new ArgumentNullException("codeStream");
+				throw new ArgumentNullException(nameof(codeStream));
 
 			if (!codeStream.CanSeek)
 				throw new ArgumentException("Must supply a seekable stream");
@@ -91,9 +90,6 @@ namespace tinyOS
 			return GetEnumerator();
 		}
 
-		public int Count
-		{
-			get { return _count; }
-		}
+		public int Count => _count;
 	}
 }

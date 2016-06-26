@@ -16,30 +16,15 @@ namespace Andy.TinyOS
 			_value = (ushort) opCode;
 		}
 
-		public OpCodeFlag Destination
-		{
-			get { return (OpCodeFlag) ((_value >> 8) & 0x03); }
-		}
+		public OpCodeFlag Destination => (OpCodeFlag) ((_value >> 8) & 0x03);
 
-		public OpCodeFlag Source
-		{
-			get { return (OpCodeFlag) ((_value >> 10) & 0x03); }
-		}
+		public OpCodeFlag Source => (OpCodeFlag) ((_value >> 10) & 0x03);
 
-		public OpCode OpCode
-		{
-			get { return (OpCode) (_value & 0xFF); }
-		}
+		public OpCode OpCode => (OpCode) (_value & 0xFF);
 
-		public bool Signed
-		{
-			get { return (_value & 0x8000) != 0; }
-		}
+		public bool Signed => (_value & 0x8000) != 0;
 
-		public byte OpCodeMask
-		{
-			get { return (byte) (_value >> 8); }
-		}
+		public byte OpCodeMask => (byte) (_value >> 8);
 
 		public static explicit operator MaskedOpCode(ushort value)
 		{
@@ -55,13 +40,13 @@ namespace Andy.TinyOS
 		{
 			if (Source != OpCodeFlag.None && Destination != OpCodeFlag.None)
 			{
-				return string.Format("{0} {1} {2}", OpCode, Format(Destination), Format(Source));
+				return $"{OpCode} {Format(Destination)} {Format(Source)}";
 			}
 
 			if (Source == OpCodeFlag.None && Destination == OpCodeFlag.None)
 				return OpCode.ToString();
 
-			return string.Format("{0} {1}", OpCode, Format((OpCodeFlag) ((byte)Source | (byte)Destination)));
+			return $"{OpCode} {Format((OpCodeFlag) ((byte) Source | (byte) Destination))}";
 		}
 
 		private string Format(OpCodeFlag opCodeFlag)
@@ -78,7 +63,7 @@ namespace Andy.TinyOS
 					return Signed ? "+[rX]" : "[rX]";
 			}
 
-			throw new ArgumentOutOfRangeException("opCodeFlag");
+			throw new ArgumentOutOfRangeException(nameof(opCodeFlag));
 		}
 	}
 }

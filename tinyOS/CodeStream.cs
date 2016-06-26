@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using tinyOS;
 
 namespace Andy.TinyOS
 {
@@ -18,10 +17,7 @@ namespace Andy.TinyOS
 			_instructions = new List<Instruction>(instructions);
 		}
 
-		public int Position
-		{
-			get { return _instructions.Count; }
-		}
+		public int Position => _instructions.Count;
 
 		public CodeStream Add(Instruction instruction)
 		{

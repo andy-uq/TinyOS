@@ -2,7 +2,6 @@
 using System.Linq;
 using Andy.TinyOS;
 using NUnit.Framework;
-using tinyOS;
 
 namespace ClassLibrary1
 {

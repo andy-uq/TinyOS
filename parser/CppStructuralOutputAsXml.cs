@@ -57,8 +57,8 @@ namespace Andy.TinyOS.Parser
 					return;
 			}
 
-			string name = node.IsUnnamed() ? "" : string.Format(" name='{0}'", node.RuleName);
-			string beginTag = string.Format("<{0}{1}>", node.RuleType, name);
+			string name = node.IsUnnamed() ? "" : $" name='{node.RuleName}'";
+			string beginTag = $"<{node.RuleType}{name}>";
 			WriteLine(beginTag);
 
 			if (node.Count == 0)
@@ -71,7 +71,7 @@ namespace Andy.TinyOS.Parser
 					Add(tmp, depth + 1);
 			}
 
-			WriteLine(string.Format("</{0}>", node.RuleType));
+			WriteLine($"</{node.RuleType}>");
 		}
 
 		public string TypeDeclToString(ParseNode node)

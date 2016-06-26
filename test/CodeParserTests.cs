@@ -7,18 +7,18 @@ using Andy.TinyOS.Compiler;
 using Andy.TinyOS.Parser;
 using Andy.TinyOS.Utility;
 using NUnit.Framework;
-using tinyOS;
 
 namespace ClassLibrary1
 {
 	[TestFixture]
 	public class CodeParserTests
 	{
-		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
+		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
 			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"},
 			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"},
-			{"ANDYCLARKE",@"C:\Dotnet\TinyOS\"}
+			{"ANDYCLARKE",@"C:\Dotnet\TinyOS\"},
+			{"ANDYLAPTOP",@"C:\Source\C#\TinyOS\"},
 		};
 
 		[TestCase(@"Sample Programs\prog1.txt")]

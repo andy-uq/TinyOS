@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
 using NUnit.Framework;
-using tinyOS;
 
 namespace ClassLibrary1
 {
@@ -15,11 +14,11 @@ namespace ClassLibrary1
 		private int _sharedOffset;
 		private readonly byte[] _ram = new byte[1024];
 
-		private uint A { get { return _cpu.Registers[Register.A]; } }
-		private uint B { get { return _cpu.Registers[Register.B]; } }
-		private uint C { get { return _cpu.Registers[Register.C]; } }
-		private uint H { get { return _cpu.Registers[Register.H]; } }
-		private uint Sp { get { return _cpu.Sp; } }
+		private uint A => _cpu.Registers[Register.A];
+		private uint B => _cpu.Registers[Register.B];
+		private uint C => _cpu.Registers[Register.C];
+		private uint H => _cpu.Registers[Register.H];
+		private uint Sp => _cpu.Sp;
 
 		[SetUp]
 		public void SetUp()

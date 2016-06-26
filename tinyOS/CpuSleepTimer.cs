@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class CpuSleepTimer
 	{
@@ -28,13 +28,14 @@ namespace tinyOS
 		public DeviceId Register(uint sleep)
 		{
 			var target = _tickCount + sleep;
+
 			DeviceId handle;
-			if (!_sleepRegister.TryGetValue(target, out handle))
-			{
-				handle = (DeviceId) (Devices.Sleep + _deviceOffset);
-				_sleepRegister.Add(target, handle);
-				_deviceOffset++;
-			}
+			if (_sleepRegister.TryGetValue(target, out handle))
+				return handle;
+
+			handle = (DeviceId) (Devices.Sleep + _deviceOffset);
+			_sleepRegister.Add(target, handle);
+			_deviceOffset++;
 
 			return handle;
 		}

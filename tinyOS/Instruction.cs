@@ -8,18 +8,14 @@ namespace Andy.TinyOS
 		private string _comment;
 
 		public MaskedOpCode MaskedOpCode { get; set; }
-		public OpCode OpCode { get { return MaskedOpCode.OpCode; } }
+		public OpCode OpCode => MaskedOpCode.OpCode;
+		public byte OpCodeMask => MaskedOpCode.OpCodeMask;
 		public uint[] Parameters { get; set; }
 			
 		public string Comment
 		{
 			get { return _comment; }
 			set { _comment = string.IsNullOrWhiteSpace(value) ? null : value; }
-		}
-
-		public byte OpCodeMask
-		{
-			get { return MaskedOpCode.OpCodeMask; }
 		}
 
 		public Instruction(OpCode opCode, string commment = null) : this()

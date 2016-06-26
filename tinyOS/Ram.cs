@@ -1,40 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using tinyOS;
 
 namespace Andy.TinyOS
 {
- 	public class Ram
+	public class Ram
 	{
-		private readonly byte[] _ram;
 		private readonly List<Frame>[] _pageTable;
- 		private Frame[] _shared;
- 		public VirtualAddressCalculator VirtualAddressCalculator { get; private set; }
+		private readonly byte[] _ram;
+		private Frame[] _shared;
 
-        public int Size
+		public Ram(byte[] ram, uint frameSize)
 		{
-			get { return _ram.Length; }
+			VirtualAddressCalculator = new VirtualAddressCalculator(frameSize);
+			FrameSize = frameSize;
+			_ram = ram;
+			_pageTable = Enumerable.Range(0, (int) (ram.Length/frameSize))
+				.Select(x => CreateFrame(0, (uint) x))
+				.Select(x => new List<Frame> {x})
+				.ToArray();
 		}
 
- 	    public uint FrameSize { get; private set; }
- 	    public ushort FrameCount { get { return (ushort) _pageTable.Length; } }
-
-        public Ram(byte[] ram, uint frameSize)
-        {
-        	VirtualAddressCalculator = new VirtualAddressCalculator(frameSize);
-            FrameSize = frameSize;
-            _ram = ram;
-            _pageTable = Enumerable.Range(0, (int) (ram.Length/frameSize))
-                .Select(x => CreateFrame(0, (uint) x))
-                .Select(x => new List<Frame> {x})
-                .ToArray();
-        }
-
- 		public Ram(uint size, uint frameSize) : this(new byte[size], frameSize)
+		public Ram(uint size, uint frameSize) : this(new byte[size], frameSize)
 		{
+		}
+
+		public VirtualAddressCalculator VirtualAddressCalculator { get; }
+
+		public int Size => _ram.Length;
+
+		public uint FrameSize { get; }
+		public ushort FrameCount => (ushort) _pageTable.Length;
+
+		private IEnumerable<Frame> LiveFrames
+		{
+			get { return _pageTable.Select(frameList => frameList[0]); }
 		}
 
 		public uint AllocateShared(uint size)
@@ -43,7 +44,7 @@ namespace Andy.TinyOS
 				throw new ArgumentException("Size must be greater than zero");
 
 			_shared = Enumerable
-				.Range(1, (int )(size/FrameSize))
+				.Range(1, (int) (size/FrameSize))
 				.Select(CreateSharedFrame)
 				.ToArray();
 
@@ -57,7 +58,7 @@ namespace Andy.TinyOS
 					from f in LiveFrames
 					where f.ProcessId == 0
 					select f
-				).FirstOrDefault();
+					).FirstOrDefault();
 
 			if (frame == null)
 				throw new InvalidOperationException("Cannot allocate space for shared memory");
@@ -69,28 +70,28 @@ namespace Andy.TinyOS
 			return frame;
 		}
 
- 		private Frame CreateFrame(uint processId, uint frameNumber)
-	    {
-	        return new Frame
-	                   {
-                           FrameNumber = frameNumber,
-	                       ProcessId = processId, 
-                           FrameAddress = frameNumber * FrameSize,
-                           Live = true,
-	                   };
-	    }
+		private Frame CreateFrame(uint processId, uint frameNumber)
+		{
+			return new Frame
+			{
+				FrameNumber = frameNumber,
+				ProcessId = processId,
+				FrameAddress = frameNumber*FrameSize,
+				Live = true
+			};
+		}
 
 		public VirtualAddress ToVirtualAddress(Page page)
 		{
-			return VirtualAddressCalculator.New(0, (int)page.PageNumber);
+			return VirtualAddressCalculator.New(0, (int) page.PageNumber);
 		}
 
-	    public uint ToPhysicalAddress(uint processId, VirtualAddress vaddr)
+		public uint ToPhysicalAddress(uint processId, VirtualAddress vaddr)
 		{
-	        uint pageNumber = vaddr.PageNumber;
-	        var frame = LiveFrames.SingleOrDefault(x => x.ProcessId == processId && x.PageNumber == pageNumber );
-            if (frame == null)
-                throw new InvalidOperationException();
+			var pageNumber = vaddr.PageNumber;
+			var frame = LiveFrames.SingleOrDefault(x => x.ProcessId == processId && x.PageNumber == pageNumber);
+			if (frame == null)
+				throw new InvalidOperationException();
 
 			return frame.FrameAddress + vaddr.Offset;
 		}
@@ -100,7 +101,7 @@ namespace Andy.TinyOS
 			long remaining = size;
 
 			var index = 0;
-			while ( remaining > 0 )
+			while (remaining > 0)
 			{
 				var sharedFrame = _shared[index];
 				var page = pcb.PageTable.CreatePage(this);
@@ -113,67 +114,62 @@ namespace Andy.TinyOS
 			}
 		}
 
- 		public Page Allocate(ProcessContextBlock pcb)
-        {
+		public Page Allocate(ProcessContextBlock pcb)
+		{
 			if (pcb == null)
-				throw new ArgumentNullException("pcb");
+				throw new ArgumentNullException(nameof(pcb));
 
-            var firstFreeFrame =
-                (
-                    from frame in LiveFrames
-                    where frame.ProcessId == 0
-                    select frame
-                ).FirstOrDefault();
+			var firstFreeFrame =
+				(
+					from frame in LiveFrames
+					where frame.ProcessId == 0
+					select frame
+					).FirstOrDefault();
 
-            if (firstFreeFrame == null)
-                return null;
+			if (firstFreeFrame == null)
+				return null;
 
-            var page = pcb.PageTable.CreatePage(this);
-            firstFreeFrame.ProcessId = pcb.Id;
-            firstFreeFrame.PageNumber = page.PageNumber;
-            page.Size = FrameSize;
-            page.FrameNumber = firstFreeFrame.FrameNumber;
+			var page = pcb.PageTable.CreatePage(this);
+			firstFreeFrame.ProcessId = pcb.Id;
+			firstFreeFrame.PageNumber = page.PageNumber;
+			page.Size = FrameSize;
+			page.FrameNumber = firstFreeFrame.FrameNumber;
 
-            return page;
-        }
-		
-        public void Free(Page page)
-        {
-            var frameList = _pageTable[page.FrameNumber];
-            var frameIndex = frameList.FindIndex(x => x.PageNumber == page.PageNumber);
-            if (frameIndex == -1)
-                return;
+			return page;
+		}
 
-            if (frameIndex == 0)
-            {
-                var frame = frameList[0];
-                frame.PageNumber = 0;
-                frame.ProcessId = 0;
-            }
-            else
-            {
-                frameList.RemoveAt(frameIndex);
-            }
-        }
+		public void Free(Page page)
+		{
+			var frameList = _pageTable[page.FrameNumber];
+			var frameIndex = frameList.FindIndex(x => x.PageNumber == page.PageNumber);
+			if (frameIndex == -1)
+				return;
 
-	    private IEnumerable<Frame> LiveFrames
-	    {
-	        get { return _pageTable.Select(frameList => frameList[0]); }
-	    }
+			if (frameIndex == 0)
+			{
+				var frame = frameList[0];
+				frame.PageNumber = 0;
+				frame.ProcessId = 0;
+			}
+			else
+			{
+				frameList.RemoveAt(frameIndex);
+			}
+		}
 
-        public MemoryStream GetStream(Page page)
-        {
-            return GetStream(page.FrameNumber);
-        }
+		public MemoryStream GetStream(Page page)
+		{
+			return GetStream(page.FrameNumber);
+		}
 
-        public MemoryStream GetStream(uint frameNumber)
-        {
-            return new MemoryStream(_ram, (int) (frameNumber * FrameSize), (int) FrameSize, true);
-        }
-		
+		public MemoryStream GetStream(uint frameNumber)
+		{
+			return new MemoryStream(_ram, (int) (frameNumber*FrameSize), (int) FrameSize, true);
+		}
+
 		private class Frame
 		{
-            public uint FrameNumber { get; set; }
+			public uint FrameNumber { get; set; }
 			public uint ProcessId { get; set; }
 			public uint PageNumber { get; set; }
 			public bool Live { get; set; }

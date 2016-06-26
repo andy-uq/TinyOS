@@ -1,4 +1,4 @@
-﻿namespace tinyOS
+﻿namespace Andy.TinyOS
 {
 	public class Event
 	{
@@ -7,6 +7,6 @@
 			Handle = deviceId;
 		}
 
-		public DeviceId Handle { get; set; }
+		public DeviceId Handle { get; }
 	}
 }

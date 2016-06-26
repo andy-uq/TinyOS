@@ -97,7 +97,6 @@
     <Compile Include="Register.cs" />
     <Compile Include="Utility\InstructionFormatter.cs" />
     <Compile Include="Lock.cs" />
-    <Compile Include="MemoryManager.cs" />
     <Compile Include="OpCode.cs" />
     <Compile Include="OpCodeMetaInformation.cs" />
     <Compile Include="Page.cs" />

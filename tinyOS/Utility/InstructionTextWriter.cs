@@ -23,7 +23,7 @@ namespace Andy.TinyOS.Utility
 				return;
 			}
 
-			throw new InvalidOperationException("Invalid opcode " + meta.OpCode.ToString() );
+			throw new InvalidOperationException("Invalid opcode " + meta.OpCode);
 		}
 
 		public void Close()

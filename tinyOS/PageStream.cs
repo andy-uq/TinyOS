@@ -1,9 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using Andy.TinyOS;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class PageStream : Stream
 	{
@@ -14,35 +13,23 @@ namespace tinyOS
 		public PageStream(Ram ram, PageInfo pageSet)
 		{
 			if (ram == null)
-				throw new ArgumentNullException("ram");
+				throw new ArgumentNullException(nameof(ram));
 
 			if (pageSet == null)
-				throw new ArgumentNullException("pageSet");
+				throw new ArgumentNullException(nameof(pageSet));
 
 			_ram = ram;
 			_pageSet = pageSet;
 			_page = pageSet.Pages.FirstOrDefault();
 		}
 
-		public override bool CanRead
-		{
-			get { return true; }
-		}
+		public override bool CanRead => true;
 
-		public override bool CanSeek
-		{
-			get { return true; }
-		}
+		public override bool CanSeek => true;
 
-		public override bool CanWrite
-		{
-			get { return true; }
-		}
+		public override bool CanWrite => true;
 
-		public override long Length
-		{
-			get { return _pageSet.Size; }
-		}
+		public override long Length => _pageSet.Size;
 
 		public override long Position { get; set; }
 
@@ -68,7 +55,7 @@ namespace tinyOS
 					break;
 
 				default:
-					throw new ArgumentOutOfRangeException("origin");
+					throw new ArgumentOutOfRangeException(nameof(origin));
 			}
 			
 			if (position < 0L)

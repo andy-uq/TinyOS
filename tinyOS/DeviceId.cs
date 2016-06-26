@@ -1,4 +1,4 @@
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public enum DeviceId : uint
 	{

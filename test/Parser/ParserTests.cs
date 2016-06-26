@@ -10,11 +10,12 @@ namespace ClassLibrary1.Parser
 	[TestFixture]
 	public class ParserTests
 	{
-		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>()
+		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
 			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"},
 			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"},
-			{"ANDYCLARKE",@"C:\Dotnet\TinyOS"}
+			{"ANDYCLARKE",@"C:\Dotnet\TinyOS"},
+			{"ANDYLAPTOP",@"C:\Source\C#\TinyOS"},
 		};
 
 		private readonly string Source_Directory = @"test\Parser\Input";

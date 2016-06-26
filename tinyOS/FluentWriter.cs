@@ -1,6 +1,4 @@
-﻿using tinyOS;
-
-namespace Andy.TinyOS
+﻿namespace Andy.TinyOS
 {
 
 	public interface IFluentSourceInstructionWriter
@@ -149,110 +147,50 @@ namespace Andy.TinyOS
 			_codeStream = codeStream;
 		}
 
-		public IFluentDestinationSourceInstructionWriter Mov
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Mov); }
-		}
+		public IFluentDestinationSourceInstructionWriter Mov => new FluentInstructionWriter(this, OpCode.Mov);
 
-		public IFluentDestinationSourceInstructionWriter Add
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Add); }
-		}
+		public IFluentDestinationSourceInstructionWriter Add => new FluentInstructionWriter(this, OpCode.Add);
 
-		public IFluentDestinationSourceInstructionWriter Mul
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Mul); }
-		}
+		public IFluentDestinationSourceInstructionWriter Mul => new FluentInstructionWriter(this, OpCode.Mul);
 
 		public IFluentSourceInstructionWriter UnaryOp(OpCode opCode)
 		{
 			return new FluentInstructionWriter(this, opCode);
 		}
 
-		public IFluentDestinationSourceInstructionWriter Div
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Div); }
-		}
+		public IFluentDestinationSourceInstructionWriter Div => new FluentInstructionWriter(this, OpCode.Div);
 
-		public IFluentDestinationSourceInstructionWriter And
-		{
-			get { return new FluentInstructionWriter(this, OpCode.And); }
-		}
+		public IFluentDestinationSourceInstructionWriter And => new FluentInstructionWriter(this, OpCode.And);
 
-		public IFluentDestinationSourceInstructionWriter Or
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Or); }
-		}
+		public IFluentDestinationSourceInstructionWriter Or => new FluentInstructionWriter(this, OpCode.Or);
 
-		public IFluentDestinationSourceInstructionWriter Xor
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Xor); }
-		}
+		public IFluentDestinationSourceInstructionWriter Xor => new FluentInstructionWriter(this, OpCode.Xor);
 
-		public IFluentDestinationSourceInstructionWriter Not
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Not); }
-		}
+		public IFluentDestinationSourceInstructionWriter Not => new FluentInstructionWriter(this, OpCode.Not);
 
-		public IFluentDestinationSourceInstructionWriter Neg
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Neg); }
-		}
+		public IFluentDestinationSourceInstructionWriter Neg => new FluentInstructionWriter(this, OpCode.Neg);
 
-		public IFluentDestinationSourceInstructionWriter Cmpi
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Cmp); }
-		}
+		public IFluentDestinationSourceInstructionWriter Cmpi => new FluentInstructionWriter(this, OpCode.Cmp);
 
-		public IFluentSourceInstructionWriter Exit
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Exit); }
-		}
+		public IFluentSourceInstructionWriter Exit => new FluentInstructionWriter(this, OpCode.Exit);
 
-		public IFluentSourceInstructionWriter Push
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Push); }
-		}
+		public IFluentSourceInstructionWriter Push => new FluentInstructionWriter(this, OpCode.Push);
 
-		public IFluentSourceInstructionWriter Jmp
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Jmp); }
-		}
+		public IFluentSourceInstructionWriter Jmp => new FluentInstructionWriter(this, OpCode.Jmp);
 
-		public IFluentSourceInstructionWriter Jlt
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Jlt); }
-		}
+		public IFluentSourceInstructionWriter Jlt => new FluentInstructionWriter(this, OpCode.Jlt);
 
-		public IFluentSourceInstructionWriter Jgt
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Jgt); }
-		}
+		public IFluentSourceInstructionWriter Jgt => new FluentInstructionWriter(this, OpCode.Jgt);
 
-		public IFluentSourceInstructionWriter Je
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Je); }
-		}
+		public IFluentSourceInstructionWriter Je => new FluentInstructionWriter(this, OpCode.Je);
 
-		public IFluentSourceInstructionWriter Jne
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Jne); }
-		}
+		public IFluentSourceInstructionWriter Jne => new FluentInstructionWriter(this, OpCode.Jne);
 
-		public IFluentDestinationSourceInstructionWriter Output
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Output); }
-		}
+		public IFluentDestinationSourceInstructionWriter Output => new FluentInstructionWriter(this, OpCode.Output);
 
-		public IFluentDestinationInstructionWriter Incr
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Incr); }
-		}
+		public IFluentDestinationInstructionWriter Incr => new FluentInstructionWriter(this, OpCode.Incr);
 
-		public IFluentDestinationInstructionWriter Pop
-		{
-			get { return new FluentInstructionWriter(this, OpCode.Pop); }
-		}
+		public IFluentDestinationInstructionWriter Pop => new FluentInstructionWriter(this, OpCode.Pop);
 	}
 
 

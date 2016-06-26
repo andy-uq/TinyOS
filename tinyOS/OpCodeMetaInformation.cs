@@ -25,17 +25,11 @@ namespace Andy.TinyOS
 
 		public class OpCodeMetaInformation
 		{
-			private static readonly Dictionary<OpCode, OpCodeMetaInformation> _opcodeMetaInformation = OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode);
+			private static readonly Dictionary<OpCode, OpCodeMetaInformation> s_opcodeMetaInformation = OpCodeMetaInformationBuilder.GetMetaInformation().ToDictionary(x => x.OpCode);
 
-			public static IEnumerable<OpCodeMetaInformation> Opcodes
-			{
-				get { return _opcodeMetaInformation.Values; }
-			}
+			public static IEnumerable<OpCodeMetaInformation> Opcodes => s_opcodeMetaInformation.Values;
 
-			public static IDictionary<OpCode, OpCodeMetaInformation> Lookup
-			{
-				get { return _opcodeMetaInformation; }
-			}
+			public static IDictionary<OpCode, OpCodeMetaInformation> Lookup => s_opcodeMetaInformation;
 
 			public OpCode OpCode { get; set; }
 			public string Comment { get; set; }
@@ -47,7 +41,7 @@ namespace Andy.TinyOS
 		[AttributeUsage(AttributeTargets.Method)]
 		public class OpCodeAttribute : Attribute
 		{
-			public OpCode OpCode { get; set; }
+			public OpCode OpCode { get; }
 			public string Comment { get; set; }
 
 			public OpCodeAttribute(OpCode opCode)
@@ -59,7 +53,7 @@ namespace Andy.TinyOS
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 		public class ParameterAttribute : Attribute
 		{
-			public string Name { get; set; }
+			public string Name { get; }
 			public ParamType Type { get; set; }
 			public string Comment { get; set; }
 

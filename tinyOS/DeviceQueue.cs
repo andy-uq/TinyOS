@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using tinyOS;
 
 namespace Andy.TinyOS
 {
@@ -41,10 +40,9 @@ namespace Andy.TinyOS
 		public BlockingProcess Dequeue(DeviceId deviceId)
 		{
 			var queue = _deviceQueue[deviceId];
-			if ( queue.Count == 0 )
-				return null;
-
-			return queue.Dequeue();
+			return queue.Count != 0 
+				? queue.Dequeue() 
+				: null;
 		}
 
 		public IEnumerator<BlockingProcess> GetEnumerator()

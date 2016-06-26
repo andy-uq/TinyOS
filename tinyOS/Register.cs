@@ -5,23 +5,6 @@ namespace Andy.TinyOS
 {
 	public class Register
 	{
-		private readonly int _index;
-
-		private Register(int i)
-		{
-			_index = i - 1;
-		}
-
-		public int Index
-		{
-			get { return _index; }
-		}
-
-		public static implicit operator uint(Register r)
-		{
-			return (uint) r._index;
-		}
-
 		/// <summary>r1</summary>
 		public static readonly Register A = new Register(1);
 
@@ -33,7 +16,7 @@ namespace Andy.TinyOS
 
 		/// <summary>r4</summary>
 		public static readonly Register D = new Register(4);
-		
+
 		/// <summary>r5</summary>
 		public static readonly Register E = new Register(5);
 
@@ -52,28 +35,40 @@ namespace Andy.TinyOS
 		/// <summary>r10</summary>
 		public static readonly Register J = new Register(10);
 
-		private static Register[] _registers;
+		private static readonly Register[] s_registers;
 
 		static Register()
 		{
-			_registers = typeof (Register)
+			s_registers = typeof(Register)
 				.GetFields()
-				.Where(x => x.FieldType == typeof (Register))
+				.Where(x => x.FieldType == typeof(Register))
 				.Select(x => x.GetValue(null))
 				.Cast<Register>()
 				.ToArray();
 		}
 
+		private Register(int i)
+		{
+			Index = i - 1;
+		}
+
+		public int Index { get; }
+
+		public static implicit operator uint(Register r)
+		{
+			return (uint) r.Index;
+		}
+
 		public static Register Parse(string value)
 		{
 			if (string.IsNullOrEmpty(value))
-				throw new ArgumentException("Register name must not be null or empty", "value");
+				throw new ArgumentException("Register name must not be null or empty", nameof(value));
 
 			if (value[0] != 'r')
-				throw new ArgumentException("Register name must start with an R", "value");
+				throw new ArgumentException("Register name must start with an R", nameof(value));
 
-			int num = int.Parse(value.Substring(1)) - 1;
-			return _registers[num];
+			var num = int.Parse(value.Substring(1)) - 1;
+			return s_registers[num];
 		}
 	}
 }

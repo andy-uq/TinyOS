@@ -14,7 +14,7 @@ namespace Andy.TinyOS.Parser
 
 		#region public fields
 
-		public string Text { get { return _text; } }
+		public string Text => _text;
 		public int Index { get; set; }
 
 		#endregion

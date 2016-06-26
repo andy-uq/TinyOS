@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Andy.TinyOS;
-using Andy.TinyOS.OpCodeMeta;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class Cpu
 	{
@@ -25,19 +23,16 @@ namespace tinyOS
 		public ProcessContextBlock CurrentProcess { get; set; }
 		public Action<uint> OutputMethod { get; set; }
 		public InputDevice InputDevice { get; set; }
-		public Ram Ram { get; private set; }
-		public ReadyQueue ReadyQueue { get; private set; }
-		public DeviceQueue DeviceReadQueue { get; private set; }
-		public DeviceQueue DeviceWriteQueue { get; private set; }
-		public CpuSleepTimer SleepTimer { get; private set; }
+		public Ram Ram { get; }
+		public ReadyQueue ReadyQueue { get; }
+		public DeviceQueue DeviceReadQueue { get; }
+		public DeviceQueue DeviceWriteQueue { get; }
+		public CpuSleepTimer SleepTimer { get; }
 		public Lock[] Locks { get; set; }
 		public Event[] Events { get; set; }
 		public ulong TickCount { get; private set; }
 
-		public uint[] Registers
-		{
-			get { return CurrentProcess.Registers; }
-		}
+		public uint[] Registers => CurrentProcess.Registers;
 
 		public bool Sf
 		{
@@ -51,10 +46,7 @@ namespace tinyOS
 			set { CurrentProcess.Zf = value; }
 		}
 
-		public uint Ip
-		{
-			get { return CurrentProcess.Ip; }
-		}
+		public uint Ip => CurrentProcess.Ip;
 
 		public uint Sp
 		{
@@ -82,12 +74,9 @@ namespace tinyOS
 		{
 		}
 
-		public ProcessContextBlock IdleProcess { get; private set; }
+		public ProcessContextBlock IdleProcess { get; }
 
-		public bool Running
-		{
-			get { return (IdleProcess.ExitCode == 0); }
-		}
+		public bool Running => (IdleProcess.ExitCode == 0);
 
 		public ProcessContextBlock Load()
 		{
@@ -120,7 +109,7 @@ namespace tinyOS
 		public void Run(ProcessContextBlock block)
 		{
 			if (block == null)
-				throw new ArgumentNullException("block");
+				throw new ArgumentNullException(nameof(block));
 
 			block.Stack.Append(Ram.Allocate(block));
 			block.GlobalData.Append(Ram.Allocate(block));
@@ -340,7 +329,7 @@ namespace tinyOS
 		{
 			var page = CurrentProcess.PageTable.Find(vAddr);
 			if (page == null)
-				throw new InvalidOperationException(string.Format("Bad address: [0x{0:x8}]", vAddr));
+				throw new InvalidOperationException($"Bad address: [0x{vAddr:x8}]");
 			
 			using (var stream = GetMemoryStream(page))
 			{

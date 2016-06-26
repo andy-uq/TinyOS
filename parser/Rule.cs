@@ -64,7 +64,7 @@ namespace Andy.TinyOS.Parser
 			// If this assertion fails, there is a good chance that it is because
 			// you are referring to a rule that hasn't been initialized yet. 
 			if (r == null)
-				throw new ArgumentNullException("r");
+				throw new ArgumentNullException(nameof(r));
 
 			Rules.Add(r);
 		}
@@ -99,18 +99,12 @@ namespace Andy.TinyOS.Parser
 		/// <summary>
 		/// Returns the name of the rule, or _unnamed_ if it is an unnamed rule.
 		/// </summary>
-		public string RuleName
-		{
-			get { return IsUnnamed() ? "_unnamed_" : Name; }
-		}
+		public string RuleName => IsUnnamed() ? "_unnamed_" : Name;
 
 		/// <summary>
 		/// Outputs the rule in the form "MyRuleName ::== SomeRule + (OneRule | AnotherRule)"
 		/// </summary>
-		public string RuleNameAndDefinition
-		{
-			get { return RuleName + " ::== " + RuleDefinition; }
-		}
+		public string RuleNameAndDefinition => RuleName + " ::== " + RuleDefinition;
 
 
 		/// <summary>
@@ -305,10 +299,7 @@ namespace Andy.TinyOS.Parser
 			}
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Choice; }
-		}
+		public override RuleType RuleType => RuleType.Choice;
 
 		public override void FlattenRules()
 		{
@@ -363,10 +354,7 @@ namespace Andy.TinyOS.Parser
 				throw new InvalidOperationException("Expecting two or more rules in a sequence");
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Sequence; }
-		}
+		public override RuleType RuleType => RuleType.Sequence;
 
 		public override string RuleDefinition
 		{
@@ -426,15 +414,9 @@ namespace Andy.TinyOS.Parser
 		{
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Anything; }
-		}
+		public override RuleType RuleType => RuleType.Anything;
 
-		public override string RuleDefinition
-		{
-			get { return "."; }
-		}
+		public override string RuleDefinition => ".";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -454,15 +436,9 @@ namespace Andy.TinyOS.Parser
 	{
 		public static readonly NothingRule Instance = new NothingRule();
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Nothing; }
-		}
+		public override RuleType RuleType => RuleType.Nothing;
 
-		public override string RuleDefinition
-		{
-			get { return "#"; }
-		}
+		public override string RuleDefinition => "#";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -480,20 +456,14 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Star; }
-		}
+		public override RuleType RuleType => RuleType.Star;
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0] + "*"; }
-		}
+		public override string RuleDefinition => Rules[0] + "*";
 
 		protected override bool InternalMatch(ParserState p)
 		{
 			if (Rules.Count != 1)
-				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+				throw new InvalidOperationException($"Invalid number of child rules (Expected 1, Actual: {Rules.Count})");
 
 			Rule r = Rules[0];
 			while (true)
@@ -520,20 +490,14 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Plus; }
-		}
+		public override RuleType RuleType => RuleType.Plus;
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0] + "+"; }
-		}
+		public override string RuleDefinition => Rules[0] + "+";
 
 		protected override bool InternalMatch(ParserState p)
 		{
 			if ( Rules.Count != 1 )
-				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+				throw new InvalidOperationException($"Invalid number of child rules (Expected 1, Actual: {Rules.Count})");
 
 			Rule r = Rules[0];
 			if (!r.Match(p))
@@ -562,20 +526,14 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Not; }
-		}
+		public override RuleType RuleType => RuleType.Not;
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0] + "^"; }
-		}
+		public override string RuleDefinition => Rules[0] + "^";
 
 		protected override bool InternalMatch(ParserState p)
 		{
 			if ( Rules.Count != 1 )
-				throw new InvalidOperationException(string.Format("Invalid number of child rules (Expected 1, Actual: {0})", Rules.Count));
+				throw new InvalidOperationException($"Invalid number of child rules (Expected 1, Actual: {Rules.Count})");
 
 			Rule r = Rules[0];
 			if (r.Match(p))
@@ -594,15 +552,9 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Opt; }
-		}
+		public override RuleType RuleType => RuleType.Opt;
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0] + "?"; }
-		}
+		public override string RuleDefinition => Rules[0] + "?";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -625,15 +577,9 @@ namespace Andy.TinyOS.Parser
 			_func = f;
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Recursive; }
-		}
+		public override RuleType RuleType => RuleType.Recursive;
 
-		public override string RuleDefinition
-		{
-			get { return "recursive"; }
-		}
+		public override string RuleDefinition => "recursive";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -652,20 +598,14 @@ namespace Andy.TinyOS.Parser
 		public CharSeqRule(string s)
 		{
 			if (string.IsNullOrEmpty(s))
-				throw new ArgumentException("Parameter must not be empty or null", "s");
+				throw new ArgumentException("Parameter must not be empty or null", nameof(s));
 
 			_value = s;
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.CharSequence; }
-		}
+		public override RuleType RuleType => RuleType.CharSequence;
 
-		public override string RuleDefinition
-		{
-			get { return "[" + _value + "]"; }
-		}
+		public override string RuleDefinition => "[" + _value + "]";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -693,15 +633,9 @@ namespace Andy.TinyOS.Parser
 			_value = s;
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.CharSet; }
-		}
+		public override RuleType RuleType => RuleType.CharSet;
 
-		public override string RuleDefinition
-		{
-			get { return "[" + _value + "]"; }
-		}
+		public override string RuleDefinition => "[" + _value + "]";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -727,15 +661,9 @@ namespace Andy.TinyOS.Parser
 			_last = to;
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.CharRange; }
-		}
+		public override RuleType RuleType => RuleType.CharRange;
 
-		public override string RuleDefinition
-		{
-			get { return string.Format("[{0}..{1}]", _first, _last); }
-		}
+		public override string RuleDefinition => $"[{_first}..{_last}]";
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -757,15 +685,9 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.NoFail; }
-		}
+		public override RuleType RuleType => RuleType.NoFail;
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0].RuleDefinition; }
-		}
+		public override string RuleDefinition => Rules[0].RuleDefinition;
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -790,15 +712,9 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override string RuleDefinition
-		{
-			get { return "skip(" + Rules[0].RuleDefinition + ")"; }
-		}
+		public override string RuleDefinition => "skip(" + Rules[0].RuleDefinition + ")";
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Skip; }
-		}
+		public override RuleType RuleType => RuleType.Skip;
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -830,15 +746,9 @@ namespace Andy.TinyOS.Parser
 			AddRule(x);
 		}
 
-		public override string RuleDefinition
-		{
-			get { return Rules[0].RuleDefinition; }
-		}
+		public override string RuleDefinition => Rules[0].RuleDefinition;
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Leaf; }
-		}
+		public override RuleType RuleType => RuleType.Leaf;
 
 		protected override bool InternalMatch(ParserState p)
 		{
@@ -864,15 +774,9 @@ namespace Andy.TinyOS.Parser
 	/// </summary>
 	public class EndOfInputRule : Rule
 	{
-		public override string RuleDefinition
-		{
-			get { return "_EOF_"; }
-		}
+		public override string RuleDefinition => "_EOF_";
 
-		public override RuleType RuleType
-		{
-			get { return RuleType.Eof; }
-		}
+		public override RuleType RuleType => RuleType.Eof;
 
 		public override bool Match(ParserState p)
 		{

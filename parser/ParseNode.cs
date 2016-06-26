@@ -74,37 +74,25 @@ namespace Andy.TinyOS.Parser
 		/// Returns the type of the associated rule, or "" if no rule is available
 		/// (which is the case for root nodes).
 		/// </summary>
-		public RuleType RuleType
-		{
-			get { return _rule == null ? RuleType.Root : _rule.RuleType; }
-		}
+		public RuleType RuleType => _rule == null ? RuleType.Root : _rule.RuleType;
 
 		/// <summary>
 		/// Returns the type of the associated rule, or "" if no rule is available
 		/// (which is the case for root nodes).
 		/// </summary>
-		public string RuleName
-		{
-			get { return _rule == null ? "_root_" : _rule.RuleName; }
-		}
+		public string RuleName => _rule == null ? "_root_" : _rule.RuleName;
 
 		/// <summary>
 		/// Returns the number of child nodes
 		/// </summary>
-		public int Count
-		{
-			get { return _children.Count; }
-		}
+		public int Count => _children.Count;
 
 		/// <summary>
 		/// Provides access to child nodes indexed by integer
 		/// </summary>
 		/// <param name="n"></param>
 		/// <returns></returns>
-		public ParseNode this[int n]
-		{
-			get { return _children[n]; }
-		}
+		public ParseNode this[int n] => _children[n];
 
 		/// <summary>
 		/// Provides access to children indexed by the rule name
@@ -119,15 +107,9 @@ namespace Andy.TinyOS.Parser
 		/// <summary>
 		/// Returns true if the parse rule corresponds to no actual text 
 		/// </summary>
-		public bool IsZeroWidth
-		{
-			get { return _begin == _end; }
-		}
+		public bool IsZeroWidth => _begin == _end;
 
-		public string Value
-		{
-			get { return _end > _begin ? _text.Substring(_begin, _end - _begin) : ""; }
-		}
+		public string Value => _end > _begin ? _text.Substring(_begin, _end - _begin) : "";
 
 		#region IEnumerable<ParseNode> Members
 

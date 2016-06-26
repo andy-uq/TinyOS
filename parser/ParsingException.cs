@@ -92,7 +92,7 @@ namespace Andy.TinyOS.Parser
 		{
 			get
 			{
-				string s = string.Format("line number {0}, and character number {1}\n", Row, Column);
+				string s = $"line number {Row}, and character number {Column}\n";
 				s += Line + "\n";
 				s += Ptr + "\n";
 
@@ -100,10 +100,7 @@ namespace Andy.TinyOS.Parser
 			}
 		}
 
-		public override string Message
-		{
-			get { return ToString(); }
-		}
+		public override string Message => ToString();
 
 		public override string ToString()
 		{
@@ -111,12 +108,12 @@ namespace Andy.TinyOS.Parser
 
 			if (ParentRule != null)
 			{
-				s += string.Format(" while parsing '{0}' ", ParentRule);
+				s += $" while parsing '{ParentRule}' ";
 			}
 
 			if (FailedRule != null)
 			{
-				s += string.Format(" expected '{0}' ", FailedRule);
+				s += $" expected '{FailedRule}' ";
 			}
 
 			s += " at \n";

@@ -3,13 +3,10 @@ namespace Andy.TinyOS
 	public struct VirtualAddress
 	{
 		private readonly VirtualAddressCalculator _calculator;
-		public ushort Offset { get; private set; }
-		public uint PageNumber { get; private set; }
+		public ushort Offset { get; }
+		public uint PageNumber { get; }
 
-		public uint Address
-		{
-			get { return _calculator.Address(this); }
-		}
+		public uint Address => _calculator.Address(this);
 
 		public VirtualAddress(VirtualAddressCalculator calculator, int offset, int pageNumber)
 			: this()
@@ -31,7 +28,7 @@ namespace Andy.TinyOS
 
 		public override string ToString()
 		{
-			return string.Format("[0x{0:x8}] Page: {1:n0}, Offset: {2}", Address, PageNumber, Offset);
+			return $"[0x{Address:x8}] Page: {PageNumber:n0}, Offset: {Offset}";
 		}
 	}
 }

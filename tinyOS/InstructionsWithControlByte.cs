@@ -1,6 +1,5 @@
 ﻿using System;
 using Andy.TinyOS.OpCodeMeta;
-using tinyOS;
 
 namespace Andy.TinyOS
 {
@@ -29,7 +28,7 @@ namespace Andy.TinyOS
 				case OpCodeFlag.Constant:
 					return param;
 				default:
-					throw new ArgumentOutOfRangeException("flag");
+					throw new ArgumentOutOfRangeException(nameof(flag));
 			}
 		}
 
@@ -44,7 +43,7 @@ namespace Andy.TinyOS
 					cpu.Write(cpu.Registers[param], value);
 					break;					
 				default:
-					throw new ArgumentOutOfRangeException("flag");
+					throw new ArgumentOutOfRangeException(nameof(flag));
 			}
 		}
 
@@ -156,7 +155,7 @@ namespace Andy.TinyOS
 			cpu.Sf = (rValue < lValue);
 			cpu.Zf = (lValue == rValue);
 
-			Console.WriteLine("{0} < {1} : Sf: {2} Zf: {3}", rValue, lValue, cpu.Sf, cpu.Zf);
+			Console.WriteLine($"{rValue} < {lValue} : Sf: {cpu.Sf} Zf: {cpu.Zf}");
 		}
 
 		[OpCode(OpCode.Call, Comment = "Call the function absolute from the current instruction by a register; The address of the next instruction to execute after a RET is pushed on the stack.")]

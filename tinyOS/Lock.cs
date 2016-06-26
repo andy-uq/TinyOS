@@ -1,4 +1,4 @@
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class Lock
 	{
@@ -10,6 +10,6 @@ namespace tinyOS
 		public uint Owner { get; set; }
 		public int RefCount { get; set; }
 
-		public DeviceId Handle { get; set; }
+		public DeviceId Handle { get; }
 	}
 }

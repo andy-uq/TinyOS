@@ -4,41 +4,26 @@ namespace Andy.TinyOS
 {
 	public class VirtualAddressCalculator
 	{
-		private readonly int _pageShift;
-		private readonly ushort _offsetMask;
-
 		public VirtualAddressCalculator(uint frameSize)
 		{
-			_pageShift = 0;
+			PageShift = 0;
 
 			frameSize >>= 1;
-			while ( frameSize > 0 )
+			while (frameSize > 0)
 			{
-				_pageShift++;
-				_offsetMask = (ushort)(_offsetMask << 1 | 1);
+				PageShift++;
+				OffsetMask = (ushort) (OffsetMask << 1 | 1);
 				frameSize >>= 1;
 			}
 		}
 
-		public int PageShift
-		{
-			get { return _pageShift; }
-		}
+		public int PageShift { get; }
 
-		public ushort OffsetMask
-		{
-			get { return _offsetMask; }
-		}
+		public ushort OffsetMask { get; }
 
-		public int PageSize
-		{
-			get { return 1 << PageShift; }
-		}
+		public int PageSize => 1 << PageShift;
 
-		public int MaxPages
-		{
-			get { return 1 << (32 - _pageShift); }
-		}
+		public int MaxPages => 1 << (32 - PageShift);
 
 		public uint Address(VirtualAddress vAddr)
 		{
@@ -47,11 +32,11 @@ namespace Andy.TinyOS
 
 		public VirtualAddress New(int offset, int pageNumber)
 		{
-			if (offset < 0 || offset > _offsetMask)
-				throw new ArgumentOutOfRangeException("offset", offset, "Offset must be greater than zero and less than " + _offsetMask);
+			if (offset < 0 || offset > OffsetMask)
+				throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be greater than zero and less than " + OffsetMask);
 
 			if (pageNumber < 0)
-				throw new ArgumentOutOfRangeException("pageNumber", offset, "Page PageNumber must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(pageNumber), offset, "Page PageNumber must be greater than zero");
 
 			return new VirtualAddress(this, offset, pageNumber);
 		}
@@ -59,9 +44,9 @@ namespace Andy.TinyOS
 		public VirtualAddress New(uint address)
 		{
 			var pageNumber = address >> PageShift;
-			var offset = address & _offsetMask;
+			var offset = address & OffsetMask;
 
-			return new VirtualAddress(this, (int )offset, (int )pageNumber);
+			return new VirtualAddress(this, (int) offset, (int) pageNumber);
 		}
 	}
 }

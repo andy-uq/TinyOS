@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace tinyOS
+namespace Andy.TinyOS
 {
 	public class ReadyQueue : IEnumerable<ProcessContextBlock>
 	{
 		private readonly byte _priorityCount;
 		private readonly Dictionary<byte, Queue<ProcessContextBlock>> _readyQueue;
 
-		public byte DefaultPriority { get; set; }
+		public byte DefaultPriority { get; }
 
 		public ReadyQueue(byte priorityCount)
 		{

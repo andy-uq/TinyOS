@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using Andy.TinyOS;
 using Andy.TinyOS.Compiler;
-using tinyOS;
 
 namespace ClassLibrary1
 {

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Andy.TinyOS.OpCodeMeta;
-using tinyOS;
 
 namespace Andy.TinyOS.Utility
 {
@@ -45,7 +44,7 @@ namespace Andy.TinyOS.Utility
 		{
 			if (meta.Parameters.Length != instruction.Parameters.Length)
 			{
-				throw new InvalidOperationException(string.Format("Parameter mismatch: {0} ({1}, {2})", meta.OpCode, meta.Parameters.Length, instruction.Parameters.Length));
+				throw new InvalidOperationException($"Parameter mismatch: {meta.OpCode} ({meta.Parameters.Length}, {instruction.Parameters.Length})");
 			}
 
 			for (var i = 0; i < meta.Parameters.Length; i++)

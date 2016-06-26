@@ -39,7 +39,7 @@ namespace Andy.TinyOS.Compiler
 		public CompilerContext Push(ParseNode node)
 		{
 			if ( node == null )
-				throw new ArgumentNullException("node");
+				throw new ArgumentNullException(nameof(node));
 
 			return new CompilerContext
 			{

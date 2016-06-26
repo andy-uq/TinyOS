@@ -165,7 +165,7 @@ namespace Andy.TinyOS.Compiler
 			var symbol = context.SymbolTable[name];
 
 			context.AsFluent()
-				.Mov.RU(Register.B, symbol.Address, string.Format("Load variable {0} into rB", name))
+				.Mov.RU(Register.B, symbol.Address, $"Load variable {name} into rB")
 				.Add.RR(Register.B, Register.H)
 				.Mov.MR(MemoryAddress.B, Register.A);
 
@@ -270,7 +270,7 @@ namespace Andy.TinyOS.Compiler
 		private CodeStream Compile(CompilerContext context)
 		{
 			if ( context == null )
-				throw new ArgumentNullException("context");
+				throw new ArgumentNullException(nameof(context));
 			
 			var rule = context.Node.GetRule();
 			if ( !rule.IsUnnamed() )

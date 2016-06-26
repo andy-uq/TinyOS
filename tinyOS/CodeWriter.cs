@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Andy.TinyOS.OpCodeMeta;
-using tinyOS;
 
 namespace Andy.TinyOS
 {
@@ -15,7 +14,7 @@ namespace Andy.TinyOS
 		public CodeWriter(Stream stream)
 		{
 			if (stream == null)
-				throw new ArgumentNullException("stream");
+				throw new ArgumentNullException(nameof(stream));
 
 			if (!stream.CanSeek)
 				throw new ArgumentException("Must supply a seekable stream");
@@ -33,7 +32,7 @@ namespace Andy.TinyOS
 
 			var meta = OpCodeMetaInformation.Lookup[instruction.OpCode];
 			if (meta.Parameters.Length != instruction.Parameters.Length)
-				throw new InvalidOperationException(string.Format("Bad instruction, not enough parameters: {0}", meta.OpCode));
+				throw new InvalidOperationException($"Bad instruction, not enough parameters: {meta.OpCode}");
 
 			_instructionTable.Add((ushort )_writer.BaseStream.Position);
 			_writer.Write((byte )instruction.OpCode);
