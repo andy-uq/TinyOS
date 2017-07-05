@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -110,10 +111,10 @@ namespace ClassLibrary1
 		{
 			Invoke(InstructionsWithControlByte.Add, Register.A, 100);
 			Invoke(InstructionsWithControlByte.Add, Register.B, 50);
-			Assert.That(A, Is.EqualTo(100));
+			A.Should().Be(100);
 
 			Invoke(InstructionsWithControlByte.Add, Register.A, Register.B);
-			Assert.That(A, Is.EqualTo(150));
+			A.Should().Be(150);
 		}
 
 		[Fact]
@@ -121,23 +122,23 @@ namespace ClassLibrary1
 		{
 			Invoke(new Instruction(OpCode.Mov).Destination(Register.A).Source(100));
 			Invoke(new Instruction(OpCode.Mov).Destination(Register.B).Source(50));
-			Assert.That(A, Is.EqualTo(100));
+			A.Should().Be(100);
 
 			Invoke(new Instruction(OpCode.Add).Destination(Register.A).Source(Register.B));
-			Assert.That(A, Is.EqualTo(150));
+			A.Should().Be(150);
 		}
 
 		[Fact]
 		public void Incri()
 		{
 			var globalData = _cpu.CurrentProcess.GlobalData.Offset;
-			Assert.That(H, Is.EqualTo(globalData));
+			H.Should().Be(globalData);
 
 			Invoke(InstructionsWithControlByte.Incr, Register.A);
 			Invoke(InstructionsWithControlByte.Incr, MemoryAddress.H);
-			Assert.That(A, Is.EqualTo(1));
-			Assert.That(H, Is.EqualTo(globalData));
-			Assert.That(_cpu.Read(H), Is.EqualTo(1));
+			A.Should().Be(1);
+			H.Should().Be(globalData);
+			_cpu.Read(H).Should().Be(1);
 		}
 
 		[Fact]
@@ -145,16 +146,16 @@ namespace ClassLibrary1
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 100);
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.H, Register.A);
-			Assert.That(A, Is.EqualTo(100));
-			Assert.That(_cpu.Read(H), Is.EqualTo(100));
+			A.Should().Be(100);
+			_cpu.Read(H).Should().Be(100);
 		}
 
 		[Fact]
 		public void Push()
 		{
 			Invoke(InstructionsWithControlByte.Push, 1000);
-			Assert.That(Sp, Is.EqualTo(4));
-			Assert.That(_cpu.Peek(), Is.EqualTo(1000));
+			Sp.Should().Be(4);
+			_cpu.Peek().Should().Be(1000);
 		}
 
 		[Fact]
@@ -162,7 +163,7 @@ namespace ClassLibrary1
 		{
 			Invoke(InstructionsWithControlByte.Push, 1000);
 			Invoke(InstructionsWithControlByte.Pop, MemoryAddress.H);
-			Assert.That(_cpu.Read(H), Is.EqualTo(1000));
+			_cpu.Read(H).Should().Be(1000);
 		}
 
 		[Fact]
@@ -171,16 +172,16 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
 			Invoke(InstructionsWithControlByte.Cmp, Register.A, 20);
 
-			Assert.That(_cpu.Sf, Is.True);
-			Assert.That(_cpu.Zf, Is.False);
+			_cpu.Sf.Should().BeTrue();
+			_cpu.Zf.Should().BeFalse();
 
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 30);
 			Invoke(InstructionsWithControlByte.Cmp, Register.A, 20);
-			Assert.That(_cpu.Sf, Is.False);
-			Assert.That(_cpu.Zf, Is.False);
+			_cpu.Sf.Should().BeFalse();
+			_cpu.Zf.Should().BeFalse();
 
 			Invoke(InstructionsWithControlByte.Cmp, Register.A, 30);
-			Assert.That(_cpu.Zf, Is.True);
+			_cpu.Zf.Should().BeTrue();
 		}
 
 		[Fact]
@@ -191,13 +192,13 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Jmp, Register.A);
 			_cpu.CurrentProcess.Ip++;
 
-			Assert.That(_cpu.Ip, Is.EqualTo(11));
+			_cpu.Ip.Should().Be(11);
 
 			_cpu.CurrentProcess.Ip++;
 			Invoke(InstructionsWithControlByte.Jmp, AsUint(-11));
 			_cpu.CurrentProcess.Ip++;
 			
-			Assert.That(_cpu.Ip, Is.EqualTo(1));
+			_cpu.Ip.Should().Be(1);
 		}
 
 		[Fact]
@@ -212,14 +213,14 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Je, Register.C);
 			_cpu.CurrentProcess.Ip++;
 			
-			Assert.That(_cpu.Ip, Is.EqualTo(13));
+			_cpu.Ip.Should().Be(13);
 
 			Invoke(InstructionsWithControlByte.Mov, Register.C, AsUint(-13));
 			_cpu.CurrentProcess.Ip++;
 			Invoke(InstructionsWithControlByte.Je, Register.C);
 			_cpu.CurrentProcess.Ip++;
 			
-			Assert.That(_cpu.Ip, Is.EqualTo(1));
+			_cpu.Ip.Should().Be(1);
 		}
 
 		[Fact]
@@ -234,14 +235,14 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Jlt, Register.C);
 			_cpu.CurrentProcess.Ip++;
 
-			Assert.That(_cpu.Ip, Is.EqualTo(13));
+			_cpu.Ip.Should().Be(13);
 
 			Invoke(InstructionsWithControlByte.Mov, Register.C, AsUint(-13));
 			_cpu.CurrentProcess.Ip++;
 			Invoke(InstructionsWithControlByte.Jlt, Register.C);
 			_cpu.CurrentProcess.Ip++;
 
-			Assert.That(_cpu.Ip, Is.EqualTo(1));
+			_cpu.Ip.Should().Be(1);
 		}
 
 		[Fact]
@@ -251,7 +252,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, Register.A);
 			
-			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(count + 1));
+			_cpu.CurrentProcess.PageTable.Count().Should().Be(count + 1);
 		}
 
 		[Fact]
@@ -262,13 +263,13 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Map, Register.B, Register.A);
 			
 			Assert.That(B, Is.Not.EqualTo(0));
-			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(count + 1));
+			_cpu.CurrentProcess.PageTable.Count().Should().Be(count + 1);
 
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, 8088);
 			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
 			var value = BitConverter.ToUInt32(_ram, _sharedOffset);
-			Assert.That(value, Is.EqualTo(8088));
-			Assert.That(C, Is.EqualTo(8088));
+			value.Should().Be(8088);
+			C.Should().Be(8088);
 		}
 
 		[Fact]
@@ -286,7 +287,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Map, Register.B, Register.A);
 			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
 
-			Assert.That(C, Is.EqualTo(8088));
+			C.Should().Be(8088);
 		}
 
 		[Fact]
@@ -296,7 +297,7 @@ namespace ClassLibrary1
 
 			Invoke(InstructionsWithControlByte.WaitEvent, 1);
 
-			Assert.That(_cpu.CurrentProcess, Is.Null);
+			_cpu.CurrentProcess.Should().BeNull();
 			Assert.That(_cpu.DeviceReadQueue.Where(x => x.DeviceId == DeviceId.Event1).Select(x => x.Process), Contains.Item(pA));
 		}
 
@@ -333,7 +334,7 @@ namespace ClassLibrary1
 				_cpu.Tick();
 
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
-			Assert.That(C, Is.EqualTo(99));
+			C.Should().Be(99);
 		}
 
 		[Fact]
@@ -355,7 +356,7 @@ namespace ClassLibrary1
 			_cpu.Tick();
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
 
-			Assert.That(printStack.Peek(), Is.EqualTo(10));
+			printStack.Peek().Should().Be(10);
 		}
 
 		[Fact]
@@ -376,7 +377,7 @@ namespace ClassLibrary1
 			_cpu.Tick();
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
 
-			Assert.That(printStack.Peek(), Is.EqualTo(10));
+			printStack.Peek().Should().Be(10);
 		}
 
 		[Fact]
@@ -399,7 +400,7 @@ namespace ClassLibrary1
 			_cpu.Tick();
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
 
-			Assert.That(printStack.Peek(), Is.EqualTo(99));
+			printStack.Peek().Should().Be(99);
 		}
 
 
@@ -414,7 +415,7 @@ namespace ClassLibrary1
 			_cpu.CurrentProcess = pB;
 			Invoke(InstructionsWithControlByte.SignalEvent, 1);
 
-			Assert.That(_cpu.CurrentProcess, Is.EqualTo(pB));
+			_cpu.CurrentProcess.Should().Be(pB);
 			Assert.That(_cpu.ReadyQueue, Contains.Item(pA));
 			Assert.That(_cpu.DeviceReadQueue, Is.Empty);
 		}
@@ -427,7 +428,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
 
 			var value = BitConverter.ToUInt32(_ram, _heapOffset);
-			Assert.That(value, Is.EqualTo(88));
+			value.Should().Be(88);
 		}
 
 		[Fact]
@@ -438,7 +439,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
 			Invoke(InstructionsWithControlByte.Mov, Register.C, MemoryAddress.B);
 			
-			Assert.That(C, Is.EqualTo(88));
+			C.Should().Be(88);
 		}
 
 		[Fact]
@@ -450,13 +451,13 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 0x12345678);
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
 			var value = (ulong )BitConverter.ToUInt32(_ram, _heapOffset);
-			Assert.That(value, Is.EqualTo(0x12345678L));
+			value.Should().Be(0x12345678L);
 
 			Invoke(InstructionsWithControlByte.Add, Register.B, 4);
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
 			
 			value = BitConverter.ToUInt64(_ram, _heapOffset);
-			Assert.That(value, Is.EqualTo(0x1234567812345678));
+			value.Should().Be(0x1234567812345678);
 			
 			Invoke(InstructionsWithControlByte.Pop, Register.B);
 
@@ -467,7 +468,7 @@ namespace ClassLibrary1
 
 			value = BitConverter.ToUInt64(_ram, _heapOffset);
 			Console.WriteLine(value.ToString("x8"));
-			Assert.That(value, Is.EqualTo(0x1234560000000078));
+			value.Should().Be(0x1234560000000078);
 
 			Invoke(InstructionsWithControlByte.FreeMemory, Register.B);
 		}
@@ -483,7 +484,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.C, MemoryAddress.B);
 
 			var value = BitConverter.ToUInt32(_ram, (int) (_heapOffset + _cpu.Ram.FrameSize));
-			Assert.That(value, Is.EqualTo(88));
+			value.Should().Be(88);
 		}
 
 		[Fact]

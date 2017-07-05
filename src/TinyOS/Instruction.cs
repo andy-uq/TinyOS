@@ -28,7 +28,7 @@ namespace Andy.TinyOS
 		{
 			Parameters = new uint[0];
 		}
-
+		
 		public override string ToString()
 		{
 			return InstructionFormatter.ToString(this).TrimEnd();

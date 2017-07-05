@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -28,11 +29,11 @@ namespace ClassLibrary1
 			IdleProcess.Initialise(cpu, IdleProcess.Instructions);
 
  			cpu.Tick();
- 			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
-			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1U));
+ 			cpu.CurrentProcess.Should().Be(cpu.IdleProcess);
+			cpu.CurrentProcess.Ip.Should().Be(1U);
 			
 			cpu.Tick();
-			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20U));
+			cpu.CurrentProcess.Registers[0].Should().Be(20U);
 		}
 
 		[Fact]
@@ -51,7 +52,7 @@ namespace ClassLibrary1
 				cpu.Tick();
 			}
 
-			Assert.That(prog1.ExitCode, Is.EqualTo(1U));
+			prog1.ExitCode.Should().Be(1U);
 		}
 
 		[Fact]
@@ -74,8 +75,8 @@ namespace ClassLibrary1
 				cpu.Tick();
 			}
 
-			Assert.That(prog1.ExitCode, Is.EqualTo(1U));
-			Assert.That(prog2.ExitCode, Is.EqualTo(1U));
+			prog1.ExitCode.Should().Be(1U);
+			prog2.ExitCode.Should().Be(1U);
 		}
 	}
 }

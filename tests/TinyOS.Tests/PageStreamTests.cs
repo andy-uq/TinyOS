@@ -1,4 +1,5 @@
 ﻿using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -19,12 +20,12 @@ namespace ClassLibrary1
 			pageSet.Append(ram.Allocate(pcb));
 
 			var pageStream = new PageStream(ram, pageSet);
-			Assert.That(pageStream.Length, Is.EqualTo(8));
+			pageStream.Length.Should().Be(8);
 
 			var b = new byte[6];
 			pageStream.Read(b, 0, 6);
 
-			Assert.That(pageStream.Position, Is.EqualTo(6));
+			pageStream.Position.Should().Be(6);
 
 			Assert.That(b, Is.EquivalentTo(new byte[] { 5, 6, 7, 8, 9, 10 }));
 		}
@@ -43,7 +44,7 @@ namespace ClassLibrary1
 			pageSet.Append(ram.Allocate(pcb));
 
 			var pageStream = new PageStream(ram, pageSet);
-			Assert.That(pageStream.Length, Is.EqualTo(8));
+			pageStream.Length.Should().Be(8);
 
 			var b = new byte[] { 91, 92, 93, 94, };
 			pageStream.Position = 2;

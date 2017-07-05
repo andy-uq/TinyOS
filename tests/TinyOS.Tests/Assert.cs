@@ -13,10 +13,7 @@ namespace ClassLibrary1
     {
         public static void That<T>(T value, IAssertion<T> assertion)
         {
-            if (assertion.Evaluate(value))
-                return;
-            
-            throw new AssertionException();
+            assertion.Evaluate(value);
         }
         
         public static void That(uint value, IAssertion<int> assertion)
@@ -61,8 +58,6 @@ namespace ClassLibrary1
         public static IsInstanceOf<T> InstanceOf<T>() => new IsInstanceOf<T>();
         public static EmptyAssertion Empty => new EmptyAssertion();
         
-        public static EqualToAssertion<bool> True => new EqualToAssertion<bool>(true, EqualityComparer<bool>.Default);
-        public static EqualToAssertion<bool> False => new EqualToAssertion<bool>(false, EqualityComparer<bool>.Default);
         public static SameAsAssertion<object> Null => new SameAsAssertion<object>(null);
 
         public static NotAssertions Not { get; } = new NotAssertions();    

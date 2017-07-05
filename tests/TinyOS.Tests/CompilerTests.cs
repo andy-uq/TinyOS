@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -32,13 +33,13 @@ namespace ClassLibrary1
 			{
 				if ( expected.MoveNext() )
 				{
-					Assert.That(actual.Current.OpCode, Is.EqualTo(expected.Current.OpCode));
-					Assert.That(actual.Current.Parameters, Is.EqualTo(expected.Current.Parameters));
-					Assert.That(actual.Current.Comment, Is.EqualTo(expected.Current.Comment));
+					actual.Current.OpCode.Should().Be(expected.Current.OpCode);
+					actual.Current.Parameters.Should().ContainInOrder(expected.Current.Parameters);
+					actual.Current.Comment.Should().Be(expected.Current.Comment);
 					continue;
 				}
 
-				Assert.That(actual.Current.OpCode, Is.EqualTo(OpCode.Noop));
+				actual.Current.OpCode.Should().Be(OpCode.Noop);
 			}
 
 		}

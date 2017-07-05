@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -57,7 +58,7 @@ namespace ClassLibrary1
 			var instruction = new Instruction();
 			stream.Add(instruction);
 
-			Assert.That(stream.ToArray(), Is.EqualTo(new[] { instruction }));
+			stream.ToArray().Should().Be(new[] { instruction });
 		}
 
 		[Fact]
@@ -68,7 +69,7 @@ namespace ClassLibrary1
 			var i2 = new Instruction();
 			stream.Add(i1, i2);
 
-			Assert.That(stream.ToArray(), Is.EqualTo(new[] { i1, i2 }));
+			stream.ToArray().Should().Be(new[] { i1, i2 });
 		}
 
 		[Fact]
@@ -90,7 +91,8 @@ namespace ClassLibrary1
 			stream.AsFluent()
 				.Mov.RI(Register.A, 0);
 
-			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Mov).Destination(Register.A).Source(0)).Using(new InstructionComparer()));
+			var expected = new Instruction(OpCode.Mov).Destination(Register.A).Source(0);
+			stream.First().Should().Be(expected, new InstructionComparer());
 		}
 
 		[Fact]
@@ -102,7 +104,7 @@ namespace ClassLibrary1
 				.Mov.RR(Register.A, Register.B);
 
 			var expected = new Instruction(OpCode.Mov).Source(Register.B).Destination(Register.A);
-			Assert.That(stream.First(), Is.EqualTo(expected).Using(new InstructionComparer()));
+			stream.First().Should().Be(expected, new InstructionComparer());
 		}
 	}
 }

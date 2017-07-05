@@ -6,6 +6,7 @@ using Andy.TinyOS;
 using Andy.TinyOS.Compiler;
 using Andy.TinyOS.Parser;
 using Andy.TinyOS.Utility;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -49,8 +50,8 @@ namespace ClassLibrary1
 				string source = File.ReadAllText(file);
 				var parser = new ParserState(source);
 				var result = grammar.program.Match(parser);
-				Assert.That(result, Is.True);
-
+				result.Should().BeTrue();
+				
 				var printer = new CppStructuralOutputAsXml();
 				printer.Print(parser.GetRoot());
 				Console.WriteLine(printer.AsXml());
@@ -107,8 +108,8 @@ namespace ClassLibrary1
 		public void ParseExpression()
 		{
 			var instruction = new Instruction(OpCode.Mov).Destination(Register.A).Source(10);
-			Assert.That(instruction.OpCode, Is.EqualTo(OpCode.Mov));
-			Assert.That(instruction.OpCodeMask, Is.EqualTo(13));
+			instruction.OpCode.Should().Be(OpCode.Mov);
+			instruction.OpCodeMask.Should().Be(13);
 			Xunit.Assert.Matches(@"^Mov\s+r1\s+\$10", instruction.ToString());
 		}
 

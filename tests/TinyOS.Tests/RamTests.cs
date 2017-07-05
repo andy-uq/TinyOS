@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -10,9 +11,9 @@ namespace ClassLibrary1
         public void Create()
         {
             var ram = new Ram(1024, 256);
-            Assert.That(ram.Size, Is.EqualTo(1024));
-            Assert.That(ram.FrameSize, Is.EqualTo(256));
-            Assert.That(ram.FrameCount, Is.EqualTo(4));
+            ram.Size.Should().Be(1024);
+            ram.FrameSize.Should().Be(256);
+            ram.FrameCount.Should().Be(4);
         }
 
 		[Fact]
@@ -20,7 +21,7 @@ namespace ClassLibrary1
 		{
 			var ram = new Ram(1024, 256);
 			var offset = ram.AllocateShared(512);
-			Assert.That(offset, Is.EqualTo(0));
+			offset.Should().Be(0);
 
 			var pcb = new ProcessContextBlock {Id = 10};
 			var p1 = ram.Allocate(pcb);
@@ -28,9 +29,9 @@ namespace ClassLibrary1
 
 			var p1Offset = ram.ToPhysicalAddress(10, p1.VirtualAddress);
 			var p2Offset = ram.ToPhysicalAddress(10, p2.VirtualAddress);
-			Xunit.Assert.InRange(p1Offset, 0U, offset);
-			Xunit.Assert.InRange(p2Offset, 0U, offset);
-			Xunit.Assert.InRange(p2Offset, 0U, p1Offset);
+			p1Offset.Should().BeGreaterThan(offset);
+			p2Offset.Should().BeGreaterThan(offset);
+			p2Offset.Should().BeGreaterThan(p1Offset);
 		}
 
     	[Fact]
@@ -48,7 +49,7 @@ namespace ClassLibrary1
             Assert.That(page.PageNumber, Is.Not.EqualTo(0));
 
             page = ram.Allocate(pcb);
-            Assert.That(page, Is.Null);
+            page.Should().BeNull();
         }
 
         [Fact]
@@ -101,8 +102,8 @@ namespace ClassLibrary1
 		public void VirtualAddressCalculations()
 		{
 			var c = new VirtualAddressCalculator(16);
-			Assert.That(c.PageSize, Is.EqualTo(16));
-			Assert.That(c.MaxPages, Is.EqualTo(1 << 28));
+			c.PageSize.Should().Be(16);
+			c.MaxPages.Should().Be(1 << 28);
 		}
     }
 }

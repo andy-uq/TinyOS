@@ -1,4 +1,5 @@
 ﻿using Andy.TinyOS;
+using FluentAssertions;
 using Xunit;
 
 namespace ClassLibrary1
@@ -9,25 +10,25 @@ namespace ClassLibrary1
 		public void EncodeOpCode()
 		{
 			var op = new MaskedOpCode(OpCode.Add);
-			Assert.That(op.OpCode, Is.EqualTo(OpCode.Add));
-			Assert.That(op.Signed, Is.False);
+			op.OpCode.Should().Be(OpCode.Add);
+			op.Signed.Should().BeFalse();
 		}
 
 		[Fact]
 		public void EncodeOpCodeAsString()
 		{
 			var op = new MaskedOpCode(OpCode.Add);
-			Assert.That(op.ToString(), Is.EqualTo("Add"));
+			op.ToString().Should().Be("Add");
 		}
 
 		[Fact]
 		public void EncodeOpCodeWithDestination()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetDest(OpCodeFlag.MemoryAddress);
-			Assert.That(op.OpCode, Is.EqualTo(OpCode.Add));
-			Assert.That(op.Signed, Is.False);
+			op.OpCode.Should().Be(OpCode.Add);
+			op.Signed.Should().BeFalse();
 
-			Assert.That(op.Destination, Is.EqualTo(OpCodeFlag.MemoryAddress));
+			op.Destination.Should().Be(OpCodeFlag.MemoryAddress);
 		}
 
 		[Fact]
@@ -36,43 +37,43 @@ namespace ClassLibrary1
 			var op = new MaskedOpCode(OpCode.Add)
 				.SetDest(OpCodeFlag.MemoryAddress)
 				.SetSource(OpCodeFlag.Constant);
-			Assert.That(op.ToString(), Is.EqualTo("Add [rX] 0x0"));
+			op.ToString().Should().Be("Add [rX] 0x0");
 
 			op = op.SetDest(OpCodeFlag.Register);
-			Assert.That(op.ToString(), Is.EqualTo("Add rX 0x0"));
+			op.ToString().Should().Be("Add rX 0x0");
 
 			op = op.SetDest(OpCodeFlag.MemoryAddress);
-			Assert.That(op.ToString(), Is.EqualTo("Add [rX] 0x0"));
+			op.ToString().Should().Be("Add [rX] 0x0");
 		}
 
 		[Fact]
 		public void EncodeOpCodeWithSource()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetSource(OpCodeFlag.Constant);
-			Assert.That(op.OpCode, Is.EqualTo(OpCode.Add));
-			Assert.That(op.Signed, Is.False);
-			Assert.That(op.Source, Is.EqualTo(OpCodeFlag.Constant));
-			Assert.That(op.Destination, Is.EqualTo(OpCodeFlag.None));
+			op.OpCode.Should().Be(OpCode.Add);
+			op.Signed.Should().BeFalse();
+			op.Source.Should().Be(OpCodeFlag.Constant);
+			op.Destination.Should().Be(OpCodeFlag.None);
 		}
 		[Fact]
 		public void EncodeOpCodeWithSourceAsString()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetDest(OpCodeFlag.MemoryAddress).SetSource(OpCodeFlag.Constant);
-			Assert.That(op.ToString(), Is.EqualTo("Add [rX] 0x0"));
+			op.ToString().Should().Be("Add [rX] 0x0");
 
 			op = op.SetSource(OpCodeFlag.Register);
-			Assert.That(op.ToString(), Is.EqualTo("Add [rX] rX"));
+			op.ToString().Should().Be("Add [rX] rX");
 
 			op = op.SetSource(OpCodeFlag.MemoryAddress);
-			Assert.That(op.ToString(), Is.EqualTo("Add [rX] [rX]"));
+			op.ToString().Should().Be("Add [rX] [rX]");
 		}
 
 		[Fact]
 		public void EncodeOpCodeAsSigned()
 		{
 			var op = new MaskedOpCode(OpCode.Add).AsSigned();
-			Assert.That(op.OpCode, Is.EqualTo(OpCode.Add));
-			Assert.That(op.Signed, Is.True);
+			op.OpCode.Should().Be(OpCode.Add);
+			op.Signed.Should().BeTrue();
 		}
 	}
 }
