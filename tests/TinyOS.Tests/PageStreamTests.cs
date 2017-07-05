@@ -1,12 +1,11 @@
 ﻿using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class PageStreamTests
 	{
-		[Test]
+		[Fact]
 		public void Read()
 		{
 			var buffer = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
@@ -27,10 +26,10 @@ namespace ClassLibrary1
 
 			Assert.That(pageStream.Position, Is.EqualTo(6));
 
-			Assert.That(b, Is.EquivalentTo(new[] { 5, 6, 7, 8, 9, 10 }));
+			Assert.That(b, Is.EquivalentTo(new byte[] { 5, 6, 7, 8, 9, 10 }));
 		}
 
-		[Test]
+		[Fact]
 		public void Write()
 		{
 			var buffer = new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
@@ -50,7 +49,7 @@ namespace ClassLibrary1
 			pageStream.Position = 2;
 			pageStream.Write(b, 0, 4);
 
-			Assert.That(buffer, Is.EquivalentTo(new[] { 1, 2, 3, 4, 5, 6, 91, 92, 93, 94, 11, 12, }));
+			Assert.That(buffer, Is.EquivalentTo(new byte[] { 1, 2, 3, 4, 5, 6, 91, 92, 93, 94, 11, 12, }));
 		}
 	}
 }

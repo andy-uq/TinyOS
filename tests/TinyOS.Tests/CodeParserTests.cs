@@ -6,11 +6,10 @@ using Andy.TinyOS;
 using Andy.TinyOS.Compiler;
 using Andy.TinyOS.Parser;
 using Andy.TinyOS.Utility;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class CodeParserTests
 	{
 		private readonly Dictionary<string, string> _testPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -21,22 +20,23 @@ namespace ClassLibrary1
 			{"ANDYLAPTOP",@"C:\Source\C#\TinyOS\"},
 		};
 
-		[TestCase(@"Sample Programs\prog1.txt")]
-		[TestCase(@"Sample Programs\prog2.txt")]
-		[TestCase(@"Sample Programs\prog3.txt")]
-		[TestCase(@"Sample Programs\scott1.txt")]
-		[TestCase(@"Sample Programs\scott2.txt")]
-		[TestCase(@"Sample Programs\scott3.txt")]
-		[TestCase(@"Sample Programs\scott4.txt")]
-		[TestCase(@"Sample Programs\scott5.txt")]
-		[TestCase(@"Sample Programs\scott6.txt")]
-		[TestCase(@"Sample Programs\scott7.txt")]
-		[TestCase(@"Sample Programs\scott8.txt")]
-		[TestCase(@"Sample Programs\scott9.txt")]
-		[TestCase(@"Sample Programs\scott10.txt")]
-		[TestCase(@"Sample Programs\scott11.txt")]
-		[TestCase(@"Sample Programs\scott12.txt")]
-		[TestCase(@"Sample Programs\scott13.txt")]
+		[Theory]
+		[InlineData(@"Sample Programs\prog1.txt")]
+		[InlineData(@"Sample Programs\prog2.txt")]
+		[InlineData(@"Sample Programs\prog3.txt")]
+		[InlineData(@"Sample Programs\scott1.txt")]
+		[InlineData(@"Sample Programs\scott2.txt")]
+		[InlineData(@"Sample Programs\scott3.txt")]
+		[InlineData(@"Sample Programs\scott4.txt")]
+		[InlineData(@"Sample Programs\scott5.txt")]
+		[InlineData(@"Sample Programs\scott6.txt")]
+		[InlineData(@"Sample Programs\scott7.txt")]
+		[InlineData(@"Sample Programs\scott8.txt")]
+		[InlineData(@"Sample Programs\scott9.txt")]
+		[InlineData(@"Sample Programs\scott10.txt")]
+		[InlineData(@"Sample Programs\scott11.txt")]
+		[InlineData(@"Sample Programs\scott12.txt")]
+		[InlineData(@"Sample Programs\scott13.txt")]
 		public void OpenFile(string file)
 		{
 			var grammar = new AsmStructuralGrammar();
@@ -60,22 +60,23 @@ namespace ClassLibrary1
 			}
 		}
 
-		[TestCase(@"Sample Programs\prog1.txt")]
-		[TestCase(@"Sample Programs\prog2.txt")]
-		[TestCase(@"Sample Programs\prog3.txt")]
-		[TestCase(@"Sample Programs\scott1.txt")]
-		[TestCase(@"Sample Programs\scott2.txt")]
-		[TestCase(@"Sample Programs\scott3.txt")]
-		[TestCase(@"Sample Programs\scott4.txt")]
-		[TestCase(@"Sample Programs\scott5.txt")]
-		[TestCase(@"Sample Programs\scott6.txt")]
-		[TestCase(@"Sample Programs\scott7.txt")]
-		[TestCase(@"Sample Programs\scott8.txt")]
-		[TestCase(@"Sample Programs\scott9.txt")]
-		[TestCase(@"Sample Programs\scott10.txt")]
-		[TestCase(@"Sample Programs\scott11.txt")]
-		[TestCase(@"Sample Programs\scott12.txt")]
-		[TestCase(@"Sample Programs\scott13.txt")]
+		[Theory]
+		[InlineData(@"Sample Programs\prog1.txt")]
+		[InlineData(@"Sample Programs\prog2.txt")]
+		[InlineData(@"Sample Programs\prog3.txt")]
+		[InlineData(@"Sample Programs\scott1.txt")]
+		[InlineData(@"Sample Programs\scott2.txt")]
+		[InlineData(@"Sample Programs\scott3.txt")]
+		[InlineData(@"Sample Programs\scott4.txt")]
+		[InlineData(@"Sample Programs\scott5.txt")]
+		[InlineData(@"Sample Programs\scott6.txt")]
+		[InlineData(@"Sample Programs\scott7.txt")]
+		[InlineData(@"Sample Programs\scott8.txt")]
+		[InlineData(@"Sample Programs\scott9.txt")]
+		[InlineData(@"Sample Programs\scott10.txt")]
+		[InlineData(@"Sample Programs\scott11.txt")]
+		[InlineData(@"Sample Programs\scott12.txt")]
+		[InlineData(@"Sample Programs\scott13.txt")]
 		public void Decompile(string file)
 		{
 			file = string.Concat(_testPaths[Environment.MachineName], file);
@@ -102,47 +103,51 @@ namespace ClassLibrary1
 			return ms.ToArray();
 		}
 
-		[Test]
+		[Fact]
 		public void ParseExpression()
 		{
 			var instruction = new Instruction(OpCode.Mov).Destination(Register.A).Source(10);
 			Assert.That(instruction.OpCode, Is.EqualTo(OpCode.Mov));
 			Assert.That(instruction.OpCodeMask, Is.EqualTo(13));
-			Assert.That(instruction.ToString(), Is.StringMatching(@"^Mov\s+r1\s+\$10"));
+			Xunit.Assert.Matches(@"^Mov\s+r1\s+\$10", instruction.ToString());
 		}
 
-		[Test, ExpectedException(typeof(InvalidOperationException))]
+		[Fact]
 		public void WriteExtraParameter()
 		{
 			var badInstruction = new Instruction(OpCode.Ret).Source(10);
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Ret\s+\$10"));
-
-			var ms = new StringWriter();
-			using (var writer = new InstructionTextWriter(ms))
-				writer.Write(badInstruction);
-		}
-
-		[Test, ExpectedException(typeof(InvalidOperationException))]
-		public void WriteBadOpCode()
-		{
-			var badInstruction = new Instruction((OpCode) 254);
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^254\s+;.*"));
-			
-			var ms = new StringWriter();
-			using (var writer = new InstructionTextWriter(ms))
-				writer.Write(badInstruction);
-		}
-
-		[Test, ExpectedException(typeof(InvalidOperationException))]
-		public void WriteMissingParameter()
-		{
-			var badInstruction = new Instruction(OpCode.Mov).Source(10);
-			Assert.That(badInstruction.ToString(), Is.StringMatching(@"^Mov"));
+			Xunit.Assert.Matches(@"^Ret\s+\$10", badInstruction.ToString());
 
 			var ms = new StringWriter();
 			using (var writer = new InstructionTextWriter(ms))
 			{
-				writer.Write(badInstruction);
+				Xunit.Assert.Throws<InvalidOperationException>(() => writer.Write(badInstruction));
+			}
+		}
+
+		[Fact]
+		public void WriteBadOpCode()
+		{
+			var badInstruction = new Instruction((OpCode) 254);
+			Xunit.Assert.Matches(@"^254\s+;.*", badInstruction.ToString());
+			
+			var ms = new StringWriter();
+			using (var writer = new InstructionTextWriter(ms))
+			{
+				Xunit.Assert.Throws<InvalidOperationException>(() => writer.Write(badInstruction));
+			}
+		}
+
+		[Fact]
+		public void WriteMissingParameter()
+		{
+			var badInstruction = new Instruction(OpCode.Mov).Source(10);
+			Xunit.Assert.Matches("^Mov", badInstruction.ToString());
+
+			var ms = new StringWriter();
+			using (var writer = new InstructionTextWriter(ms))
+			{
+				Xunit.Assert.Throws<InvalidOperationException>(() => writer.Write(badInstruction));
 			}
 		}
 	}

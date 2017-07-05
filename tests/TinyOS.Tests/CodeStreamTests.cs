@@ -2,34 +2,33 @@
 using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class CodeStreamTests
 	{
-		[Test]
+		[Fact]
 		public void InitialiseCodeStream()
 		{
 			new CodeStream();
 		}
 
-		[Test]
+		[Fact]
 		public void AsEnumerable()
 		{
 			var stream = new CodeStream();
-			Assert.That(stream, Is.InstanceOf<IEnumerable<Instruction>>());
+			global::ClassLibrary1.Assert.That(stream, Is.InstanceOf<IEnumerable<Instruction>>());
 		}
 
-		[Test]
+		[Fact]
 		public void Enumerate()
 		{
 			var stream = new CodeStream();
 			Assert.That(stream.AsEnumerable().ToArray(), Is.InstanceOf<Instruction[]>());
 		}
 
-		[Test]
+		[Fact]
 		public void CanComposeSingleInstruction()
 		{
 			var stream = new CodeStream();
@@ -39,7 +38,7 @@ namespace ClassLibrary1
 			Assert.That(s2, Is.EquivalentTo(new[] { i1 }));
 		}
 
-		[Test]
+		[Fact]
 		public void CanComposeMultipleInstructions()
 		{
 			var i1 = new Instruction();
@@ -51,7 +50,7 @@ namespace ClassLibrary1
 			Assert.That(s3, Is.EquivalentTo(new[] { i1, i2 }));
 		}
 
-		[Test]
+		[Fact]
 		public void WriteInstruction()
 		{
 			var stream =new CodeStream();
@@ -61,7 +60,7 @@ namespace ClassLibrary1
 			Assert.That(stream.ToArray(), Is.EqualTo(new[] { instruction }));
 		}
 
-		[Test]
+		[Fact]
 		public void WriteMultipleInstruction()
 		{
 			var stream =new CodeStream();
@@ -72,7 +71,7 @@ namespace ClassLibrary1
 			Assert.That(stream.ToArray(), Is.EqualTo(new[] { i1, i2 }));
 		}
 
-		[Test]
+		[Fact]
 		public void WriteExplicitInstruction()
 		{
 			var stream =new CodeStream
@@ -83,7 +82,7 @@ namespace ClassLibrary1
 			Assert.That(stream.ToArray(), Is.Not.Empty);
 		}
 
-		[Test]
+		[Fact]
 		public void Movi()
 		{
 			var stream = new CodeStream();
@@ -94,7 +93,7 @@ namespace ClassLibrary1
 			Assert.That(stream.First(), Is.EqualTo(new Instruction(OpCode.Mov).Destination(Register.A).Source(0)).Using(new InstructionComparer()));
 		}
 
-		[Test]
+		[Fact]
 		public void Movr()
 		{
 			var stream = new CodeStream();

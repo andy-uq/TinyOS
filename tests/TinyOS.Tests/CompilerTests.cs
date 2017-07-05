@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class CompilerTests
 	{
 		const string _reallySimpleProgram = @"
@@ -13,7 +12,7 @@ namespace ClassLibrary1
 			exit r1
 		";
  
-		[Test]
+		[Fact]
 		public void Compile()
 		{
 			var cpu = new Cpu(2048, 256);

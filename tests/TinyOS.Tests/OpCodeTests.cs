@@ -1,12 +1,11 @@
 ﻿using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class OpCodeTests
 	{
-		[Test]
+		[Fact]
 		public void EncodeOpCode()
 		{
 			var op = new MaskedOpCode(OpCode.Add);
@@ -14,14 +13,14 @@ namespace ClassLibrary1
 			Assert.That(op.Signed, Is.False);
 		}
 
-		[Test]
+		[Fact]
 		public void EncodeOpCodeAsString()
 		{
 			var op = new MaskedOpCode(OpCode.Add);
 			Assert.That(op.ToString(), Is.EqualTo("Add"));
 		}
 
-		[Test]
+		[Fact]
 		public void EncodeOpCodeWithDestination()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetDest(OpCodeFlag.MemoryAddress);
@@ -31,7 +30,7 @@ namespace ClassLibrary1
 			Assert.That(op.Destination, Is.EqualTo(OpCodeFlag.MemoryAddress));
 		}
 
-		[Test]
+		[Fact]
 		public void EncodeOpCodeWithDestinationAsString()
 		{
 			var op = new MaskedOpCode(OpCode.Add)
@@ -46,7 +45,7 @@ namespace ClassLibrary1
 			Assert.That(op.ToString(), Is.EqualTo("Add [rX] 0x0"));
 		}
 
-		[Test]
+		[Fact]
 		public void EncodeOpCodeWithSource()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetSource(OpCodeFlag.Constant);
@@ -55,7 +54,7 @@ namespace ClassLibrary1
 			Assert.That(op.Source, Is.EqualTo(OpCodeFlag.Constant));
 			Assert.That(op.Destination, Is.EqualTo(OpCodeFlag.None));
 		}
-		[Test]
+		[Fact]
 		public void EncodeOpCodeWithSourceAsString()
 		{
 			var op = new MaskedOpCode(OpCode.Add).SetDest(OpCodeFlag.MemoryAddress).SetSource(OpCodeFlag.Constant);
@@ -68,7 +67,7 @@ namespace ClassLibrary1
 			Assert.That(op.ToString(), Is.EqualTo("Add [rX] [rX]"));
 		}
 
-		[Test]
+		[Fact]
 		public void EncodeOpCodeAsSigned()
 		{
 			var op = new MaskedOpCode(OpCode.Add).AsSigned();

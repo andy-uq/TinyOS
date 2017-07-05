@@ -2,14 +2,13 @@
 using System.Linq;
 using Andy.TinyOS;
 using Andy.TinyOS.OpCodeMeta;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class OperationMetaDataTests
 	{
-		[Test]
+		[Fact]
 		public void HasMetaForEveryOpCode()
 		{
 			foreach (var opcode in Enum.GetValues(typeof(OpCode)).Cast<OpCode>())
@@ -21,7 +20,7 @@ namespace ClassLibrary1
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void EveryOpCodeHasComment()
 		{
 			foreach (var opcode in Enum.GetValues(typeof(OpCode)).Cast<OpCode>())
@@ -30,7 +29,7 @@ namespace ClassLibrary1
 					continue;
 
 				var meta = OpCodeMetaInformation.Lookup[opcode];
-				Assert.That(meta.Comment, Is.Not.Null.Or.Empty);
+				Xunit.Assert.NotEmpty(meta.Comment);
 			}
 		}
 

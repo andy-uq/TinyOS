@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class InstructionTests
 	{
 		private Cpu _cpu;
@@ -20,8 +19,7 @@ namespace ClassLibrary1
 		private uint H => _cpu.Registers[Register.H];
 		private uint Sp => _cpu.Sp;
 
-		[SetUp]
-		public void SetUp()
+		public InstructionTests()
 		{
 			const uint pId = 10;
 
@@ -107,7 +105,7 @@ namespace ClassLibrary1
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void Add()
 		{
 			Invoke(InstructionsWithControlByte.Add, Register.A, 100);
@@ -118,7 +116,7 @@ namespace ClassLibrary1
 			Assert.That(A, Is.EqualTo(150));
 		}
 
-		[Test]
+		[Fact]
 		public void WithDynamic()
 		{
 			Invoke(new Instruction(OpCode.Mov).Destination(Register.A).Source(100));
@@ -129,7 +127,7 @@ namespace ClassLibrary1
 			Assert.That(A, Is.EqualTo(150));
 		}
 
-		[Test]
+		[Fact]
 		public void Incri()
 		{
 			var globalData = _cpu.CurrentProcess.GlobalData.Offset;
@@ -142,7 +140,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Read(H), Is.EqualTo(1));
 		}
 
-		[Test]
+		[Fact]
 		public void Mov()
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 100);
@@ -151,7 +149,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Read(H), Is.EqualTo(100));
 		}
 
-		[Test]
+		[Fact]
 		public void Push()
 		{
 			Invoke(InstructionsWithControlByte.Push, 1000);
@@ -159,7 +157,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Peek(), Is.EqualTo(1000));
 		}
 
-		[Test]
+		[Fact]
 		public void Pop()
 		{
 			Invoke(InstructionsWithControlByte.Push, 1000);
@@ -167,7 +165,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Read(H), Is.EqualTo(1000));
 		}
 
-		[Test]
+		[Fact]
 		public void Cmpi()
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
@@ -185,7 +183,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Zf, Is.True);
 		}
 
-		[Test]
+		[Fact]
 		public void Jmp()
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 10);
@@ -202,7 +200,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
-		[Test]
+		[Fact]
 		public void Je()
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.C, 10);
@@ -224,7 +222,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
-		[Test]
+		[Fact]
 		public void Jlt()
 		{
 			Invoke(InstructionsWithControlByte.Mov, Register.C, 10);
@@ -246,7 +244,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.Ip, Is.EqualTo(1));
 		}
 
-		[Test]
+		[Fact]
 		public void Alloc()
 		{
             int count = _cpu.CurrentProcess.PageTable.Count();
@@ -256,7 +254,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.CurrentProcess.PageTable.Count(), Is.EqualTo(count + 1));
 		}
 
-		[Test]
+		[Fact]
 		public void Map()
 		{
             int count = _cpu.CurrentProcess.PageTable.Count();
@@ -273,7 +271,7 @@ namespace ClassLibrary1
 			Assert.That(C, Is.EqualTo(8088));
 		}
 
-		[Test]
+		[Fact]
 		public void MapIsShared()
 		{
 			var pA = _cpu.CurrentProcess;
@@ -291,7 +289,7 @@ namespace ClassLibrary1
 			Assert.That(C, Is.EqualTo(8088));
 		}
 
-		[Test]
+		[Fact]
 		public void WaitEvent()
 		{
 			var pA = _cpu.CurrentProcess;
@@ -302,7 +300,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.DeviceReadQueue.Where(x => x.DeviceId == DeviceId.Event1).Select(x => x.Process), Contains.Item(pA));
 		}
 
-		[Test]
+		[Fact]
 		public void Sleep()
 		{
 			IdleProcess.Initialise(_cpu);
@@ -319,7 +317,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.CurrentProcess, Is.SameAs(pA));
 		}
 
-		[Test]
+		[Fact]
 		public void Input()
 		{
 			IdleProcess.Initialise(_cpu);
@@ -338,7 +336,7 @@ namespace ClassLibrary1
 			Assert.That(C, Is.EqualTo(99));
 		}
 
-		[Test]
+		[Fact]
 		public void Printr()
 		{
 			IdleProcess.Initialise(_cpu);
@@ -360,7 +358,7 @@ namespace ClassLibrary1
 			Assert.That(printStack.Peek(), Is.EqualTo(10));
 		}
 
-		[Test]
+		[Fact]
 		public void Printc()
 		{
 			IdleProcess.Initialise(_cpu);
@@ -381,7 +379,7 @@ namespace ClassLibrary1
 			Assert.That(printStack.Peek(), Is.EqualTo(10));
 		}
 
-		[Test]
+		[Fact]
 		public void Printm()
 		{
 			IdleProcess.Initialise(_cpu);
@@ -405,7 +403,7 @@ namespace ClassLibrary1
 		}
 
 
-		[Test]
+		[Fact]
 		public void SignalEvent()
 		{
 			var pA = _cpu.CurrentProcess;
@@ -421,7 +419,7 @@ namespace ClassLibrary1
 			Assert.That(_cpu.DeviceReadQueue, Is.Empty);
 		}
 
-		[Test]
+		[Fact]
 		public void Movrm()
 		{
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 10);
@@ -432,7 +430,7 @@ namespace ClassLibrary1
 			Assert.That(value, Is.EqualTo(88));
 		}
 
-		[Test]
+		[Fact]
 		public void Movmr()
 		{
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 10);
@@ -443,7 +441,7 @@ namespace ClassLibrary1
 			Assert.That(C, Is.EqualTo(88));
 		}
 
-		[Test]
+		[Fact]
 		public void MemoryClear()
 		{
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 10);
@@ -452,7 +450,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.Mov, Register.A, 0x12345678);
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
 			var value = (ulong )BitConverter.ToUInt32(_ram, _heapOffset);
-			Assert.That(value, Is.EqualTo(0x12345678));
+			Assert.That(value, Is.EqualTo(0x12345678L));
 
 			Invoke(InstructionsWithControlByte.Add, Register.B, 4);
 			Invoke(InstructionsWithControlByte.Mov, MemoryAddress.B, Register.A);
@@ -474,7 +472,7 @@ namespace ClassLibrary1
 			Invoke(InstructionsWithControlByte.FreeMemory, Register.B);
 		}
 
-		[Test]
+		[Fact]
 		public void Movmm()
 		{
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 4);
@@ -488,7 +486,7 @@ namespace ClassLibrary1
 			Assert.That(value, Is.EqualTo(88));
 		}
 
-		[Test]
+		[Fact]
 		public void Free()
 		{
 			Invoke(InstructionsWithControlByte.Alloc, Register.B, 4);

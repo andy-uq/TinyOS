@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class CpuTests
 	{
 
-		[Test]
+		[Fact]
 		public void RunCpu()
 		{
 			var cpu = new Cpu(2048, 256);
@@ -22,7 +21,7 @@ namespace ClassLibrary1
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void RunRealCpu()
 		{
 			var cpu = new Cpu(2048, 256);
@@ -30,13 +29,13 @@ namespace ClassLibrary1
 
  			cpu.Tick();
  			Assert.That(cpu.CurrentProcess, Is.EqualTo(cpu.IdleProcess));
-			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1));
+			Assert.That(cpu.CurrentProcess.Ip, Is.EqualTo(1U));
 			
 			cpu.Tick();
-			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20));
+			Assert.That(cpu.CurrentProcess.Registers[0], Is.EqualTo(20U));
 		}
 
-		[Test]
+		[Fact]
 		public void RunCpuWithProgram()
 		{
 			var cpu = new Cpu(2048, 256);
@@ -52,10 +51,10 @@ namespace ClassLibrary1
 				cpu.Tick();
 			}
 
-			Assert.That(prog1.ExitCode, Is.EqualTo(1));
+			Assert.That(prog1.ExitCode, Is.EqualTo(1U));
 		}
 
-		[Test]
+		[Fact]
 		public void ProgramSignals()
 		{
 			var cpu = new Cpu(2048, 256);
@@ -75,8 +74,8 @@ namespace ClassLibrary1
 				cpu.Tick();
 			}
 
-			Assert.That(prog1.ExitCode, Is.EqualTo(1));
-			Assert.That(prog2.ExitCode, Is.EqualTo(1));
+			Assert.That(prog1.ExitCode, Is.EqualTo(1U));
+			Assert.That(prog2.ExitCode, Is.EqualTo(1U));
 		}
 	}
 }

@@ -1,13 +1,12 @@
 ﻿using System.Linq;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-    [TestFixture]
     public class RamTests
     {
-        [Test]
+        [Fact]
         public void Create()
         {
             var ram = new Ram(1024, 256);
@@ -16,7 +15,7 @@ namespace ClassLibrary1
             Assert.That(ram.FrameCount, Is.EqualTo(4));
         }
 
-		[Test]
+		[Fact]
 		public void CreateShared()
 		{
 			var ram = new Ram(1024, 256);
@@ -29,12 +28,12 @@ namespace ClassLibrary1
 
 			var p1Offset = ram.ToPhysicalAddress(10, p1.VirtualAddress);
 			var p2Offset = ram.ToPhysicalAddress(10, p2.VirtualAddress);
-			Assert.That(p1Offset, Is.GreaterThan(offset));
-			Assert.That(p2Offset, Is.GreaterThan(offset));
-			Assert.That(p2Offset, Is.GreaterThan(p1Offset));
+			Xunit.Assert.InRange(p1Offset, 0U, offset);
+			Xunit.Assert.InRange(p2Offset, 0U, offset);
+			Xunit.Assert.InRange(p2Offset, 0U, p1Offset);
 		}
 
-    	[Test]
+    	[Fact]
         public void Allocate()
         {
             var ram = new Ram(2, 1);
@@ -52,7 +51,7 @@ namespace ClassLibrary1
             Assert.That(page, Is.Null);
         }
 
-        [Test]
+        [Fact]
         public void Free()
         {
             var ram = new Ram(2, 1);
@@ -70,7 +69,7 @@ namespace ClassLibrary1
             Assert.That(frame, Is.Not.Null);
         }
 
-        [Test]
+        [Fact]
         public void ReadFromStream()
         {
             var buffer = new byte[] {1, 2, 3, 4, 5, 6};
@@ -78,15 +77,15 @@ namespace ClassLibrary1
             var ram = new Ram(buffer, frameSize);
 
             var s = ram.GetStream(0);
-            Assert.That(s.Length, Is.EqualTo(frameSize));
-            Assert.That(s.ToArray(), Is.EquivalentTo(new[] {1, 2, 3}));
+            Assert.That(s.Length, Is.EqualTo<long>(frameSize));
+            Assert.That(s.ToArray(), Is.EquivalentTo(new byte[] {1, 2, 3}));
 
             var s2 = ram.GetStream(1);
-            Assert.That(s2.Length, Is.EqualTo(frameSize));
-            Assert.That(s2.ToArray(), Is.EquivalentTo(new[] { 4, 5, 6 }));
+            Assert.That(s2.Length, Is.EqualTo<long>(frameSize));
+            Assert.That(s2.ToArray(), Is.EquivalentTo(new byte[] { 4, 5, 6 }));
         }
 
-        [Test]
+        [Fact]
         public void WriteToStream()
         {
             var buffer = new byte[] {1, 2, 3, 4, 5, 6};
@@ -95,10 +94,10 @@ namespace ClassLibrary1
 
             var s = ram.GetStream(0);
             s.WriteByte(99);
-            Assert.That(s.ToArray(), Is.EquivalentTo(new[] {99, 2, 3}));
+            Assert.That(s.ToArray(), Is.EquivalentTo(new byte[] {99, 2, 3}));
         }
 
-		[Test]
+		[Fact]
 		public void VirtualAddressCalculations()
 		{
 			var c = new VirtualAddressCalculator(16);

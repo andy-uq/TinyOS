@@ -1,16 +1,14 @@
 ﻿using System;
 using Andy.TinyOS;
-using NUnit.Framework;
+using Xunit;
 
 namespace ClassLibrary1
 {
-	[TestFixture]
 	public class VirtualAddressTests
 	{
 		private VirtualAddressCalculator _calculator;
 
-		[SetUp]
-		public void SetUp()
+		public VirtualAddressTests()
 		{
 			_calculator = new VirtualAddressCalculator(4096);
 			Assert.That(_calculator.PageSize, Is.EqualTo(4096));
@@ -19,19 +17,19 @@ namespace ClassLibrary1
 			Assert.That(_calculator.OffsetMask, Is.EqualTo(4095));
 		}
 
-		[Test, ExpectedException(typeof(ArgumentOutOfRangeException))]
+		[Fact]
 		public void BadPageArgumentThrows()
 		{
-			_calculator.New(-1, 0);
+			Xunit.Assert.Throws<ArgumentOutOfRangeException>(() => _calculator.New(-1, 0));
 		}
 
-		[Test, ExpectedException(typeof(ArgumentOutOfRangeException))]
+		[Fact]
 		public void BadOffsetArgumentThrows()
 		{
-			_calculator.New(0, -1);
+			Xunit.Assert.Throws<ArgumentOutOfRangeException>(() => _calculator.New(0, -1));
 		}
 
-		[Test]
+		[Fact]
 		public void Zero()
 		{
 			var v1 = _calculator.New(0);
@@ -39,7 +37,7 @@ namespace ClassLibrary1
 			Assert.That(v1.Offset, Is.EqualTo(0));
 		}
 
-		[Test]
+		[Fact]
 		public void MaxValue()
 		{
 			var v1 = _calculator.New(uint.MaxValue);
@@ -47,7 +45,7 @@ namespace ClassLibrary1
 			Assert.That(v1.PageNumber, Is.EqualTo((1 << 20) - 1));
 		}
 
-		[Test]
+		[Fact]
 		public void Page()
 		{
 			var v1 = _calculator.New(1 << 12);
@@ -55,7 +53,7 @@ namespace ClassLibrary1
 			Assert.That(v1.PageNumber, Is.EqualTo(1));
 		}
 
-		[Test]
+		[Fact]
 		public void PageToAddr()
 		{
 			var v1 = _calculator.New(0, 1);
@@ -65,7 +63,7 @@ namespace ClassLibrary1
 			Assert.That(v2.Address, Is.EqualTo(2 << 12));
 		}
 
-		[Test]
+		[Fact]
 		public void AddAddr()
 		{
 			var v1 = _calculator.New(4095, 0);
@@ -76,7 +74,7 @@ namespace ClassLibrary1
 			Assert.That(v2.Offset, Is.EqualTo(0));
 		}
 
-		[Test]
+		[Fact]
 		public void SubAddr()
 		{
 			var v1 = _calculator.New(0, 2);
@@ -87,7 +85,7 @@ namespace ClassLibrary1
 			Assert.That(v2.Offset, Is.EqualTo(4095));
 		}
 
-		[Test]
+		[Fact]
 		public void Offset()
 		{
 			var v1 = _calculator.New(1024);
@@ -95,14 +93,14 @@ namespace ClassLibrary1
 			Assert.That(v1.PageNumber, Is.EqualTo(0));
 		}
 
-		[Test]
+		[Fact]
 		public void OffsetToAddr()
 		{
 			var v1 = _calculator.New(1024, 0);
 			Assert.That(v1.Address, Is.EqualTo(1024));
 		}
 
-		[Test]
+		[Fact]
 		public void CanToString()
 		{
 			var v1 = _calculator.New(1024, 0);
