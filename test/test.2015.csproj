@@ -77,25 +77,25 @@
     <Content Include="Parser\Output\test02.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\compiler\compiler.csproj">
-      <Project>{A49E182B-5DFA-492F-A3AD-F7CFF3B72E42}</Project>
-      <Name>compiler</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\parser\parser.csproj">
-      <Project>{BD0827A4-1D11-41A5-B4CD-B97E3E236CC3}</Project>
-      <Name>parser</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\tinyOS\tinyOS.csproj">
-      <Project>{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}</Project>
-      <Name>tinyOS</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Parser\Output\test01.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compiler\compiler.2015.csproj">
+      <Project>{a49e182b-5dfa-492f-a3ad-f7cff3b72e42}</Project>
+      <Name>compiler.2015</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\parser\parser.2015.csproj">
+      <Project>{bd0827a4-1d11-41a5-b4cd-b97e3e236cc3}</Project>
+      <Name>parser.2015</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\tinyOS\tinyOS.2015.csproj">
+      <Project>{9677efea-4a62-4de6-b32e-f7d10d83756d}</Project>
+      <Name>tinyOS.2015</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

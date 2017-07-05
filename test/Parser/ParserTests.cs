@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml.Linq;
 using Andy.TinyOS.Parser;
 using NUnit.Framework;
 
@@ -14,8 +13,8 @@ namespace ClassLibrary1.Parser
 		{
 			{"TBPC16", @"D:\Users\andy\Documents\GitHub\TinyOS\"},
 			{"ARCHANGEL", @"C:\Users\andy\Documents\GitHub\TinyOS\"},
-			{"ANDYCLARKE",@"C:\Dotnet\TinyOS"},
-			{"ANDYLAPTOP",@"C:\Source\C#\TinyOS"},
+			{"ANDYCLARKE", @"C:\Dotnet\TinyOS"},
+			{"ANDYLAPTOP", @"C:\Source\C#\TinyOS"}
 		};
 
 		private readonly string Source_Directory = @"test\Parser\Input";
@@ -39,7 +38,7 @@ namespace ClassLibrary1.Parser
 				Assert.Inconclusive("Cannot find filename " + sourceFile);
 
 			var output = new CppStructuralOutputAsXml();
-            
+
 			var result = CppFileParser.Parse(sourceFile, output);
 			Console.WriteLine(result.GetRoot());
 			Assert.That(result.ParseException, Is.Null);
@@ -59,7 +58,7 @@ namespace ClassLibrary1.Parser
 		{
 			var grammer = new AndyStructuralGrammar();
 			var p = new ParserState(integer);
-			
+
 			Assert.That(grammer.int_literal.Match(p), Is.EqualTo(expected));
 		}
 
@@ -77,7 +76,7 @@ namespace ClassLibrary1.Parser
 			var p = new ParserState(integer);
 
 			Assert.That(grammer.term.Match(p), Is.EqualTo(expected));
-			
+
 			var printer = new CppStructuralOutputAsXml();
 			printer.Print(p.GetRoot());
 			Console.WriteLine(printer.AsXml());
@@ -129,81 +128,6 @@ namespace ClassLibrary1.Parser
 			Console.WriteLine(printer.AsXml());
 		}
 
-		[Test]
-		public void BuildWhileStatement()
-		{
-			var grammer = new AndyStructuralGrammar();
-			var p = new ParserState("while");
-
-			Assert.That(grammer.while_keyword.Match(p), Is.True);
-
-			p = new ParserState("while()");
-			var rule = grammer.while_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
-			Assert.That(rule.Match(p), Is.True);
-
-			p = new ParserState("while (a == b)");
-			Assert.That(grammer.while_condition.Match(p), Is.True);
-			
-			p = new ParserState("while(a == 10){a=20;}");
-			var while_block = grammer.while_condition + grammer.block;
-			Assert.That(while_block.Match(p), Is.True);
-			
-			p = new ParserState("while(a == 10){a=20;}");
-			Assert.That(grammer.while_statement.Match(p), Is.True);
-
-			p = new ParserState("while(a == 10){a=20;}");
-			Assert.That(grammer.control_statement.Match(p), Is.True);
-		}
-
-		[Test]
-		public void BuildIfStatement()
-		{
-			var grammer = new AndyStructuralGrammar();
-			var p = new ParserState("if");
-
-			Assert.That(grammer.if_keyword.Match(p), Is.True);
-			
-			p = new ParserState("if()");
-			var rule = grammer.if_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
-			Assert.That(rule.Match(p), Is.True);
-
-			p = new ParserState("if (a == b)");
-			Assert.That(grammer.if_condition.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){a=20;}");
-			var if_block = grammer.if_condition + grammer.block;
-			Assert.That(if_block.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){a=20;}");
-			if_block = grammer.if_condition + new RecursiveRule(() => grammer.block);
-			Assert.That(if_block.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){a=20;}");
-			Assert.That(grammer.control_statement.Match(p), Is.True);
-		}
-
-		[Test]
-		public void BuildElseStatement()
-		{
-			var grammer = new AndyStructuralGrammar();
-			var p = new ParserState("else");
-
-			Assert.That(grammer.else_keyword.Match(p), Is.True);
-
-			p = new ParserState("else { b=10; }");
-			Assert.That(grammer.else_block.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){a=20;}");
-			var if_block = grammer.if_condition + grammer.block + new OptRule(grammer.else_block);
-			Assert.That(if_block.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){a=20;}else{b=10;}");
-			Assert.That(if_block.Match(p), Is.True);
-
-			p = new ParserState("if(a == 10){ a=20; } else { b=10; }");
-			Assert.That(grammer.if_statement.Match(p), Is.True);
-		}
-
 		[TestCase("a = 10;", true)]
 		[TestCase("if ( a == 10 ) { a=20; }", true)]
 		[TestCase("if ( a == 10 ) { a=20; } else { a=10; }", true)]
@@ -234,14 +158,79 @@ namespace ClassLibrary1.Parser
 		}
 
 		[Test]
-		public void ParseComment()
+		public void BuildElseStatement()
 		{
-			var grammar = new CppStructuralGrammar();
-			var output = new CppStructuralOutputAsXml();
-			var parserState = CppSourceParser.Parse("/* Comment */", output, rule: grammar.declaration_list);
-			Assert.That(parserState.ParseException, Is.Null);
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("else");
 
-			Console.WriteLine(output.AsXml());
+			Assert.That(grammer.else_keyword.Match(p), Is.True);
+
+			p = new ParserState("else { b=10; }");
+			Assert.That(grammer.else_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+
+			var if_block = grammer.if_condition + grammer.block + new OptRule(grammer.else_block);
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}else{b=10;}");
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){ a=20; } else { b=10; }");
+			Assert.That(grammer.if_statement.Match(p), Is.True);
+		}
+
+		[Test]
+		public void BuildIfStatement()
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("if");
+
+			Assert.That(grammer.if_keyword.Match(p), Is.True);
+
+			p = new ParserState("if()");
+			var rule = grammer.if_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
+			Assert.That(rule.Match(p), Is.True);
+
+			p = new ParserState("if (a == b)");
+			Assert.That(grammer.if_condition.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			var if_block = grammer.if_condition + grammer.block;
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			if_block = grammer.if_condition + new RecursiveRule(() => grammer.block);
+			Assert.That(if_block.Match(p), Is.True);
+
+			p = new ParserState("if(a == 10){a=20;}");
+			Assert.That(grammer.control_statement.Match(p), Is.True);
+		}
+
+		[Test]
+		public void BuildWhileStatement()
+		{
+			var grammer = new AndyStructuralGrammar();
+			var p = new ParserState("while");
+
+			Assert.That(grammer.while_keyword.Match(p), Is.True);
+
+			p = new ParserState("while()");
+			var rule = grammer.while_keyword + grammer.Delimiter("(") + grammer.Delimiter(")");
+			Assert.That(rule.Match(p), Is.True);
+
+			p = new ParserState("while (a == b)");
+			Assert.That(grammer.while_condition.Match(p), Is.True);
+
+			p = new ParserState("while(a == 10){a=20;}");
+			var while_block = grammer.while_condition + grammer.block;
+			Assert.That(while_block.Match(p), Is.True);
+
+			p = new ParserState("while(a == 10){a=20;}");
+			Assert.That(grammer.while_statement.Match(p), Is.True);
+
+			p = new ParserState("while(a == 10){a=20;}");
+			Assert.That(grammer.control_statement.Match(p), Is.True);
 		}
 
 		[Test]
@@ -252,6 +241,17 @@ namespace ClassLibrary1.Parser
 
 			var root = parserState.GetRoot();
 			Console.WriteLine(root);
+		}
+
+		[Test]
+		public void ParseComment()
+		{
+			var grammar = new CppStructuralGrammar();
+			var output = new CppStructuralOutputAsXml();
+			var parserState = CppSourceParser.Parse("/* Comment */", output, grammar.declaration_list);
+			Assert.That(parserState.ParseException, Is.Null);
+
+			Console.WriteLine(output.AsXml());
 		}
 	}
 }

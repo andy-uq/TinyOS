@@ -49,13 +49,13 @@
     <Compile Include="SymbolTable.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\parser\parser.csproj">
+    <ProjectReference Include="..\parser\parser.2015.csproj">
       <Project>{BD0827A4-1D11-41A5-B4CD-B97E3E236CC3}</Project>
-      <Name>parser</Name>
+      <Name>parser.2015</Name>
     </ProjectReference>
-    <ProjectReference Include="..\tinyOS\tinyOS.csproj">
+    <ProjectReference Include="..\tinyOS\tinyOS.2015.csproj">
       <Project>{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}</Project>
-      <Name>tinyOS</Name>
+      <Name>tinyOS.2015</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

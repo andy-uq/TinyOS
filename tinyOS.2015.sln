@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tinyOS", "tinyOS\tinyOS.csproj", "{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tinyOS", "tinyOS\tinyOS.2015.csproj", "{9677EFEA-4A62-4DE6-B32E-F7D10D83756D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{1AEC3271-FDAD-42E5-BD50-967BBEE8191E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.2015.csproj", "{1AEC3271-FDAD-42E5-BD50-967BBEE8191E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleFiles", "SampleFiles", "{A07BEA1D-87BB-4CFF-8618-F889B5E8DB51}"
 	ProjectSection(SolutionItems) = preProject
@@ -46,9 +46,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleFiles", "SampleFiles"
 		Sample Programs\scott9.txt = Sample Programs\scott9.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compiler", "compiler\compiler.csproj", "{A49E182B-5DFA-492F-A3AD-F7CFF3B72E42}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compiler", "compiler\compiler.2015.csproj", "{A49E182B-5DFA-492F-A3AD-F7CFF3B72E42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "parser", "parser\parser.csproj", "{BD0827A4-1D11-41A5-B4CD-B97E3E236CC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "parser", "parser\parser.2015.csproj", "{BD0827A4-1D11-41A5-B4CD-B97E3E236CC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
